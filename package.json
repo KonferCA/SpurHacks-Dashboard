@@ -12,6 +12,7 @@
         "format:check": "prettier . --check",
         "test": "vitest run --coverage",
         "test:dev": "vitest",
+        "typecheck": "tsc --noEmit",
         "emulators": "firebase emulators:start --project hawkhacks-dashboard --import ./data",
         "setup": "firebase init emulators",
         "firebase": "firebase",
