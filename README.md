@@ -1,27 +1,53 @@
 <div align="center">
-
-```
-██████╗  █████╗ ███████╗██╗  ██╗██████╗  ██████╗  █████╗ ██████╗ ██████╗ 
-██╔══██╗██╔══██╗██╔════╝██║  ██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗██╔══██╗
-██║  ██║███████║███████╗███████║██████╔╝██║   ██║███████║██████╔╝██║  ██║
-██║  ██║██╔══██║╚════██║██╔══██║██╔══██╗██║   ██║██╔══██║██╔══██╗██║  ██║
-██████╔╝██║  ██║███████║██║  ██║██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝
-╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ 
-```
-
-<h1>Hawk Hacks' Dashboard Application for Hackers & Mentors</h1>
-
+  <h1 align="center">
+    <a href="https://hawkhacks.ca/">
+        <picture>
+            <source height="175" media="(prefers-color-scheme: dark)" srcset="https://github.com/KonferCA/HawkHacks-Landing/blob/main/src/assets/logo-text.svg">
+            <img height="175" alt="SPUR" src="https://github.com/KonferCA/HawkHacks-Landing/blob/main/src/assets/logo-text.svg">
+        </picture>
+    </a>
+    <br>
+  </h1>
+                                                 
+  ![GitHub](https://img.shields.io/github/license/KonferCA/HawkHacks-Dashboard?style=flat-square)
+  
+  #### The official dashboard page for HawkHacks - see [here](https://portal.hawkhacks.ca).
 </div>
 
-## Development
+## Quick Setup :hammer:
 
-Before you begin development, please read our [CONTRIBUTING](/docs/CONTRIBUTING.md) file.
+> Install Node.js
 
-Setting up local development is very easy:
+```sh
+https://nodejs.org/en/download/
+```
 
-Steps:
+> Install pnpm using npm
 
-1. `git clone git@github.com:LaurierHawkHacks/Dashboard.git`
-2. `cd Dashboard`
-3. `pnpm install`
-4. `pnpm dev`
+```sh
+$ npm install -g pnpm
+```
+
+> Clone the repo
+
+```sh
+$ git clone https://github.com/KonferCA/SPUR-Innovation.git
+```
+
+> From your terminal, navigate to the root path of clone
+
+```sh
+$ cd path/to/your/clone
+```
+
+> Install dependencies
+
+```sh
+$ pnpm i
+```
+
+> Run local server
+
+```sh
+$ pnpm dev
+```
