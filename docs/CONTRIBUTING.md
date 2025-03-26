@@ -83,17 +83,15 @@ npm install -g firebase-tools
 # Login to Firebase
 firebase login
 
+# At this point if you haven't been added to the Firebase project, let the VPs know.
 # Initialize the Firebase project
 firebase use --add
-
-# Start the Firebase emulators for local development
-pnpm run emulators
 ```
 
 > Start Development Server
   
 ```sh
-pnpm dev
+pnpm dev # This will start the vite development server + Firebase emulators
 ```
 
 > Run Firebase Functions Locally (in a separate terminal)
@@ -102,7 +100,7 @@ pnpm dev
 cd functions
 pnpm i
 pnpm build:watch  # Build TypeScript in watch mode
-pnpm server       # Start functions emulator 
+pnpm serve        # Start functions emulator
 ```
 
 > Build for Production (Optional)
@@ -439,7 +437,10 @@ Related to #456
 For local development, we use Firebase emulators to simulate the Firebase services. The project is configured to use a specific Firebase project for emulation:
 
 ```sh
-# Start the Firebase emulators with the project configuration
+# Start both vite dev server + Firebase emulators
+pnpm run
+
+# In case you like to run things seperately, start the Firebase emulators with the project configuration
 pnpm run emulators
 
 # Alternative command
