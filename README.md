@@ -9,7 +9,7 @@
     <br>
   </h1>
                                                  
-  ![GitHub](https://img.shields.io/github/license/KonferCA/HawkHacks-Dashboard?style=flat-square)
+  ![GitHub](https://img.shields.io/github/license/KonferCA/HawkHacks-Landing?style=flat-square)
   
   #### The official dashboard page for HawkHacks - see [here](https://portal.hawkhacks.ca).
 </div>
