@@ -2,6 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 
+import { Provider } from "@/components/ui/provider";
+
 import { Router } from "@/navigation";
 import { AuthProvider } from "@providers";
 import { NotificationProvider } from "./providers/notification.provider";
@@ -15,12 +17,14 @@ console.log(`App env: ${import.meta.env.MODE}`);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-        <NotificationProvider>
-            <AuthProvider>
-                <RoutesProvider>
-                    <Router />
-                </RoutesProvider>
-            </AuthProvider>
-        </NotificationProvider>
+        <Provider>
+            <NotificationProvider>
+                <AuthProvider>
+                    <RoutesProvider>
+                        <Router />
+                    </RoutesProvider>
+                </AuthProvider>
+            </NotificationProvider>
+        </Provider>
     </React.StrictMode>
 );
