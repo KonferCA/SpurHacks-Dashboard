@@ -293,7 +293,7 @@ export const createPassObject = onCall(async (data: any, res) => {
         hexBackgroundColor: "#27393F",
         heroImage: {
             sourceUri: {
-                uri: "https://storage.googleapis.com/hawkhacks-dashboard.appspot.com/uploads%2Fwallet-banner.png",
+                uri: "https://storage.googleapis.com/spurhacks-dashboard.appspot.com/uploads%2Fwallet-banner.png",
             },
             contentDescription: {
                 defaultValue: {
