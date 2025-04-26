@@ -712,6 +712,7 @@ export const ApplyPage = () => {
 									opportunities.
 								</p>
 								<FileBrowser
+									inputId="sponsors-resume-file-input"
 									allowedFileTypes={[
 										"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
 										"application/pdf", //pdf

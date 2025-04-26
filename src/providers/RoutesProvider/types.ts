@@ -1,6 +1,6 @@
 import type { AccessControlFn } from "@/navigation/AccessControl/types";
 import type { RouteObject } from "react-router-dom";
-import { paths } from "./data";
+import type { paths } from "./data";
 
 export type Paths = typeof paths;
 

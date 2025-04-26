@@ -6,8 +6,6 @@ import type {
 import type { Timestamp } from "firebase/firestore";
 import type { TextAreaProps } from "../TextArea/TextArea";
 
-export interface HackerApplicationReadOnlyData {}
-
 export interface HackerApplicationData {
 	firstName: string;
 	lastName: string;
