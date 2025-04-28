@@ -1,5 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Button } from "@chakra-ui/react";
 import {
 	TextInput,
@@ -46,6 +45,7 @@ import { useApplications } from "@/hooks/use-applications";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { paths } from "@/providers/RoutesProvider/data";
 import { toaster } from "@/components/ui/toaster";
+import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
 
 // Form validations
 const profileFormValidation = z.object({
@@ -336,8 +336,6 @@ export const ApplicationPage = () => {
 
 		setIsSubmitting(true);
 
-		// Removed mentor resume upload
-
 		try {
 			if (generalResumeFile) {
 				application.generalResumeRef = await uploadGeneralResume(
@@ -417,126 +415,129 @@ export const ApplicationPage = () => {
 					<span className="font-bold">required</span>.
 				</h3>
 				<form onSubmit={submitApp} className="mt-12">
-					<div className="">
-						<div
-							className={`mx-auto lg:grid max-w-4xl space-y-8 lg:gap-x-6 lg:gap-y-8 lg:space-y-0 lg:grid-cols-6${
-								activeStep !== 0 ? " hidden lg:hidden" : ""
-							}`}
-						>
-							<div className="sm:col-span-3">
-								<TextInput
-									label="What is your first name?"
-									type="text"
-									id="firstName"
-									autoComplete="given-name"
-									placeholder="Steven"
-									value={application.firstName}
-									onChange={(e) => handleChange("firstName", e.target.value)}
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-3">
-								<TextInput
-									label="What is your last name?"
-									type="text"
-									id="lastName"
-									autoComplete="family-name"
-									placeholder="Wu"
-									value={application.lastName}
-									onChange={(e) => handleChange("lastName", e.target.value)}
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-2">
-								<Select
-									label="How old are you?"
-									options={ages}
-									initialValue={application.age ?? ""}
-									onChange={(opt) => handleChange("age", opt)}
-									required
-								/>
-							</div>
-							<div className="sm:col-span-4">
-								<TextInput
-									label="What is your Discord username?"
-									id="discord"
-									placeholder="@username or username#1234"
-									value={application.discord}
-									onChange={(e) => handleChange("discord", e.target.value)}
-									description="Discord will be our primary form of communication."
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-3">
-								<Select
-									label="Which country do you currently reside in?"
-									options={countryNames}
-									initialValue={application.countryOfResidence ?? ""}
-									onChange={(opt) => handleChange("countryOfResidence", opt)}
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-3">
-								<Select
-									label="Which city do you live in?"
-									options={cityNames}
-									initialValue={application.city ?? ""}
-									onChange={(opt) => handleChange("city", opt)}
-									allowCustomValue
-									required
-								/>
-							</div>
-
-							<div className="col-span-6">
-								<TextInput
-									id="phone"
-									label="Phone Number"
-									onChange={(e) => handleChange("phone", e.target.value)}
-									placeholder="+1 123-444-555"
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-3">
-								<Select
-									label="Which school are you currently attending?"
-									options={schools}
-									initialValue={application.school ?? ""}
-									onChange={(opt) => handleChange("school", opt)}
-									allowCustomValue
-									required
-								/>
-								<p className="mt-2 text-sageGray">
-									If you recently graduated, pick the school you graduated from.
-								</p>
-							</div>
-							<div className="sm:col-span-3">
-								<Select
-									label="What is your current level of study?"
-									options={levelsOfStudy}
-									initialValue={application.levelOfStudy ?? ""}
-									onChange={(opt) => handleChange("levelOfStudy", opt)}
-									required
-								/>
-							</div>
-
-							<div className="sm:col-span-full">
-								<MultiSelect
-									label="What is your major/field of study?"
-									options={majorsList}
-									onChange={(opts) => handleChange("major", opts)}
-									initialValues={
-										application.major.length ? application.major : []
-									}
-									allowCustomValue
-									required
-								/>
-							</div>
+					{/* basic profile */}
+					<div
+						className={`mx-auto lg:grid max-w-4xl space-y-8 lg:gap-x-6 lg:gap-y-8 lg:space-y-0 lg:grid-cols-6${
+							activeStep !== 0 ? " hidden lg:hidden" : ""
+						}`}
+					>
+						<div className="sm:col-span-3">
+							<TextInput
+								label="What is your first name?"
+								type="text"
+								id="firstName"
+								autoComplete="given-name"
+								placeholder="Steven"
+								value={application.firstName}
+								onChange={(e) => handleChange("firstName", e.target.value)}
+								required
+							/>
 						</div>
+
+						<div className="sm:col-span-3">
+							<TextInput
+								label="What is your last name?"
+								type="text"
+								id="lastName"
+								autoComplete="family-name"
+								placeholder="Wu"
+								value={application.lastName}
+								onChange={(e) => handleChange("lastName", e.target.value)}
+								required
+							/>
+						</div>
+
+						<div className="sm:col-span-2">
+							<Select
+								label="How old are you?"
+								options={ages}
+								initialValue={application.age ?? ""}
+								onChange={(opt) => handleChange("age", opt)}
+								required
+							/>
+						</div>
+						<div className="sm:col-span-4">
+							<TextInput
+								label="What is your Discord username?"
+								id="discord"
+								placeholder="@username or username#1234"
+								value={application.discord}
+								onChange={(e) => handleChange("discord", e.target.value)}
+								description="Discord will be our primary form of communication."
+								required
+							/>
+						</div>
+
+						<div className="sm:col-span-3">
+							<Select
+								label="Which country do you currently reside in?"
+								options={countryNames}
+								initialValue={application.countryOfResidence ?? ""}
+								onChange={(opt) => handleChange("countryOfResidence", opt)}
+								required
+							/>
+						</div>
+
+						<div className="sm:col-span-3">
+							<Select
+								label="Which city do you live in?"
+								options={cityNames}
+								initialValue={application.city ?? ""}
+								onChange={(opt) => handleChange("city", opt)}
+								allowCustomValue
+								required
+							/>
+						</div>
+
+						<div className="col-span-6">
+							<TextInput
+								id="phone"
+								label="Phone Number"
+								onChange={(e) => handleChange("phone", e.target.value)}
+								placeholder="+1 123-444-555"
+								required
+							/>
+						</div>
+
+						<div className="sm:col-span-3">
+							<Select
+								label="Which school are you currently attending?"
+								options={schools}
+								initialValue={application.school ?? ""}
+								onChange={(opt) => handleChange("school", opt)}
+								allowCustomValue
+								required
+							/>
+							<p className="mt-2 text-sageGray">
+								If you recently graduated, pick the school you graduated from.
+							</p>
+						</div>
+						<div className="sm:col-span-3">
+							<Select
+								label="What is your current level of study?"
+								options={levelsOfStudy}
+								initialValue={application.levelOfStudy ?? ""}
+								onChange={(opt) => handleChange("levelOfStudy", opt)}
+								required
+							/>
+						</div>
+
+						<div className="sm:col-span-full">
+							<MultiSelect
+								label="What is your major/field of study?"
+								options={majorsList}
+								onChange={(opts) => handleChange("major", opts)}
+								initialValues={
+									application.major.length ? application.major : []
+								}
+								allowCustomValue
+								required
+							/>
+						</div>
+
+						{/* end of basic profile */}
+
+						{/* hacker specific questions */}
 						<div
 							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
 								activeStep !== 1 ? " hidden sm:hidden" : ""
@@ -577,9 +578,10 @@ export const ApplicationPage = () => {
 									}
 								/>
 							</div>
-
-							{/* Removed mentor resume upload section */}
 						</div>
+						{/* end of hacker specific questions */}
+
+						{/* general questions */}
 						<div
 							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
 								activeStep !== 2 ? " hidden sm:hidden" : ""
@@ -692,16 +694,19 @@ export const ApplicationPage = () => {
 								/>
 							</div>
 						</div>
+						{/* end of general questions */}
+
+						{/* final steps - agreements */}
 						<div
 							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
 								activeStep !== 3 ? " hidden sm:hidden" : ""
 							}`}
 						>
 							<div className="sm:col-span-full">
-								<label className="text-gray-900 font-medium">
+								<p className="text-gray-900 font-medium">
 									If you would like to share your resume with our sponsors,
 									please do so now.
-								</label>
+								</p>
 								<p className="text-sm italic">
 									Sponsors will be conducting coffee chats/interviews during the
 									hackathon, or might reach out via email for career or job
@@ -747,7 +752,7 @@ export const ApplicationPage = () => {
 									value={application.describeSalt}
 								/>
 							</div>
-							<div className="sm:col-span-full h-12"></div>
+							<div className="sm:col-span-full h-12" />
 							<div className="sm:col-span-full flex items-start gap-x-2">
 								<input
 									type="checkbox"
@@ -837,11 +842,12 @@ export const ApplicationPage = () => {
 								</p>
 							</div>
 						</div>
+						{/* end of final steps - agreements */}
 					</div>
 					{/* adding some more white space between the last input field and the buttons */}
-					<div className="h-12 md:h-28"></div>
+					<div className="h-12 md:h-28" />
 					{/* just a separator line */}
-					<div className="h-0.5 bg-gray-300 my-6"></div>
+					<div className="h-0.5 bg-gray-300 my-6" />
 					<div>
 						{errors.length > 0 ? (
 							<p className="text-center text-red-600">
