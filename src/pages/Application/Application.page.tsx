@@ -16,22 +16,33 @@ import {
     LoadingAnimation,
     PageWrapper,
 } from "@components";
-import { Profile } from "@/components/forms/Profile";
-import {
-    hackerAppFormInputs,
-    hackerSpecificForm,
-} from "@/components/forms/hackerApplication";
 import type {
     ApplicationInputKeys,
     ApplicationData,
-    FormInput,
 } from "@/components/forms/types";
 import type { Step } from "@/components/types";
 import { defaultApplication } from "@/components/forms/defaults";
 import { uploadGeneralResume } from "@/services/firebase/files";
 import { submitApplication } from "@/services/firebase/application";
 import { TextArea } from "@/components/TextArea/TextArea";
-import { referralSources, ages } from "@/data";
+import {
+    referralSources,
+    ages,
+    genders,
+    allergies,
+    programmingLanguages,
+    pronouns,
+    diets,
+    sexualityList,
+    races,
+    interests,
+    hackathonExps,
+    countryNames,
+    schools,
+    levelsOfStudy,
+    cityNames,
+    majorsList,
+} from "@/data";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/services/firebase";
 import { Modal } from "@/components/Modal";
@@ -392,8 +403,6 @@ export const ApplicationPage = () => {
         }
     }, [userApp, sp]);
 
-    const specificQuestions: FormInput[] = hackerSpecificForm;
-
     if (loadingApplications)
         return (
             <PageWrapper>
@@ -426,10 +435,147 @@ export const ApplicationPage = () => {
                                 activeStep !== 0 ? " hidden lg:hidden" : ""
                             }`}
                         >
-                            <Profile
-                                profile={application}
-                                handler={handleChange}
-                            />
+                            <div className="sm:col-span-3">
+                                <TextInput
+                                    label="What is your first name?"
+                                    type="text"
+                                    id="firstName"
+                                    autoComplete="given-name"
+                                    placeholder="Steven"
+                                    value={application.firstName}
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "firstName",
+                                            e.target.value
+                                        )
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <TextInput
+                                    label="What is your last name?"
+                                    type="text"
+                                    id="lastName"
+                                    autoComplete="family-name"
+                                    placeholder="Wu"
+                                    value={application.lastName}
+                                    onChange={(e) =>
+                                        handleChange("lastName", e.target.value)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-2">
+                                <Select
+                                    label="How old are you?"
+                                    options={ages}
+                                    initialValue={application.age ?? ""}
+                                    onChange={(opt) => handleChange("age", opt)}
+                                    required
+                                />
+                            </div>
+                            <div className="sm:col-span-4">
+                                <TextInput
+                                    label="What is your Discord username?"
+                                    id="discord"
+                                    placeholder="@username or username#1234"
+                                    value={application.discord}
+                                    onChange={(e) =>
+                                        handleChange("discord", e.target.value)
+                                    }
+                                    description="Discord will be our primary form of communication."
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <Select
+                                    label="Which country do you currently reside in?"
+                                    options={countryNames}
+                                    initialValue={
+                                        application.countryOfResidence ?? ""
+                                    }
+                                    onChange={(opt) =>
+                                        handleChange("countryOfResidence", opt)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <Select
+                                    label="Which city do you live in?"
+                                    options={cityNames}
+                                    initialValue={application.city ?? ""}
+                                    onChange={(opt) =>
+                                        handleChange("city", opt)
+                                    }
+                                    allowCustomValue
+                                    required
+                                />
+                            </div>
+
+                            <div className="col-span-6">
+                                <TextInput
+                                    id="phone"
+                                    label="Phone Number"
+                                    onChange={(e) =>
+                                        handleChange("phone", e.target.value)
+                                    }
+                                    placeholder="+1 123-444-555"
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-3">
+                                <Select
+                                    label="Which school are you currently attending?"
+                                    options={schools}
+                                    initialValue={application.school ?? ""}
+                                    onChange={(opt) =>
+                                        handleChange("school", opt)
+                                    }
+                                    allowCustomValue
+                                    required
+                                />
+                                <p className="mt-2 text-sageGray">
+                                    If you recently graduated, pick the school
+                                    you graduated from.
+                                </p>
+                            </div>
+                            <div className="sm:col-span-3">
+                                <Select
+                                    label="What is your current level of study?"
+                                    options={levelsOfStudy}
+                                    initialValue={
+                                        application.levelOfStudy ?? ""
+                                    }
+                                    onChange={(opt) =>
+                                        handleChange("levelOfStudy", opt)
+                                    }
+                                    required
+                                />
+                            </div>
+
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="What is your major/field of study?"
+                                    options={majorsList}
+                                    onChange={(opts) =>
+                                        handleChange("major", opts)
+                                    }
+                                    initialValues={
+                                        application.major.length
+                                            ? application.major
+                                            : []
+                                    }
+                                    allowCustomValue
+                                    required
+                                />
+                            </div>
                         </div>
                         <div
                             className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
@@ -443,77 +589,44 @@ export const ApplicationPage = () => {
                                     value="Hacker"
                                 />
                             </div>
-                            {/* render role specific questions */}
-                            {specificQuestions.map((input) => (
-                                <div
-                                    key={input.props.label}
-                                    className="sm:col-span-full"
-                                >
-                                    {input.type === "text" ? (
-                                        <TextInput
-                                            {...input.props}
-                                            value={
-                                                application[
-                                                    input.name
-                                                ] as string
-                                            }
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    input.name,
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    ) : input.type === "select" ? (
-                                        <Select
-                                            {...input.props}
-                                            onChange={(opt) =>
-                                                handleChange(input.name, opt)
-                                            }
-                                            initialValue={
-                                                application[input.name]
-                                                    ? (application[
-                                                          input.name
-                                                      ] as string)
-                                                    : ""
-                                            }
-                                        />
-                                    ) : input.type === "multiselect" ? (
-                                        <MultiSelect
-                                            {...input.props}
-                                            onChange={(opts) =>
-                                                handleChange(input.name, opts)
-                                            }
-                                            // @ts-ignore
-                                            initialValues={
-                                                (
-                                                    application[
-                                                        input.name
-                                                    ] as string[]
-                                                ).length > 0
-                                                    ? application[input.name]
-                                                    : []
-                                            }
-                                        />
-                                    ) : input.type === "textarea" ? (
-                                        <TextArea
-                                            {...input.props}
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    input.name,
-                                                    e.target.value
-                                                )
-                                            }
-                                            // @ts-ignore
-                                            value={
-                                                application[input.name]
-                                                    ? application[input.name]
-                                                    : ""
-                                            }
-                                        />
-                                    ) : null}
-                                </div>
-                            ))}
+                            <div className="sm:col-span-full">
+                                <TextArea
+                                    id="hacker-specific-q1"
+                                    label="Why do you want to participate at HawkHacks?"
+                                    rows={4}
+                                    required
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "reasonToBeInHawkHacks",
+                                            e.target.value
+                                        )
+                                    }
+                                    value={
+                                        application.reasonToBeInHawkHacks
+                                            ? application.reasonToBeInHawkHacks
+                                            : ""
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <TextArea
+                                    id="hacker-specific-q2"
+                                    label="In a few sentences, what up-and-coming or revolutionizing technology are you most excited about?"
+                                    rows={4}
+                                    required
+                                    onChange={(e) =>
+                                        handleChange(
+                                            "revolutionizingTechnology",
+                                            e.target.value
+                                        )
+                                    }
+                                    value={
+                                        application.revolutionizingTechnology
+                                            ? application.revolutionizingTechnology
+                                            : ""
+                                    }
+                                />
+                            </div>
 
                             {/* Removed mentor resume upload section */}
                         </div>
@@ -522,60 +635,138 @@ export const ApplicationPage = () => {
                                 activeStep !== 2 ? " hidden sm:hidden" : ""
                             }`}
                         >
-                            {hackerAppFormInputs?.map((input) => (
-                                <div
-                                    key={input.props.label}
-                                    className="sm:col-span-full"
-                                >
-                                    {input.type === "text" ? (
-                                        <TextInput
-                                            {...input.props}
-                                            value={
-                                                application[
-                                                    input.name
-                                                ] as string
-                                            }
-                                            onChange={(e) =>
-                                                handleChange(
-                                                    input.name,
-                                                    e.target.value
-                                                )
-                                            }
-                                        />
-                                    ) : input.type === "select" ? (
-                                        <Select
-                                            {...input.props}
-                                            onChange={(opt) =>
-                                                handleChange(input.name, opt)
-                                            }
-                                            initialValue={
-                                                application[input.name]
-                                                    ? (application[
-                                                          input.name
-                                                      ] as string)
-                                                    : ""
-                                            }
-                                        />
-                                    ) : input.type === "multiselect" ? (
-                                        <MultiSelect
-                                            {...input.props}
-                                            onChange={(opts) =>
-                                                handleChange(input.name, opts)
-                                            }
-                                            // @ts-ignore
-                                            initialValues={
-                                                (
-                                                    application[
-                                                        input.name
-                                                    ] as string[]
-                                                ).length > 0
-                                                    ? application[input.name]
-                                                    : []
-                                            }
-                                        />
-                                    ) : null}
-                                </div>
-                            ))}
+                            <div className="sm:col-span-full">
+                                <Select
+                                    label="What gender do you identify as?"
+                                    options={genders}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opt) =>
+                                        handleChange("gender", opt)
+                                    }
+                                    initialValue={application.gender || ""}
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="What are your pronouns?"
+                                    options={pronouns}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opts) =>
+                                        handleChange("pronouns", opts)
+                                    }
+                                    initialValues={
+                                        application.pronouns.length > 0
+                                            ? application.pronouns
+                                            : []
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <Select
+                                    label="Please select any of the following that resonates with you:"
+                                    options={sexualityList}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opt) =>
+                                        handleChange("sexuality", opt)
+                                    }
+                                    initialValue={application.sexuality || ""}
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <Select
+                                    label="Which of the following best describes your racial or ethnic background?"
+                                    options={races}
+                                    allowCustomValue={false}
+                                    required={true}
+                                    onChange={(opt) =>
+                                        handleChange("race", opt)
+                                    }
+                                    initialValue={application.race || ""}
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="Do you have any dietary restrictions?"
+                                    options={diets}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opts) =>
+                                        handleChange("diets", opts)
+                                    }
+                                    initialValues={
+                                        application.diets.length > 0
+                                            ? application.diets
+                                            : []
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="Are there any allergens you have that we should be aware of?"
+                                    options={allergies}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opts) =>
+                                        handleChange("allergies", opts)
+                                    }
+                                    initialValues={
+                                        application.allergies.length > 0
+                                            ? application.allergies
+                                            : []
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="Which of the following fields interests you?"
+                                    options={interests}
+                                    allowCustomValue={true}
+                                    required={true}
+                                    onChange={(opts) =>
+                                        handleChange("interests", opts)
+                                    }
+                                    initialValues={
+                                        application.interests.length > 0
+                                            ? application.interests
+                                            : []
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <Select
+                                    label="How many Hackathons have you attended as a participant in the past?"
+                                    options={hackathonExps}
+                                    required={true}
+                                    onChange={(opt) =>
+                                        handleChange("hackathonExperience", opt)
+                                    }
+                                    initialValue={
+                                        application.hackathonExperience || ""
+                                    }
+                                />
+                            </div>
+                            <div className="sm:col-span-full">
+                                <MultiSelect
+                                    label="What programming languages are you the most comfortable with or passionate about?"
+                                    options={programmingLanguages}
+                                    allowCustomValue={true}
+                                    onChange={(opts) =>
+                                        handleChange(
+                                            "programmingLanguages",
+                                            opts
+                                        )
+                                    }
+                                    initialValues={
+                                        application.programmingLanguages
+                                            .length > 0
+                                            ? application.programmingLanguages
+                                            : []
+                                    }
+                                />
+                            </div>
                         </div>
                         <div
                             className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
@@ -640,28 +831,6 @@ export const ApplicationPage = () => {
                                     value={application.describeSalt}
                                 />
                             </div>
-                            {/* dont have the CoC yet */}
-                            {/* <div className="sm:col-span-full flex items-start gap-x-2"> */}
-                            {/*     <input */}
-                            {/*         type="checkbox" */}
-                            {/*         checked={application.agreedToHawkHacksCoC} */}
-                            {/*         onChange={(e) => */}
-                            {/*             handleChange( */}
-                            {/*                 "agreedToHawkHacksCoC", */}
-                            {/*                 e.target.checked */}
-                            {/*             ) */}
-                            {/*         } */}
-                            {/*     /> */}
-                            {/*     <p> */}
-                            {/*         { */}
-                            {/*             "* I have read and agree to the HawkHacks Code of Conduct." */}
-                            {/*         } */}
-                            {/*         <a className="ml-2 text-sky-600 underline"> */}
-                            {/*             (TBD) */}
-                            {/*         </a> */}
-                            {/*     </p> */}
-                            {/* </div> */}
-                            {/* create some empty space between inputs and checkboxes */}
                             <div className="sm:col-span-full h-12"></div>
                             <div className="sm:col-span-full flex items-start gap-x-2">
                                 <input
