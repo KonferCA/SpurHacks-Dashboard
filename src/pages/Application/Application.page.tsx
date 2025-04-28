@@ -28,18 +28,15 @@ import type {
 } from "@/components/forms/types";
 import type { Step } from "@/components/types";
 import { defaultApplication } from "@/components/forms/defaults";
-import {
-    uploadGeneralResume,
-} from "@/services/firebase/files";
+import { uploadGeneralResume } from "@/services/firebase/files";
 import { submitApplication } from "@/services/firebase/application";
 import { TextArea } from "@/components/TextArea/TextArea";
 import { referralSources, ages } from "@/data";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/services/firebase";
-import { InfoCallout } from "@/components/InfoCallout/InfoCallout";
 import { Modal } from "@/components/Modal";
 
-// Form validations 
+// Form validations
 const profileFormValidation = z.object({
     firstName: z
         .string()
@@ -51,7 +48,7 @@ const profileFormValidation = z.object({
         .string()
         .min(1, "Please select the country you currently reside in."),
     city: z.string().min(1, "Please select the city you currently live in."),
-    phone: z.string().min(1, "Phone number is empty"),
+    phone: z.string().nonempty("Phone number is empty"),
     school: z.string().min(1, "School is empty"),
     levelOfStudy: z.string().min(1, "Level of study is empty"),
     age: z.string().refine((val) => ages.includes(val)),
@@ -98,8 +95,7 @@ const hackerAppFormValidation = z.object({
         .min(1, "Please choose at least one interest."),
     hackathonExperience: z.string(),
     programmingLanguages: z.string().array(),
-    participatingAs: z
-        .enum(["Hacker", "Mentor", "Volunteer"]),
+    participatingAs: z.enum(["Hacker", "Mentor", "Volunteer"]),
     applicantId: z.string(),
     agreedToHawkHacksCoC: z.boolean(),
     agreedToWLUCoC: z.boolean(),
@@ -158,9 +154,7 @@ const finalChecksValidation = z.object({
 const stepValidations = [
     profileFormValidation,
     z.object({
-        participatingAs: z
-            .string()
-            .refine((val) => ["Hacker"].includes(val)),
+        participatingAs: z.string().refine((val) => ["Hacker"].includes(val)),
     }),
     hackerAppFormValidation,
     finalChecksValidation,
@@ -443,10 +437,10 @@ export const ApplicationPage = () => {
                             }`}
                         >
                             <div className="sm:col-span-full space-y-4">
-                                <input 
-                                    type="hidden" 
-                                    name="participatingAs" 
-                                    value="Hacker" 
+                                <input
+                                    type="hidden"
+                                    name="participatingAs"
+                                    value="Hacker"
                                 />
                             </div>
                             {/* render role specific questions */}
