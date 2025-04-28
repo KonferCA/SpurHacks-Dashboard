@@ -1,68 +1,68 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { z } from "zod";
-import { useAuth } from "@/providers";
-import { paths } from "@/providers/RoutesProvider/data";
-import { useApplications } from "@/hooks/use-applications";
-import { toaster } from "@/components/ui/toaster";
 import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
-import { Button } from "@chakra-ui/react";
-import {
-    TextInput,
-    Select,
-    ErrorAlert,
-    MultiSelect,
-    Steps,
-    LoadingAnimation,
-    PageWrapper,
-} from "@components";
+import { InfoCallout } from "@/components/InfoCallout/InfoCallout";
+import { Modal } from "@/components/Modal";
+import { TextArea } from "@/components/TextArea/TextArea";
 import { Profile } from "@/components/forms/Profile";
+import { defaultApplication } from "@/components/forms/defaults";
 import {
     hackerAppFormInputs,
     hackerSpecificForm,
 } from "@/components/forms/hackerApplication";
 import type {
-    ApplicationInputKeys,
-    ApplicationData,
-    FormInput,
+	ApplicationData,
+	ApplicationInputKeys,
+	FormInput,
 } from "@/components/forms/types";
-import type { Step } from "@/components/types";
-import { defaultApplication } from "@/components/forms/defaults";
 import {
-    finalChecksValidation,
-    hackerAppFormValidation,
-    hackerSpecificValidation,
-    profileFormValidation,
+	finalChecksValidation,
+	hackerAppFormValidation,
+	hackerSpecificValidation,
+	profileFormValidation,
 } from "@/components/forms/validations";
+import type { Step } from "@/components/types";
+import { toaster } from "@/components/ui/toaster";
+import { referralSources } from "@/data";
+import { useApplications } from "@/hooks/use-applications";
+import { useAuth } from "@/providers";
+import { paths } from "@/providers/RoutesProvider/data";
+import { analytics } from "@/services/firebase";
+import { submitApplication } from "@/services/firebase/application";
 import {
     uploadGeneralResume,
 } from "@/services/firebase/files";
-import { submitApplication } from "@/services/firebase/application";
-import { TextArea } from "@/components/TextArea/TextArea";
-import { referralSources } from "@/data";
+import { Button } from "@chakra-ui/react";
+import {
+	ErrorAlert,
+	LoadingAnimation,
+	MultiSelect,
+	PageWrapper,
+	Select,
+	Steps,
+	TextInput,
+} from "@components";
 import { logEvent } from "firebase/analytics";
-import { analytics } from "@/services/firebase";
-import { InfoCallout } from "@/components/InfoCallout/InfoCallout";
-import { Modal } from "@/components/Modal";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { z } from "zod";
 
 const stepValidations = [
-    profileFormValidation,
-    z.object({
-        participatingAs: z
-            .string()
-            .refine((val) => ["Hacker"].includes(val)),
-    }),
-    hackerAppFormValidation,
-    finalChecksValidation,
+	profileFormValidation,
+	z.object({
+		participatingAs: z
+			.string()
+			.refine((val) => ["Hacker", "Mentor", "Volunteer"].includes(val)),
+	}),
+	hackerAppFormValidation,
+	finalChecksValidation,
 ];
 
 function getLogEventName(component: string) {
-    if (import.meta.env.PROD) return `app_interaction_${component}`;
-    return "dev_app_interaction"; // not logging the different components becuase it will fill the reports with spam
+	if (import.meta.env.PROD) return `app_interaction_${component}`;
+	return "dev_app_interaction"; // not logging the different components becuase it will fill the reports with spam
 }
 
 function isValidUrl(url: string) {
-    return z.string().url().safeParse(url).success;
+	return z.string().url().safeParse(url).success;
 }
 
 export const ApplicationPage = () => {
