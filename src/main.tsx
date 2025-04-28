@@ -19,7 +19,7 @@ const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
 	<React.StrictMode>
-		<Provider>
+		<Provider forcedTheme="light">
 			<QueryClientProvider client={queryClient}>
 				<Toaster />
 				<AuthProvider>
