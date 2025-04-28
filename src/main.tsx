@@ -4,7 +4,7 @@ import ReactDOM from "react-dom/client";
 import { Toaster } from "@/components/ui/toaster";
 
 import { Provider } from "@/components/ui/provider";
-import { RoutesProvider, AuthProvider } from "@/providers";
+import { AuthProvider, RoutesProvider } from "@/providers";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./index.css";

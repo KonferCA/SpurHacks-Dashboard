@@ -1,10 +1,4 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { z } from "zod";
-import { useAuth } from "@/providers";
-import { paths } from "@/providers/RoutesProvider/data";
-import { useApplications } from "@/hooks/use-applications";
-import { toaster } from "@/components/ui/toaster";
 import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
 import { Button } from "@chakra-ui/react";
 import {
@@ -46,6 +40,12 @@ import {
 import { logEvent } from "firebase/analytics";
 import { analytics } from "@/services/firebase";
 import { Modal } from "@/components/Modal";
+import { z } from "zod";
+import { useAuth } from "@/providers";
+import { useApplications } from "@/hooks/use-applications";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { paths } from "@/providers/RoutesProvider/data";
+import { toaster } from "@/components/ui/toaster";
 
 // Form validations
 const profileFormValidation = z.object({
@@ -431,9 +431,8 @@ export const ApplicationPage = () => {
                 <form onSubmit={submitApp} className="mt-12">
                     <div className="">
                         <div
-                            className={`mx-auto lg:grid max-w-4xl space-y-8 lg:gap-x-6 lg:gap-y-8 lg:space-y-0 lg:grid-cols-6${
-                                activeStep !== 0 ? " hidden lg:hidden" : ""
-                            }`}
+                            className={`mx-auto lg:grid max-w-4xl space-y-8 lg:gap-x-6 lg:gap-y-8 lg:space-y-0 lg:grid-cols-6${activeStep !== 0 ? " hidden lg:hidden" : ""
+                                }`}
                         >
                             <div className="sm:col-span-3">
                                 <TextInput
@@ -578,9 +577,8 @@ export const ApplicationPage = () => {
                             </div>
                         </div>
                         <div
-                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-                                activeStep !== 1 ? " hidden sm:hidden" : ""
-                            }`}
+                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${activeStep !== 1 ? " hidden sm:hidden" : ""
+                                }`}
                         >
                             <div className="sm:col-span-full space-y-4">
                                 <input
@@ -631,9 +629,8 @@ export const ApplicationPage = () => {
                             {/* Removed mentor resume upload section */}
                         </div>
                         <div
-                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-                                activeStep !== 2 ? " hidden sm:hidden" : ""
-                            }`}
+                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${activeStep !== 2 ? " hidden sm:hidden" : ""
+                                }`}
                         >
                             <div className="sm:col-span-full">
                                 <Select
@@ -769,9 +766,8 @@ export const ApplicationPage = () => {
                             </div>
                         </div>
                         <div
-                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-                                activeStep !== 3 ? " hidden sm:hidden" : ""
-                            }`}
+                            className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${activeStep !== 3 ? " hidden sm:hidden" : ""
+                                }`}
                         >
                             <div className="sm:col-span-full">
                                 <label className="text-gray-900 font-medium">
@@ -973,10 +969,10 @@ export const ApplicationPage = () => {
                             {isSubmitting
                                 ? "Submitting..."
                                 : activeStep === steps.length - 1
-                                  ? userApp
-                                      ? "Re-submit"
-                                      : "Submit"
-                                  : "Next"}
+                                    ? userApp
+                                        ? "Re-submit"
+                                        : "Submit"
+                                    : "Next"}
                         </Button>
                     </div>
                 </form>
