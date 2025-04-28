@@ -7,7 +7,7 @@ import {
 	programmingLanguages,
 	pronouns,
 	races,
-	sexualityList
+	sexualityList,
 } from "@data";
 import * as z from "zod";
 import type { FormInput } from "./types";

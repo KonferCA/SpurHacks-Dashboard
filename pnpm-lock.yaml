@@ -57,7 +57,7 @@ importers:
         specifier: ^1.14.0
         version: 1.14.0
       zod:
-        specifier: ^3.24.3
+        specifier: ^3.24.2
         version: 3.24.3
       zustand:
         specifier: ^4.5.6

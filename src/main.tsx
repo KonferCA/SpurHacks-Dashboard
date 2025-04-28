@@ -18,14 +18,14 @@ console.log(`App env: ${import.meta.env.MODE}`);
 const queryClient = new QueryClient();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-        <Provider forcedTheme="light">
-            <QueryClientProvider client={queryClient}>
-                <Toaster />
-                <AuthProvider>
-                    <RoutesProvider />
-                </AuthProvider>
-            </QueryClientProvider>
-        </Provider>
-    </React.StrictMode>
+	<React.StrictMode>
+		<Provider forcedTheme="light">
+			<QueryClientProvider client={queryClient}>
+				<Toaster />
+				<AuthProvider>
+					<RoutesProvider />
+				</AuthProvider>
+			</QueryClientProvider>
+		</Provider>
+	</React.StrictMode>,
 );
