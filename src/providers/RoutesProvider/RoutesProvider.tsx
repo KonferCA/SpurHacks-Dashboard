@@ -39,6 +39,7 @@ import {
 	hasVerifiedEmail,
 	isAccepted,
 	isAdmin,
+	isAppOpen,
 	isAuthenticated,
 } from "./accessChecks";
 import { RoutesContext } from "./context";
@@ -120,15 +121,13 @@ const Router = () => {
  * Manages route generation, access control, and loading states
  */
 export const RoutesProvider: FC<ComponentProps> = () => {
-	// State for triggering route refresh
-	const [refresh, setRefresh] = useState(false);
 	// State for tracking loading state
 	const [loadingRoutes, setLoadingRoutes] = useState(true);
 	// Ref for timeout to manage loading state
 	const timeoutRef = useRef<number | null>(null);
 	// Get current user and application data
-	const { currentUser } = useAuth();
-	const { applications } = useApplications();
+	const { isLoading: loadingAuth } = useAuth();
+	const { isLoading: loadingApplications } = useApplications();
 
 	// State for storing generated routes
 	const routes = useMemo(() => {
@@ -189,6 +188,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 						if (hasApplied(ctx)) throw new Redirect(paths.application);
 						return true;
 					},
+					isAppOpen,
 				],
 			},
 			{
@@ -270,21 +270,26 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		// Clear any existing timeout
 		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 
+		if (routes.length && !loadingApplications && !loadingAuth) {
+			// Prevent random flashes in the DOM due to updates
+			timeoutRef.current = window.setTimeout(
+				() => setLoadingRoutes(false),
+				250,
+			);
+			return cleanUp;
+		}
+
 		// Set timeout to turn off loading state after delay
 		timeoutRef.current = window.setTimeout(() => setLoadingRoutes(false), 1500);
 
 		return cleanUp;
-	}, [refresh, currentUser, applications]);
-
-	// Function to trigger route refresh
-	const refreshRoutes = () => setRefresh((r) => !r);
+	}, [loadingAuth, routes, loadingApplications]);
 
 	return (
 		<RoutesContext.Provider
 			value={{
 				routes,
 				loadingRoutes,
-				refreshRoutes,
 			}}
 		>
 			<Router />

@@ -6,11 +6,7 @@ import type {
 import type { Timestamp } from "firebase/firestore";
 import type { TextAreaProps } from "../TextArea/TextArea";
 
-export interface HackerApplicationReadOnlyData {
-	hackathonYear?: string;
-	rsvp?: boolean;
-	applicationStatus?: "pending" | "rejected" | "accepted";
-}
+export interface HackerApplicationReadOnlyData {}
 
 export interface HackerApplicationData {
 	firstName: string;
@@ -45,11 +41,9 @@ export interface HackerApplicationData {
 	generalResumeRef: string;
 	timestamp?: Timestamp;
 	email: string;
-
-	// This field is added later from another document that the applicant don't have
-	// access to update the information since it is crucial to accurately render the interface
-	// and grant access to certain pages and actions.
-	readOnly?: HackerApplicationReadOnlyData;
+	hackathonYear?: string;
+	rsvp?: boolean;
+	applicationStatus?: "pending" | "rejected" | "accepted";
 }
 
 export interface HackerSpecificAppData {

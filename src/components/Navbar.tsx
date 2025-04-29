@@ -1,7 +1,9 @@
 import { Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
+import { AccessControlContext } from "@/navigation";
 import { useAuth } from "@/providers";
 import { useRouteDefinitions, useUser } from "@/providers";
+import { Paths } from "@/providers/RoutesProvider";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
 	CalendarDaysIcon,
@@ -24,20 +26,23 @@ export const Navbar = () => {
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 	const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const { user } = useUser();
-	const { applications } = useApplications();
+	const { applications, isAppOpen } = useApplications();
 	const routes = useRouteDefinitions();
 
 	const availableRoutes = useMemo(() => {
 		return routes.filter((route) => {
 			// Default to include in navbar if no access check defined
 			if (typeof route.accessCheck === "undefined") return true;
+			const ctx: AccessControlContext = {
+				user,
+				applications,
+				isAppOpen,
+			};
 			try {
 				if (typeof route.accessCheck === "function")
-					return route.accessCheck({ user, applications });
+					return route.accessCheck(ctx);
 				if (Array.isArray(route.accessCheck))
-					return route.accessCheck.every((check) =>
-						check({ user, applications }),
-					);
+					return route.accessCheck.every((check) => check(ctx));
 			} catch (e) {
 				// do nothing
 			}
@@ -102,9 +107,9 @@ export const Navbar = () => {
 
 	const renderNavItems = (isMobile: boolean) => {
 		return availableRoutes
-			.filter(({ path }) => !!navItems[path as string])
+			.filter(({ path }) => !!navItems[path])
 			.map(({ path }) => {
-				const { label, Icon } = navItems[path as string];
+				const { label, Icon } = navItems[path];
 				if (
 					(path === paths.myTeam && !window.localStorage.getItem(path)) ||
 					(path === paths.myTicket && !window.localStorage.getItem(path)) ||
