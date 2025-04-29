@@ -383,7 +383,6 @@ export const ApplyPage = () => {
 
 	useEffect(() => {
 		if (userApp && !sp.get("restart")) {
-			console.log("here");
 			setApplication({
 				...userApp,
 			});

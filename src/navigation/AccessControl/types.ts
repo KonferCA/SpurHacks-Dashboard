@@ -1,4 +1,4 @@
-import type { ApplicationData } from "@/components/forms/types";
+import type { ApplicationsHookValue } from "@/hooks/use-applications";
 import type { UserWithClaims } from "@/providers";
 
 /**
@@ -7,7 +7,7 @@ import type { UserWithClaims } from "@/providers";
  */
 export interface AccessControlContext {
 	user: UserWithClaims | null;
-	applications: ApplicationData[];
+	applicationsCtx: ApplicationsHookValue;
 }
 
 /**

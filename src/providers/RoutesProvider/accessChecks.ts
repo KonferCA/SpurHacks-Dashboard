@@ -32,8 +32,10 @@ export const isAdmin: AccessControlFn = (ctx) => {
  * Checks if 2025 submission status is pending
  */
 export const hasApplied: AccessControlFn = (ctx) => {
-	if (ctx.applications.length < 1) return false;
-	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
+	if (ctx.applicationsCtx.applications.length < 1) return false;
+	const app = ctx.applicationsCtx.applications.find(
+		(app) => app.hackathonYear === "2025",
+	);
 	return app?.applicationStatus === "pending";
 };
 
@@ -42,7 +44,9 @@ export const hasApplied: AccessControlFn = (ctx) => {
  */
 export const isAccepted: AccessControlFn = (ctx) => {
 	if (!hasApplied) return false;
-	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
+	const app = ctx.applicationsCtx.applications.find(
+		(app) => app.hackathonYear === "2025",
+	);
 	return app?.applicationStatus === "accepted";
 };
 
@@ -51,8 +55,16 @@ export const isAccepted: AccessControlFn = (ctx) => {
  */
 export const hasRSVP: AccessControlFn = (ctx) => {
 	if (!isAccepted(ctx)) throw new Redirect(paths.home);
-	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
+	const app = ctx.applicationsCtx.applications.find(
+		(app) => app.hackathonYear === "2025",
+	);
 	if (!app) throw new Redirect(paths.home);
 	if (!app.rsvp) throw new Redirect(paths.verifyRSVP);
 	return true;
 };
+
+/**
+ * Checks if applications are opened or not
+ */
+export const isAppOpen: AccessControlFn = (ctx) =>
+	ctx.applicationsCtx.deadlines.inRange;

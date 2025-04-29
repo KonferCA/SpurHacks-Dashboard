@@ -66,6 +66,12 @@ service cloud.firestore {
         allow update: if isAuthenticated() && isAdmin();
     }
 
+    // Hackathon metadata collection
+    match /hackathon/{documentId} {
+        allow read: if isAuthenticated();
+        allow write: if isAuthenticated() && isAdmin();
+    }
+
     // Teams Collection Rules
     match /teams/{teamId} {
         // this rule is to allow only admin to read,write
