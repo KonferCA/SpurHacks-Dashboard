@@ -31,12 +31,17 @@ export const Navbar = () => {
 		return routes.filter((route) => {
 			// Default to include in navbar if no access check defined
 			if (typeof route.accessCheck === "undefined") return true;
-			if (typeof route.accessCheck === "function")
-				return route.accessCheck({ user, applications });
-			if (Array.isArray(route.accessCheck))
-				return route.accessCheck.every((check) =>
-					check({ user, applications }),
-				);
+			try {
+				if (typeof route.accessCheck === "function")
+					return route.accessCheck({ user, applications });
+				if (Array.isArray(route.accessCheck))
+					return route.accessCheck.every((check) =>
+						check({ user, applications }),
+					);
+			} catch (e) {
+				// do nothing
+			}
+
 			// Default to exclude if access check type is not recognized
 			return false;
 		});
@@ -59,7 +64,7 @@ export const Navbar = () => {
 			label: "My Ticket",
 			Icon: TicketIcon,
 		},
-		[paths.application]: {
+		[paths.apply]: {
 			label: "Application",
 			Icon: CodeBracketIcon,
 		},

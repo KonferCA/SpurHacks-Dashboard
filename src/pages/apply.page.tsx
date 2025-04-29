@@ -171,11 +171,11 @@ function getLogEventName(component: string) {
 	return "dev_app_interaction"; // not logging the different components becuase it will fill the reports with spam
 }
 
-function isValidUrl(url: string) {
-	return z.string().url().safeParse(url).success;
-}
+// function isValidUrl(url: string) {
+// 	return z.string().url().safeParse(url).success;
+// }
 
-export const ApplicationPage = () => {
+export const ApplyPage = () => {
 	// TODO: save steps in firebase to save progress
 	const [steps, setSteps] = useState<Step[]>([
 		{ position: 0, name: "Basic profile", status: "current" },
@@ -238,19 +238,19 @@ export const ApplicationPage = () => {
 	const validate = () => {
 		clearErrors();
 
-		// Check URL validation status
-		const urlFields: (keyof ApplicationData)[] = [
-			"linkedinUrl",
-			"githubUrl",
-			"personalWebsiteUrl",
-		] as const;
-		for (const field of urlFields) {
-			const fieldValue = application[field as keyof ApplicationData] as string;
-			if (fieldValue && !isValidUrl(fieldValue)) {
-				setErrors((prev) => [...prev, `${field} has an invalid URL.`]);
-				return false;
-			}
-		}
+		// // Check URL validation status
+		// const urlFields: (keyof ApplicationData)[] = [
+		// 	"linkedinUrl",
+		// 	"githubUrl",
+		// 	"personalWebsiteUrl",
+		// ] as const;
+		// for (const field of urlFields) {
+		// 	const fieldValue = application[field as keyof ApplicationData] as string;
+		// 	if (fieldValue && !isValidUrl(fieldValue)) {
+		// 		setErrors((prev) => [...prev, `${field} has an invalid URL.`]);
+		// 		return false;
+		// 	}
+		// }
 
 		// validate step form
 		const validateFn = stepValidations[activeStep];
@@ -866,7 +866,7 @@ export const ApplicationPage = () => {
 							</Button>
 							<Button
 								className="text-charcoalBlack"
-								onClick={() => navigate("/")}
+								onClick={() => navigate(paths.home)}
 								type="button"
 							>
 								Cancel

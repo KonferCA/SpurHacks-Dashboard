@@ -6,6 +6,12 @@ import type {
 import type { Timestamp } from "firebase/firestore";
 import type { TextAreaProps } from "../TextArea/TextArea";
 
+export interface HackerApplicationReadOnlyData {
+	hackathonYear?: string;
+	rsvp?: boolean;
+	applicationStatus?: "pending" | "rejected" | "accepted";
+}
+
 export interface HackerApplicationData {
 	firstName: string;
 	lastName: string;
@@ -34,13 +40,16 @@ export interface HackerApplicationData {
 	agreedToMLHCoC: boolean;
 	agreedToMLHToCAndPrivacyPolicy: boolean;
 	agreedToReceiveEmailsFromMLH: boolean;
-	applicationStatus?: "pending" | "rejected" | "accepted";
-	accepted?: boolean;
 	referralSources: string[];
 	describeSalt: string;
 	generalResumeRef: string;
 	timestamp?: Timestamp;
 	email: string;
+
+	// This field is added later from another document that the applicant don't have
+	// access to update the information since it is crucial to accurately render the interface
+	// and grant access to certain pages and actions.
+	readOnly?: HackerApplicationReadOnlyData;
 }
 
 export interface HackerSpecificAppData {
@@ -48,25 +57,7 @@ export interface HackerSpecificAppData {
 	revolutionizingTechnology: string;
 }
 
-export interface MentorSpecificAppData {
-	mentorExperience: string;
-	linkedinUrl: string;
-	githubUrl: string;
-	personalWebsiteUrl: string;
-	mentorResumeRef: string;
-	reasonToBeMentor: string;
-}
-
-export interface VolunteerSpecificAppData {
-	volunteerExperience: string;
-	reasonToBeVolunteer: string;
-	excitedToVolunteerFor: string;
-}
-
-export type ApplicationData = HackerApplicationData &
-	HackerSpecificAppData &
-	MentorSpecificAppData &
-	VolunteerSpecificAppData;
+export type ApplicationData = HackerApplicationData & HackerSpecificAppData;
 
 export type ApplicationInputKeys = keyof ApplicationData;
 
