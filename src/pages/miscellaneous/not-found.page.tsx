@@ -33,7 +33,7 @@ export const NotFoundPage = () => {
 					Uh oh... Something weird happened.
 				</p>
 				<Link
-					to="/"
+					to="/home"
 					className="inline-block bg-gradient-to-r from-[#2B6469] to-[#00CEDB] hover:from-[#27695E] hover:to-[#00B2AA] text-white font-bold py-2 px-4 rounded transition-all duration-300 ease-in-out"
 				>
 					Back to Home

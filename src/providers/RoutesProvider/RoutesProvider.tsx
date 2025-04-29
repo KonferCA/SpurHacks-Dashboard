@@ -7,33 +7,46 @@ import { useApplications } from "@/hooks/use-applications";
 import { AccessControl } from "@/navigation/AccessControl/AccessControl";
 import { useAuth } from "@/providers";
 
-// Pages
-import {
-	AdminPage,
-	HomePage,
-	LoginPage,
-	NetworkingPage,
-	NotFoundPage,
-	PerksPage,
-	SchedulePage,
-	TicketPage,
-	VerifyEmailPage,
-} from "@/pages";
-import { ApplicationPage } from "@/pages/Application/Application.page";
-import { JoinTeamPage } from "@/pages/JoinTeam.page";
-import { MyTeamPage } from "@/pages/MyTeam.page";
-import { AdminManageEventsPage } from "@/pages/admin/ManageEvents.page";
-import { AdminViewTicketPage } from "@/pages/admin/ViewTicket.page";
-import { PostSubmissionPage } from "@/pages/miscellaneous/PostSubmission.page";
-import { VerifyRSVP } from "@/pages/miscellaneous/VerifyRSVP.page";
-import { ViewTicketPage } from "@/pages/miscellaneous/ViewTicket.page";
+// Public pages
+import { LoginPage } from "@/pages/login.page";
+
+// Private pages
+import { SchedulePage } from "@/pages/schedule.page";
+import { NetworkingPage } from "@/pages/networking.page";
+import { PerksPage } from "@/pages/perks.page";
+import { HomePage } from "@/pages/home.page";
+import { MyTicketPage } from "@/pages/my-ticket.page";
+import { MyTeamPage } from "@/pages/my-team.page";
+import { JoinTeamPage } from "@/pages/join-team.page";
+import { ApplyPage } from "@/pages/apply.page";
+
+// Admin pages
+import { AdminPage } from "@/pages/admin/admin.page";
+import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
+import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
+
+// Miscellaneous pages
+import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
+import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
+import { PostSubmissionPage } from "@/pages/miscellaneous/post-submission.page";
+import { VerifyRSVP } from "@/pages/miscellaneous/verify-rsvp.page";
+import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 // Local imports
-import { hasVerifiedEmail, isAdmin, isAuthenticated } from "./accessChecks";
+import {
+	hasApplied,
+	hasRSVP,
+	hasVerifiedEmail,
+	isAccepted,
+	isAdmin,
+	isAuthenticated,
+} from "./accessChecks";
 import { RoutesContext } from "./context";
 import { paths } from "./data";
 import { useRouter } from "./hooks";
 import type { RouteConfig } from "./types";
+import { Redirect } from "@/navigation/redirect";
+import { ApplicationPage } from "@/pages/application.page";
 
 /**
  * Converts RouteConfig to React Router's RouteObject with AccessControl wrapper
@@ -42,13 +55,13 @@ import type { RouteConfig } from "./types";
 const convertToRouteObjects = (routeConfigs: RouteConfig[]): RouteObject[] => {
 	return routeConfigs.map((config) => {
 		// If there's an access check, wrap the element with AccessControl
-		if (config.accessCheck || config.redirectTo) {
+		if (config.accessCheck) {
 			return {
 				path: config.path,
 				element: (
 					<AccessControl
 						accessCheck={config.accessCheck}
-						redirectTo={config.redirectTo}
+						fallbackRedirect={config.fallbackRedirect}
 					/>
 				),
 				children: [
@@ -129,6 +142,10 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.notFound,
 				element: <NotFoundPage />,
 			},
+			{
+				path: paths.ticket,
+				element: <ViewTicketPage />,
+			},
 		];
 
 		// Routes requiring basic authentication
@@ -137,7 +154,6 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.verifyEmail,
 				element: <VerifyEmailPage />,
 				accessCheck: isAuthenticated,
-				redirectTo: paths.login,
 			},
 		];
 
@@ -147,67 +163,70 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.home,
 				element: <HomePage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
 			},
 			{
 				path: paths.schedule,
 				element: <SchedulePage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.networking,
 				element: <NetworkingPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.myTicket,
-				element: <TicketPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				element: <MyTicketPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+			},
+			{
+				path: paths.apply,
+				element: <ApplyPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					(ctx) => {
+						if (hasApplied(ctx)) throw new Redirect(paths.application);
+						return true;
+					},
+				],
 			},
 			{
 				path: paths.application,
 				element: <ApplicationPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					(ctx) => {
+						if (!hasApplied(ctx)) throw new Redirect(paths.apply);
+						return true;
+					},
+				],
 			},
 			{
 				path: paths.submitted,
 				element: <PostSubmissionPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, hasApplied],
 			},
 			{
 				path: paths.verifyRSVP,
 				element: <VerifyRSVP />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
 			},
 			{
 				path: paths.myTeam,
 				element: <MyTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.joinTeam,
 				element: <JoinTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
-			},
-			{
-				path: paths.ticket,
-				element: <ViewTicketPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.perks,
 				element: <PerksPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail],
-				redirectTo: paths.verifyEmail,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 		];
 
@@ -217,19 +236,16 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.admin,
 				element: <AdminPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-				redirectTo: paths.home,
 			},
 			{
 				path: paths.adminViewTicket,
 				element: <AdminViewTicketPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-				redirectTo: paths.home,
 			},
 			{
 				path: paths.adminManageEvents,
 				element: <AdminManageEventsPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-				redirectTo: paths.home,
 			},
 		];
 

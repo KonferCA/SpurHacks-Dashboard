@@ -6,7 +6,7 @@ import { Button } from "@chakra-ui/react";
 import { TextInput } from "@components";
 import { type FormEventHandler, useState } from "react";
 import { flushSync } from "react-dom";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 
 // email validation with zod, double guard just in case someone changes the input type in html
@@ -48,6 +48,8 @@ export const LoginPage = () => {
 	const routes = useRouteDefinitions();
 
 	const [searchParams] = useSearchParams();
+
+	const navigate = useNavigate();
 
 	const handlerSubmit: FormEventHandler = async (e) => {
 		// prevent page refresh when form is submitted
@@ -256,7 +258,10 @@ export const LoginPage = () => {
 										{authProviders.map((provider) => (
 											<Button
 												key={provider.name}
-												onClick={() => loginWithProvider(provider.name)}
+												onClick={async () => {
+													await loginWithProvider(provider.name);
+													navigate(paths.verifyEmail);
+												}}
 												className="rounded-lg w-full bg-white capitalize text-gray-900 flex justify-center items-center gap-4 hover:bg-gray-100 active:bg-gray-200"
 											>
 												<img
