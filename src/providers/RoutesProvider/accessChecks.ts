@@ -33,10 +33,8 @@ export const isAdmin: AccessControlFn = (ctx) => {
  */
 export const hasApplied: AccessControlFn = (ctx) => {
 	if (ctx.applications.length < 1) return false;
-	const app = ctx.applications.find(
-		(app) => app.readOnly?.hackathonYear === "2025",
-	);
-	return app?.readOnly?.applicationStatus === "pending";
+	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
+	return app?.applicationStatus === "pending";
 };
 
 /**
@@ -44,10 +42,8 @@ export const hasApplied: AccessControlFn = (ctx) => {
  */
 export const isAccepted: AccessControlFn = (ctx) => {
 	if (!hasApplied) return false;
-	const app = ctx.applications.find(
-		(app) => app.readOnly?.hackathonYear === "2025",
-	);
-	return app?.readOnly?.applicationStatus === "accepted";
+	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
+	return app?.applicationStatus === "accepted";
 };
 
 /**
@@ -55,10 +51,8 @@ export const isAccepted: AccessControlFn = (ctx) => {
  */
 export const hasRSVP: AccessControlFn = (ctx) => {
 	if (!isAccepted(ctx)) throw new Redirect(paths.home);
-	const app = ctx.applications.find(
-		(app) => app.readOnly?.hackathonYear === "2025",
-	);
+	const app = ctx.applications.find((app) => app.hackathonYear === "2025");
 	if (!app) throw new Redirect(paths.home);
-	if (!app.readOnly?.rsvp) throw new Redirect(paths.verifyRSVP);
+	if (!app.rsvp) throw new Redirect(paths.verifyRSVP);
 	return true;
 };
