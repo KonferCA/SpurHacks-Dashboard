@@ -149,11 +149,11 @@ export const LoginPage = () => {
 	}
 
 	return (
-		<div className="bg-dustStorm font-medium">
-			<div className="py-4 flex justify-center items-center bg-gradient-to-r from-deepPurple/20 via-deepGold/20 via-50% to-stonePurple/20 min-h-screen">
+		<div className="bg-gradient-to-b from-[#0F1922] via-[#1A2834] to-[#253545] font-medium text-white">
+			<div className="py-4 flex justify-center items-center min-h-screen">
 				<div className="mx-auto max-w-2xl px-4 sm:px-6 md:px-8">
 					<div>
-						<h1 className="text-center sm:text-left text-2xl sm:text-4xl text-charcoalBlack font-body font-bold">
+						<h1 className="text-center sm:text-left text-2xl sm:text-4xl text-white font-body font-bold">
 							{showResetPasswordForm
 								? "Reset Password"
 								: isLogin
@@ -161,7 +161,7 @@ export const LoginPage = () => {
 									: "Create your account"}
 						</h1>
 						{!showResetPasswordForm ? (
-							<p className="text-charcoalBlack mt-2">
+							<p className="text-white mt-2">
 								Join hundreds of students across Canada in a 36 hour period of
 								exploration, creativity, and learning!
 							</p>
@@ -182,11 +182,12 @@ export const LoginPage = () => {
 											id="email"
 											type="email"
 											placeholder="awesome@hawkhack.ca"
-											className="py-4 px-5 rounded-lg"
+											className="py-4 px-5 rounded-lg text-white"
 											value={email}
 											invalid={isInvalidEmail}
 											description={isInvalidEmail ? "Invalid email!" : ""}
 											onChange={({ target: { value } }) => setEmail(value)}
+											background={"transparent"}
 											required
 										/>
 										<TextInput
@@ -194,11 +195,12 @@ export const LoginPage = () => {
 											id="password"
 											type="password"
 											placeholder="your very awesome and secure password"
-											className="py-4 px-5 rounded-lg"
+											className="py-4 px-5 rounded-lg text-white"
 											minLength={isLogin ? 0 : 8}
 											value={password}
 											invalid={!isLogin && isInvalidPassword}
 											onChange={({ target: { value } }) => setPassword(value)}
+											background={"transparent"}
 											required
 										/>
 										{!isLogin && (
@@ -206,7 +208,7 @@ export const LoginPage = () => {
 												label="Confirm Password:"
 												id="confirmPassword"
 												type="password"
-												className="py-4 px-5 rounded-lg"
+												className="py-4 px-5 rounded-lg text-white"
 												minLength={8}
 												value={confirmPass}
 												invalid={isInvalidPassword}
@@ -214,13 +216,14 @@ export const LoginPage = () => {
 												onChange={({ target: { value } }) =>
 													setConfirmPass(value)
 												}
+												background={"transparent"}
 												required
 											/>
 										)}
 										{isLogin && (
 											<div className="flex justify-end">
 												<button
-													className="text-charcoalBlack font-bold underline hover:text-tbrand-hover"
+													className="text-white font-bold underline hover:text-tbrand-hover"
 													type="button"
 													onClick={toggleResetPassword}
 												>
@@ -237,14 +240,14 @@ export const LoginPage = () => {
 											{isLogin ? "Log In" : "Sign Up"}
 										</Button>
 									</form>
-									<p className="mt-6 text-center text-charcoalBlack font-medium">
+									<p className="mt-6 text-center text-white font-medium">
 										<span>
 											{isLogin
 												? "Don't have an account? "
 												: "Already have an account? "}
 										</span>
 										<button
-											className="text-charcoalBlack font-bold underline hover:text-tbrand-hover"
+											className="text-white font-bold underline hover:text-tbrand-hover"
 											onClick={toggleForm}
 										>
 											{isLogin ? "Sign Up" : "Log In"}
@@ -262,14 +265,14 @@ export const LoginPage = () => {
 													await loginWithProvider(provider.name);
 													navigate(paths.verifyEmail);
 												}}
-												className="rounded-lg w-full bg-white capitalize text-gray-900 flex justify-center items-center gap-4 hover:bg-gray-100 active:bg-gray-200"
+												className="rounded-lg w-full bg-white capitalize text-white flex justify-center items-center gap-4 hover:bg-gray-100 active:bg-gray-200"
 											>
 												<img
 													src={provider.logo}
 													aria-hidden="true"
 													className="w-8 h-8"
 												/>
-												{`continue with ${provider.name}`}
+												<span className="text-black">{`continue with ${provider.name}`}</span>
 											</Button>
 										))}
 									</div>
@@ -284,11 +287,12 @@ export const LoginPage = () => {
 										id="resetEmail"
 										type="email"
 										placeholder="awesome@hawkhack.ca"
-										className="py-4 px-5 rounded-lg"
+										className="py-4 px-5 rounded-lg text-white"
 										value={email}
 										invalid={isInvalidEmail}
 										description={isInvalidEmail ? "Invalid email!" : ""}
 										onChange={({ target: { value } }) => setEmail(value)}
+										background={"transparent"}
 										required
 									/>
 									<Button
@@ -299,7 +303,7 @@ export const LoginPage = () => {
 									</Button>
 								</form>
 								<button
-									className="text-charcoalBlack font-bold underline hover:text-tbrand-hover"
+									className="text-white font-bold underline hover:text-tbrand-hover"
 									type="button"
 									onClick={toggleResetPassword}
 								>
