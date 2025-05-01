@@ -2,8 +2,8 @@ import { useApplications } from "@/hooks/use-applications";
 import { useUser } from "@/providers";
 import { type FC, useMemo } from "react";
 import { Navigate, Outlet } from "react-router-dom";
-import type { AccessControlContext, AccessControlProps } from "./types";
 import { Redirect } from "../redirect";
+import type { AccessControlContext, AccessControlProps } from "./types";
 
 /**
  * AccessControl component provides route protection based on user authentication and authorization.

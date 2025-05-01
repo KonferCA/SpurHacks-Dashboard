@@ -10,15 +10,15 @@ import { useAuth } from "@/providers";
 // Public pages
 import { LoginPage } from "@/pages/login.page";
 
-// Private pages
-import { SchedulePage } from "@/pages/schedule.page";
+import { ApplyPage } from "@/pages/apply.page";
+import { HomePage } from "@/pages/home.page";
+import { JoinTeamPage } from "@/pages/join-team.page";
+import { MyTeamPage } from "@/pages/my-team.page";
+import { MyTicketPage } from "@/pages/my-ticket.page";
 import { NetworkingPage } from "@/pages/networking.page";
 import { PerksPage } from "@/pages/perks.page";
-import { HomePage } from "@/pages/home.page";
-import { MyTicketPage } from "@/pages/my-ticket.page";
-import { MyTeamPage } from "@/pages/my-team.page";
-import { JoinTeamPage } from "@/pages/join-team.page";
-import { ApplyPage } from "@/pages/apply.page";
+// Private pages
+import { SchedulePage } from "@/pages/schedule.page";
 
 // Admin pages
 import { AdminPage } from "@/pages/admin/admin.page";
@@ -27,11 +27,13 @@ import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
-import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
 import { PostSubmissionPage } from "@/pages/miscellaneous/post-submission.page";
+import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
 import { VerifyRSVP } from "@/pages/miscellaneous/verify-rsvp.page";
 import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
+import { Redirect } from "@/navigation/redirect";
+import { ApplicationPage } from "@/pages/application.page";
 // Local imports
 import {
 	hasApplied,
@@ -46,8 +48,6 @@ import { RoutesContext } from "./context";
 import { paths } from "./data";
 import { useRouter } from "./hooks";
 import type { RouteConfig } from "./types";
-import { Redirect } from "@/navigation/redirect";
-import { ApplicationPage } from "@/pages/application.page";
 
 /**
  * Converts RouteConfig to React Router's RouteObject with AccessControl wrapper

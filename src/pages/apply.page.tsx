@@ -1,51 +1,51 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
-import { Button } from "@chakra-ui/react";
-import {
-	TextInput,
-	Select,
-	ErrorAlert,
-	MultiSelect,
-	Steps,
-	LoadingAnimation,
-	PageWrapper,
-} from "@components";
+import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
+import { Modal } from "@/components/Modal";
+import { TextArea } from "@/components/TextArea/TextArea";
+import { defaultApplication } from "@/components/forms/defaults";
 import type {
-	ApplicationInputKeys,
 	ApplicationData,
+	ApplicationInputKeys,
 } from "@/components/forms/types";
 import type { Step } from "@/components/types";
-import { defaultApplication } from "@/components/forms/defaults";
-import { uploadGeneralResume } from "@/services/firebase/files";
-import { submitApplication } from "@/services/firebase/application";
-import { TextArea } from "@/components/TextArea/TextArea";
+import { toaster } from "@/components/ui/toaster";
 import {
-	referralSources,
 	ages,
-	genders,
 	allergies,
+	cityNames,
+	countryNames,
+	diets,
+	genders,
+	hackathonExps,
+	interests,
+	levelsOfStudy,
+	majorsList,
 	programmingLanguages,
 	pronouns,
-	diets,
-	sexualityList,
 	races,
-	interests,
-	hackathonExps,
-	countryNames,
+	referralSources,
 	schools,
-	levelsOfStudy,
-	cityNames,
-	majorsList,
+	sexualityList,
 } from "@/data";
-import { logEvent } from "firebase/analytics";
-import { analytics } from "@/services/firebase";
-import { Modal } from "@/components/Modal";
-import { z } from "zod";
-import { useAuth } from "@/providers";
 import { useApplications } from "@/hooks/use-applications";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { toaster } from "@/components/ui/toaster";
-import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
+import { analytics } from "@/services/firebase";
+import { submitApplication } from "@/services/firebase/application";
+import { uploadGeneralResume } from "@/services/firebase/files";
+import { Button } from "@chakra-ui/react";
+import {
+	ErrorAlert,
+	LoadingAnimation,
+	MultiSelect,
+	PageWrapper,
+	Select,
+	Steps,
+	TextInput,
+} from "@components";
+import { logEvent } from "firebase/analytics";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { z } from "zod";
 
 // Form validations
 const profileFormValidation = z.object({

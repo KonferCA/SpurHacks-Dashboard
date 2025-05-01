@@ -1,8 +1,8 @@
 import { Modal, PageWrapper } from "@/components";
 import { getButtonStyles } from "@/components/Button/Button.styles";
+import { type PerksData, perksData } from "@/data/perks";
 import { paths } from "@/providers/RoutesProvider/data";
 import { useEffect, useRef, useState } from "react";
-import { type PerksData, perksData } from "@/data/perks";
 
 const PerksPage = () => {
 	const foodItemsRef = useRef([]);
