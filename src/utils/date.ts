@@ -1,4 +1,4 @@
-import { isBefore, isAfter, parseISO } from "date-fns";
+import { isAfter, isBefore, parseISO } from "date-fns";
 
 /**
  * Checks if the given date is neither before the start date nor after the end date
