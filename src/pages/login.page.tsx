@@ -245,6 +245,7 @@ export const LoginPage = () => {
 										</span>
 										<button
 											className="text-white font-bold underline hover:text-tbrand-hover"
+											type="button"
 											onClick={toggleForm}
 										>
 											{isLogin ? "Sign Up" : "Log In"}
@@ -265,6 +266,7 @@ export const LoginPage = () => {
 												className="rounded-lg w-full bg-white capitalize text-white flex justify-center items-center gap-4 hover:bg-gray-100 active:bg-gray-200"
 											>
 												<img
+													alt={`${provider.name} logo`}
 													src={provider.logo}
 													aria-hidden="true"
 													className="w-8 h-8"

@@ -1,6 +1,6 @@
 import { Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
-import { AccessControlContext } from "@/navigation";
+import type { AccessControlContext } from "@/navigation";
 import { useAuth } from "@/providers";
 import { useRouteDefinitions, useUser } from "@/providers";
 import { Paths } from "@/providers/RoutesProvider";

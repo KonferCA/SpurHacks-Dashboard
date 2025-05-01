@@ -1,4 +1,4 @@
-import { ApplicationData } from "@/components/forms/types";
+import type { ApplicationData } from "@/components/forms/types";
 import { useUser } from "@/providers";
 import { getUserApplications } from "@/services/firebase/application";
 import { getDeadlines } from "@/services/firebase/deadlines";
