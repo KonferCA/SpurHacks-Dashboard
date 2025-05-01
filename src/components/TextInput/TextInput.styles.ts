@@ -12,11 +12,6 @@ const textInputStyles = cva(
 			invalid: {
 				true: "text-red-500 ring-red-500 ring-2 placeholder:text-red-300 focus:ring-red-500",
 			},
-			background: {
-				default: "bg-gray-50",
-				transparent: "bg-white/20",
-				none: "",
-			},
 		},
 		defaultVariants: {
 			invalid: false,
@@ -33,7 +28,7 @@ export function getTextInputStyles(
 }
 
 export const getTextInputLabelStyles = cva(
-	"block font-medium leading-5 text-white text-md",
+	"block font-medium leading-5 text-md",
 	{
 		variants: {
 			srLabel: {

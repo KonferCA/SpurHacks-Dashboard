@@ -182,12 +182,11 @@ export const LoginPage = () => {
 											id="email"
 											type="email"
 											placeholder="awesome@hawkhack.ca"
-											className="py-4 px-5 rounded-lg text-white"
+											className="py-4 px-5 rounded-lg text-white bg-white/20"
 											value={email}
 											invalid={isInvalidEmail}
 											description={isInvalidEmail ? "Invalid email!" : ""}
 											onChange={({ target: { value } }) => setEmail(value)}
-											background={"transparent"}
 											required
 										/>
 										<TextInput
@@ -195,12 +194,11 @@ export const LoginPage = () => {
 											id="password"
 											type="password"
 											placeholder="your very awesome and secure password"
-											className="py-4 px-5 rounded-lg text-white"
+											className="py-4 px-5 rounded-lg text-white bg-white/20"
 											minLength={isLogin ? 0 : 8}
 											value={password}
 											invalid={!isLogin && isInvalidPassword}
 											onChange={({ target: { value } }) => setPassword(value)}
-											background={"transparent"}
 											required
 										/>
 										{!isLogin && (
@@ -208,7 +206,7 @@ export const LoginPage = () => {
 												label="Confirm Password:"
 												id="confirmPassword"
 												type="password"
-												className="py-4 px-5 rounded-lg text-white"
+												className="py-4 px-5 rounded-lg text-white bg-white/20"
 												minLength={8}
 												value={confirmPass}
 												invalid={isInvalidPassword}
@@ -216,7 +214,6 @@ export const LoginPage = () => {
 												onChange={({ target: { value } }) =>
 													setConfirmPass(value)
 												}
-												background={"transparent"}
 												required
 											/>
 										)}
@@ -287,12 +284,11 @@ export const LoginPage = () => {
 										id="resetEmail"
 										type="email"
 										placeholder="awesome@hawkhack.ca"
-										className="py-4 px-5 rounded-lg text-white"
+										className="py-4 px-5 rounded-lg text-white bg-white/20"
 										value={email}
 										invalid={isInvalidEmail}
 										description={isInvalidEmail ? "Invalid email!" : ""}
 										onChange={({ target: { value } }) => setEmail(value)}
-										background={"transparent"}
 										required
 									/>
 									<Button
