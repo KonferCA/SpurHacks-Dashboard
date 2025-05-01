@@ -3,7 +3,6 @@ import { useApplications } from "@/hooks/use-applications";
 import type { AccessControlContext } from "@/navigation";
 import { useAuth } from "@/providers";
 import { useRouteDefinitions, useUser } from "@/providers";
-import { Paths } from "@/providers/RoutesProvider";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
 	CalendarDaysIcon,
@@ -26,7 +25,7 @@ export const Navbar = () => {
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 	const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const { user } = useUser();
-	const { applications, isAppOpen } = useApplications();
+	const applicationsCtx = useApplications();
 	const routes = useRouteDefinitions();
 
 	const availableRoutes = useMemo(() => {
@@ -35,8 +34,7 @@ export const Navbar = () => {
 			if (typeof route.accessCheck === "undefined") return true;
 			const ctx: AccessControlContext = {
 				user,
-				applications,
-				isAppOpen,
+				applicationsCtx,
 			};
 			try {
 				if (typeof route.accessCheck === "function")
@@ -50,7 +48,7 @@ export const Navbar = () => {
 			// Default to exclude if access check type is not recognized
 			return false;
 		});
-	}, [routes, user, applications]);
+	}, [routes, applicationsCtx]);
 
 	const navItems = {
 		[paths.home]: {
@@ -90,7 +88,9 @@ export const Navbar = () => {
 	};
 
 	const firstName =
-		applications[0]?.firstName || user?.displayName?.split(" ")[0] || "Unknown";
+		applicationsCtx.applications[0]?.firstName ||
+		user?.displayName?.split(" ")[0] ||
+		"Unknown";
 
 	useEffect(() => {
 		window.addEventListener("resize", updateNavbarState);
@@ -106,65 +106,69 @@ export const Navbar = () => {
 	// TODO: groom routes rendering
 
 	const renderNavItems = (isMobile: boolean) => {
-		return availableRoutes
-			.filter(({ path }) => !!navItems[path])
-			.map(({ path }) => {
-				const { label, Icon } = navItems[path];
-				if (
-					(path === paths.myTeam && !window.localStorage.getItem(path)) ||
-					(path === paths.myTicket && !window.localStorage.getItem(path)) ||
-					(path === paths.perks && !window.localStorage.getItem(path))
-				) {
+		return (
+			availableRoutes
+				// @ts-ignore
+				.filter(({ path }) => path && !!navItems[path])
+				.map(({ path }) => {
+					// @ts-ignore
+					const { label, Icon } = navItems[path];
+					if (
+						(path === paths.myTeam && !window.localStorage.getItem(path)) ||
+						(path === paths.myTicket && !window.localStorage.getItem(path)) ||
+						(path === paths.perks && !window.localStorage.getItem(path))
+					) {
+						return (
+							<Link key={label} to={path as string} className="relative w-full">
+								<li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
+									{isMobile ? (
+										<>
+											<Icon className="w-4 h-4" />
+											<span className="relative">
+												{label}
+
+												<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
+													<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+													<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
+												</span>
+											</span>
+										</>
+									) : (
+										<>
+											<Icon className="w-8 h-8" />
+											<span className="relative hidden md:flex">
+												{label}
+												<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
+													<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+													<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
+												</span>
+											</span>
+										</>
+									)}
+								</li>
+							</Link>
+						);
+					}
+
 					return (
-						<Link key={label} to={path as string} className="relative w-full">
+						<Link key={label} to={path as string} className="w-full">
 							<li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
 								{isMobile ? (
 									<>
 										<Icon className="w-4 h-4" />
-										<span className="relative">
-											{label}
-
-											<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
-											</span>
-										</span>
+										<span>{label}</span>
 									</>
 								) : (
 									<>
 										<Icon className="w-8 h-8" />
-										<span className="relative hidden md:flex">
-											{label}
-											<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-												<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-												<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
-											</span>
-										</span>
+										<span className="hidden md:flex">{label}</span>
 									</>
 								)}
 							</li>
 						</Link>
 					);
-				}
-
-				return (
-					<Link key={label} to={path as string} className="w-full">
-						<li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-							{isMobile ? (
-								<>
-									<Icon className="w-4 h-4" />
-									<span>{label}</span>
-								</>
-							) : (
-								<>
-									<Icon className="w-8 h-8" />
-									<span className="hidden md:flex">{label}</span>
-								</>
-							)}
-						</li>
-					</Link>
-				);
-			});
+				})
+		);
 	};
 
 	return (
