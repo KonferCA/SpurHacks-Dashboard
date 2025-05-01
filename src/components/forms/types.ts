@@ -16,7 +16,6 @@ export interface HackerApplicationData {
 	city: string;
 	age: string;
 	discord: string;
-	instagram: string;
 	major: string[];
 	gender: string;
 	pronouns: string[];
@@ -37,6 +36,8 @@ export interface HackerApplicationData {
 	referralSources: string[];
 	describeSalt: string;
 	generalResumeRef: string;
+	reasonToBeInHawkHacks: string;
+	revolutionizingTechnology: string;
 	timestamp?: Timestamp;
 	email: string;
 	hackathonYear?: string;
@@ -44,12 +45,7 @@ export interface HackerApplicationData {
 	applicationStatus?: "pending" | "rejected" | "accepted";
 }
 
-export interface HackerSpecificAppData {
-	reasonToBeInHawkHacks: string;
-	revolutionizingTechnology: string;
-}
-
-export type ApplicationData = HackerApplicationData & HackerSpecificAppData;
+export type ApplicationData = HackerApplicationData;
 
 export type ApplicationInputKeys = keyof ApplicationData;
 

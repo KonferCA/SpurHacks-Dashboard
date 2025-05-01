@@ -4,7 +4,7 @@ import { getUserApplications } from "@/services/firebase/application";
 import { getDeadlines } from "@/services/firebase/deadlines";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAfter, isBefore, parseISO } from "date-fns";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 export type ApplicationsHookValue = {
 	applications: ApplicationData[];
@@ -85,10 +85,20 @@ export const useApplications = () => {
 		return queryClient.invalidateQueries({ queryKey: ["applications"] });
 	}, [queryClient]);
 
-	return {
+	const value = useMemo(() => {
+		return {
+			deadlines,
+			applications,
+			refreshApplications,
+			isLoading: loadingApplications || loadingDeadlines,
+		} satisfies ApplicationsHookValue;
+	}, [
 		deadlines,
 		applications,
 		refreshApplications,
-		isLoading: loadingApplications || loadingDeadlines,
-	} satisfies ApplicationsHookValue;
+		loadingApplications,
+		loadingDeadlines,
+	]);
+
+	return value;
 };

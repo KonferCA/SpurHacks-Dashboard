@@ -16,6 +16,6 @@ export {
 export type {
 	HeaderInfo,
 	RoutesContextValue,
-	PathObject,
+	Paths,
 	RouteConfig,
 } from "./RoutesProvider";

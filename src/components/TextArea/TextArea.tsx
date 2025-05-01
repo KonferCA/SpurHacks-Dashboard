@@ -4,9 +4,9 @@ import {
 	getTextInputLabelStyles,
 	getTextInputStyles,
 } from "@/components/TextInput/TextInput.styles";
-import { Textarea } from "@chakra-ui/react";
+import { Textarea, type TextareaProps } from "@chakra-ui/react";
 
-export interface TextAreaProps
+interface Props
 	extends TextInputStylesProps,
 		React.TextareaHTMLAttributes<HTMLTextAreaElement> {
 	/**
@@ -30,6 +30,8 @@ export interface TextAreaProps
 	 */
 	description?: string;
 }
+
+export type TextAreaProps = Props & TextareaProps;
 
 export const TextArea: React.FC<TextAreaProps> = ({
 	label,

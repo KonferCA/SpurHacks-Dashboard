@@ -84,58 +84,6 @@ export const Application: FC<ApplicationProps> = ({ app }) => {
 					/>
 				</div>
 			)}
-			{app.participatingAs === "Mentor" && (
-				<div className="py-2 space-y-2 max-w-xl">
-					<Field
-						label="Have you mentored at previous hackathons before?"
-						value={app.mentorExperience}
-					/>
-					{app.linkedinUrl && (
-						<Field label="LinkedIn:" value={app.linkedinUrl} />
-					)}
-					{app.githubUrl && <Field label="GitHub:" value={app.githubUrl} />}
-					{app.personalWebsiteUrl && (
-						<Field label="Other Website:" value={app.personalWebsiteUrl} />
-					)}
-					<Field
-						label="Why do you want to be a mentor at HawkHacks?"
-						value={app.reasonToBeMentor}
-					/>
-					{app.mentorResumeRef && (
-						<div className="py-2">
-							<p className="font-medium">Mentor Resume:</p>
-							<Button
-								onClick={() => {
-									getResume(app.mentorResumeRef).catch(() =>
-										toaster.error({
-											title: "Oops!",
-											description: "Resume could not be downloaed.",
-										}),
-									);
-								}}
-							>
-								Get Mentor Resume
-							</Button>
-						</div>
-					)}
-				</div>
-			)}
-			{app.participatingAs === "Volunteer" && (
-				<div className="py-2 space-y-2 max-w-lg">
-					<Field
-						label="Have you volunteered at large-scale events before?"
-						value={app.volunteerExperience}
-					/>
-					<Field
-						label="Why do you want to be a volunteer at HawkHacks?"
-						value={app.reasonToBeVolunteer}
-					/>
-					<Field
-						label="In a couple of sentences, what would you be most excited about helping out with at HawkHacks and why?"
-						value={app.excitedToVolunteerFor}
-					/>
-				</div>
-			)}
 			{app.generalResumeRef && (
 				<div className="py-2">
 					<p className="font-medium">Resume:</p>
