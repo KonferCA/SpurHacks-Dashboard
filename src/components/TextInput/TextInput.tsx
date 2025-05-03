@@ -30,7 +30,6 @@ export const TextInput: React.FC<TextInputProps> = ({
 	label,
 	invalid,
 	description,
-	placeholder,
 	required,
 	error,
 	...props
