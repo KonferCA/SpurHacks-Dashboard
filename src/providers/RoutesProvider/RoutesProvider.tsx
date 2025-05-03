@@ -159,6 +159,11 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		// Routes requiring email verification
 		const verifiedEmailRoutes: RouteConfig[] = [
 			{
+				path: paths.root,
+				element: <HomePage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail],
+			},
+			{
 				path: paths.home,
 				element: <HomePage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail],

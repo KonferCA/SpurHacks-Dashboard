@@ -4,9 +4,9 @@ import type {
 	TextInputProps,
 } from "@/components/types";
 import type { Timestamp } from "firebase/firestore";
-import type { TextAreaProps } from "../TextArea/TextArea";
+import type { TextAreaProps } from "@/components/TextArea/TextArea";
 
-export interface HackerApplicationData {
+export interface ApplicationData {
 	firstName: string;
 	lastName: string;
 	phone: string;
@@ -26,7 +26,7 @@ export interface HackerApplicationData {
 	interests: string[];
 	hackathonExperience: string;
 	programmingLanguages: string[];
-	participatingAs: "Hacker" | "Mentor" | "Volunteer";
+	participatingAs: "Hacker";
 	applicantId: string;
 	agreedToHawkHacksCoC: boolean;
 	agreedToWLUCoC: boolean;
@@ -45,32 +45,30 @@ export interface HackerApplicationData {
 	applicationStatus?: "pending" | "rejected" | "accepted";
 }
 
-export type ApplicationData = HackerApplicationData;
-
-export type ApplicationInputKeys = keyof ApplicationData;
+export type ApplicationDataKey = keyof ApplicationData;
 
 export interface TextFormInput {
 	type: "text";
 	props: TextInputProps;
-	name: ApplicationInputKeys;
+	name: ApplicationDataKey;
 }
 
 export interface TextAreaFormInput {
 	type: "textarea";
 	props: TextAreaProps;
-	name: ApplicationInputKeys;
+	name: ApplicationDataKey;
 }
 
 export interface SelectFormInput {
 	type: "select";
 	props: SelectProps;
-	name: ApplicationInputKeys;
+	name: ApplicationDataKey;
 }
 
 export interface MultiSelectFormInput {
 	type: "multiselect";
 	props: MultiSelectProps;
-	name: ApplicationInputKeys;
+	name: ApplicationDataKey;
 }
 
 export type FormInput =

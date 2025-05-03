@@ -6,7 +6,7 @@ import { getOptionStyles } from "../MultiSelect/MultiSelect";
 
 export interface SelectProps {
 	label: string;
-	options: string[];
+	options: string[] | readonly string[];
 	initialValue: string;
 	name?: string;
 	srLabelOnly?: boolean;

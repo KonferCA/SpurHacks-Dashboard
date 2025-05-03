@@ -1,11 +1,12 @@
 import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
 import { Modal } from "@/components/Modal";
 import { TextArea } from "@/components/TextArea/TextArea";
-import { defaultApplication } from "@/components/forms/defaults";
+import { defaultApplication } from "@/forms/hacker-form/defaults";
 import type {
 	ApplicationData,
-	ApplicationInputKeys,
-} from "@/components/forms/types";
+	ApplicationDataKey,
+} from "@/forms/hacker-form/types";
+import { validations } from "@/forms/hacker-form/validations";
 import type { Step } from "@/components/types";
 import { toaster } from "@/components/ui/toaster";
 import {
@@ -34,7 +35,6 @@ import { submitApplication } from "@/services/firebase/application";
 import { uploadGeneralResume } from "@/services/firebase/files";
 import { Button } from "@chakra-ui/react";
 import {
-	ErrorAlert,
 	LoadingAnimation,
 	MultiSelect,
 	PageWrapper,
@@ -45,135 +45,48 @@ import {
 import { logEvent } from "firebase/analytics";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
-import { z } from "zod";
 
-// Form validations
-const profileFormValidation = z.object({
-	firstName: z
-		.string()
-		.min(1, "First name must contain at least 1 character(s)"),
-	lastName: z.string().min(1, "Last name must contain at least 1 character(s)"),
-	countryOfResidence: z
-		.string()
-		.min(1, "Please select the country you currently reside in."),
-	city: z.string().min(1, "Please select the city you currently live in."),
-	phone: z.string().nonempty("Phone number is empty"),
-	school: z.string().min(1, "School is empty"),
-	levelOfStudy: z.string().min(1, "Level of study is empty"),
-	age: z.string().refine((val) => ages.includes(val)),
-	discord: z.string().refine((val) => {
-		if (val.length < 1) return false;
+// Define fields to validate for each step
+const stepFields: ApplicationDataKey[][] = [
+	// Step 0: Basic profile
+	[
+		"firstName",
+		"lastName",
+		"age",
+		"discord",
+		"countryOfResidence",
+		"city",
+		"phone",
+		"school",
+		"levelOfStudy",
+		"major",
+	],
 
-		if (val[0] === "@" && val.length === 1) return false;
+	// Step 1: Hacker questions
+	["reasonToBeInHawkHacks", "revolutionizingTechnology"],
 
-		return true;
-	}, "Invalid Discord username"),
-	major: z
-		.string()
-		.array()
-		.min(
-			1,
-			"Please select a major. If your major is not in the options, please type the major in the input field.",
-		),
-}) satisfies z.ZodType<
-	Pick<
-		ApplicationData,
-		| "firstName"
-		| "lastName"
-		| "countryOfResidence"
-		| "city"
-		| "phone"
-		| "school"
-		| "levelOfStudy"
-		| "age"
-		| "discord"
-		| "major"
-	>
->;
+	// Step 2: Application
+	[
+		"gender",
+		"pronouns",
+		"sexuality",
+		"race",
+		"diets",
+		"allergies",
+		"interests",
+		"hackathonExperience",
+		"programmingLanguages",
+	],
 
-const hackerAppFormValidation = z.object({
-	gender: z.string().transform((val) => val ?? "Prefer not to answer"),
-	pronouns: z.string().array().min(1, "Please select your pronouns."),
-	sexuality: z.string(),
-	race: z.string(),
-	diets: z.string().array(),
-	allergies: z.string().array(),
-	interests: z.string().array().min(1, "Please choose at least one interest."),
-	hackathonExperience: z.string(),
-	programmingLanguages: z.string().array(),
-	participatingAs: z.enum(["Hacker", "Mentor", "Volunteer"]),
-	applicantId: z.string(),
-	agreedToHawkHacksCoC: z.boolean(),
-	agreedToWLUCoC: z.boolean(),
-	agreedToMLHCoC: z.boolean(),
-	agreedToMLHToCAndPrivacyPolicy: z.boolean(),
-	agreedToReceiveEmailsFromMLH: z.boolean(),
-}) satisfies z.ZodType<
-	Pick<
-		ApplicationData,
-		| "gender"
-		| "pronouns"
-		| "sexuality"
-		| "race"
-		| "diets"
-		| "allergies"
-		| "interests"
-		| "hackathonExperience"
-		| "programmingLanguages"
-		| "participatingAs"
-		| "applicantId"
-		| "agreedToHawkHacksCoC"
-		| "agreedToWLUCoC"
-		| "agreedToMLHCoC"
-		| "agreedToMLHToCAndPrivacyPolicy"
-		| "agreedToReceiveEmailsFromMLH"
-	>
->;
-
-const hackerSpecificValidation = z.object({
-	// hacker only
-	reasonToBeInHawkHacks: z
-		.string()
-		.min(1, "Please tell us why you want to  particiapte at HawkHacks."),
-	revolutionizingTechnology: z
-		.string()
-		.min(1, "Please tell us about a new tech you are most excited about."),
-}) satisfies z.ZodType<
-	Pick<ApplicationData, "reasonToBeInHawkHacks" | "revolutionizingTechnology">
->;
-
-const finalChecksValidation = z.object({
-	referralSources: z
-		.string()
-		.array()
-		.min(
-			1,
-			"Please tell us how you heard about HawkHacks. If non of the options reflect your situation, please write your answer in the text input.",
-		),
-	describeSalt: z
-		.string()
-		.min(1, "Please tell us how you would describe the taste of salt."),
-}) satisfies z.ZodType<
-	Pick<ApplicationData, "referralSources" | "describeSalt">
->;
-
-const stepValidations = [
-	profileFormValidation,
-	z.object({
-		participatingAs: z.string().refine((val) => ["Hacker"].includes(val)),
-	}),
-	hackerAppFormValidation,
-	finalChecksValidation,
+	// Step 3: Final checks
+	["referralSources", "describeSalt"],
 ];
 
+// Form validations
 function getLogEventName(component: string) {
 	if (import.meta.env.PROD) return `app_interaction_${component}`;
 	return "dev_app_interaction"; // not logging the different components becuase it will fill the reports with spam
 }
-
-// function isValidUrl(url: string) {
-// 	return z.string().url().safeParse(url).success;
-// }
 
 export const ApplyPage = () => {
 	// TODO: save steps in firebase to save progress
@@ -206,10 +119,17 @@ export const ApplyPage = () => {
 	const [application, setApplication] = useState<ApplicationData>(() => {
 		const app: ApplicationData = {
 			...defaultApplication,
-			participatingAs: "Hacker", // Default to Hacker only
 		};
 		return app;
 	});
+
+	useEffect(() => {
+		if (userApp && !sp.get("restart")) {
+			setApplication({
+				...userApp,
+			});
+		}
+	}, [userApp, sp]);
 
 	const trackProgress = (component: string) => {
 		try {
@@ -223,52 +143,65 @@ export const ApplyPage = () => {
 		}
 	};
 
-	const handleChange = (
-		name: ApplicationInputKeys,
-		data: string | string[] | boolean,
+	const handleChange = <K extends ApplicationDataKey>(
+		name: K,
+		data: ApplicationData[K],
 	) => {
-		// @ts-ignore the "name" key is controlled by the keyof typing, restricts having undefined keys, so disable is ok
-		application[name] = data;
-		setApplication({ ...application });
+		const updatedApp = { ...application };
+		updatedApp[name] = data;
+		setApplication(updatedApp);
 		trackProgress(name);
+
+		// Clear errors
+		clearErrors();
 	};
 
 	const clearErrors = () => setErrors([]);
 
-	const validate = () => {
+	const validateField = <K extends ApplicationDataKey>(field: K) => {
+		if (validations[field]) {
+			return validations[field](application[field]);
+		}
+		return null;
+	};
+
+	const validateCurrentStep = () => {
 		clearErrors();
 
-		// // Check URL validation status
-		// const urlFields: (keyof ApplicationData)[] = [
-		// 	"linkedinUrl",
-		// 	"githubUrl",
-		// 	"personalWebsiteUrl",
-		// ] as const;
-		// for (const field of urlFields) {
-		// 	const fieldValue = application[field as keyof ApplicationData] as string;
-		// 	if (fieldValue && !isValidUrl(fieldValue)) {
-		// 		setErrors((prev) => [...prev, `${field} has an invalid URL.`]);
-		// 		return false;
-		// 	}
-		// }
+		const fieldsToValidate = stepFields[activeStep];
+		const stepErrors: string[] = [];
 
-		// validate step form
-		const validateFn = stepValidations[activeStep];
+		for (const field of fieldsToValidate) {
+			const error = validateField(field);
+			if (error) {
+				stepErrors.push(error);
+			}
+		}
 
-		const results = validateFn.safeParse(application);
-
-		if (!results.success) {
-			setErrors(results.error.issues.map((i) => i.message));
+		if (stepErrors.length > 0) {
+			setErrors(stepErrors);
 			return false;
 		}
 
-		if (activeStep === 1) {
-			const validateFn = hackerSpecificValidation;
-			const results = validateFn.safeParse(application);
-			if (!results.success) {
-				setErrors(results.error.issues.map((i) => i.message));
-				return false;
+		return true;
+	};
+
+	const validate = () => {
+		clearErrors();
+		const allErrors: string[] = [];
+
+		// Validate all required fields
+		Object.keys(validations).forEach((field) => {
+			const key = field as keyof ApplicationData;
+			const error = validateField(key);
+			if (error) {
+				allErrors.push(error);
 			}
+		});
+
+		if (allErrors.length > 0) {
+			setErrors(allErrors);
+			return false;
 		}
 
 		return true;
@@ -276,6 +209,9 @@ export const ApplyPage = () => {
 
 	const nextStep = () => {
 		if (activeStep < steps.length) {
+			// Validate current step before proceeding
+			if (!validateCurrentStep()) return;
+
 			trackProgress(`step_${activeStep}`);
 			setSteps((s) => {
 				s[activeStep].status = "complete";
@@ -297,7 +233,11 @@ export const ApplyPage = () => {
 			if (step <= activeStep) {
 				setActiveStep(step);
 			} else {
-				if (!validate()) return;
+				// Validate all steps up to the target step
+				for (let i = activeStep; i < step; i++) {
+					setActiveStep(i);
+					if (!validateCurrentStep()) return;
+				}
 				setActiveStep(step);
 			}
 		}
@@ -309,12 +249,19 @@ export const ApplyPage = () => {
 		}
 
 		clearErrors();
-		if (!validate()) return;
 
+		// If we're not on the final step, just validate the current step
 		if (activeStep !== steps.length - 1) {
+			if (!validateCurrentStep()) return;
 			nextStep();
 			return;
 		}
+
+		// On the final step, validate the current step first
+		if (!validateCurrentStep()) return;
+
+		// Then validate the entire form before submission
+		if (!validate()) return;
 
 		const allRequiredChecked =
 			// don't have the CoC for HH yet so we don't have to make it required for now
@@ -360,7 +307,7 @@ export const ApplyPage = () => {
 			toaster.success({
 				title: "Application Submitted!",
 				description:
-					"Thank you for applying! You'll hear from us via email within one week after applications close on May 3rd.",
+					"Thank you for applying! You'll hear from us via email within one week after applications close on June 6th.",
 			});
 			await refreshApplications();
 		} catch (e) {
@@ -381,14 +328,6 @@ export const ApplyPage = () => {
 		}
 	}, [userApp, loadingApplications]);
 
-	useEffect(() => {
-		if (userApp && !sp.get("restart")) {
-			setApplication({
-				...userApp,
-			});
-		}
-	}, [userApp, sp]);
-
 	if (loadingApplications)
 		return (
 			<PageWrapper>
@@ -398,6 +337,8 @@ export const ApplyPage = () => {
 
 	if (submitted) return <Navigate to={paths.submitted} />;
 
+	console.log(errors);
+
 	return (
 		<PageWrapper>
 			<div>
@@ -405,9 +346,7 @@ export const ApplyPage = () => {
 					<Steps steps={steps} onClick={jumpTo} />
 				</nav>
 				{errors.length > 0 ? (
-					<div className="my-8">
-						<ErrorAlert errors={errors} />
-					</div>
+					<div className="my-8">{/* <ErrorAlert errors={errors} /> */}</div>
 				) : null}
 				<h3 className="text-center my-8">
 					All fields with an <span className="font-bold">asterisk</span> are{" "}

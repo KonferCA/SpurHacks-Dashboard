@@ -59,7 +59,7 @@ export function getOptionStyles(opts: OptionStylesProps & ClassProp): string {
 
 export interface MultiSelectProps {
 	label: string;
-	options: string[];
+	options: string[] | readonly string[];
 	initialValues?: string[];
 	srLabelOnly?: boolean;
 	allowCustomValue?: boolean;
