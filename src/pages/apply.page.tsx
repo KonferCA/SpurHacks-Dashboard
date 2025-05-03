@@ -385,6 +385,7 @@ export const ApplyPage = () => {
 								onChange={(e) => handleChange("firstName", e.target.value)}
 								required
 							/>
+							<FileBrowser label="file" required onChange={() => {}} />
 						</div>
 
 						<div className="sm:col-span-3">
@@ -660,8 +661,9 @@ export const ApplyPage = () => {
 									opportunities.
 								</p>
 								<FileBrowser
+									label="Resume"
 									inputId="sponsors-resume-file-input"
-									allowedFileTypes={[
+									accept={[
 										"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
 										"application/pdf", //pdf
 										"application/msword", //doc, dot, wiz
@@ -673,7 +675,7 @@ export const ApplyPage = () => {
 										"application/vnd.oasis.opendocument.text", //odt
 									]}
 									onChange={(file) => {
-										file && setGeneralResumeFile(file);
+										file && setGeneralResumeFile(file[0] ?? null);
 									}}
 								/>
 							</div>
