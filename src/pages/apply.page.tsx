@@ -43,8 +43,15 @@ import {
 	TextInput,
 } from "@components";
 import { logEvent } from "firebase/analytics";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import {
+	type FormEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 
 // Define fields to validate for each step
 const stepFields: ApplicationDataKey[][] = [
@@ -143,18 +150,21 @@ export const ApplyPage = () => {
 		}
 	};
 
-	const handleChange = <K extends ApplicationDataKey>(
-		name: K,
-		data: ApplicationData[K],
-	) => {
-		const updatedApp = { ...application };
-		updatedApp[name] = data;
-		setApplication(updatedApp);
-		trackProgress(name);
+	const handleChange = useCallback(
+		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
+			if (name === "phone") console.log(data);
+			setApplication((application) => {
+				const updatedApp = { ...application };
+				updatedApp[name] = data;
+				return updatedApp;
+			});
+			trackProgress(name);
 
-		// Clear errors
-		clearErrors();
-	};
+			// Clear errors
+			clearErrors();
+		},
+		[],
+	);
 
 	const clearErrors = () => setErrors([]);
 
@@ -322,6 +332,13 @@ export const ApplyPage = () => {
 		}
 	};
 
+	const handlePhoneChange = useCallback(
+		(phone: string) => {
+			handleChange("phone", phone);
+		},
+		[handleChange],
+	);
+
 	useEffect(() => {
 		if (!loadingApplications && !userApp) {
 			trackProgress("open");
@@ -336,8 +353,6 @@ export const ApplyPage = () => {
 		);
 
 	if (submitted) return <Navigate to={paths.submitted} />;
-
-	console.log(errors);
 
 	return (
 		<PageWrapper>
@@ -428,13 +443,7 @@ export const ApplyPage = () => {
 						</div>
 
 						<div className="col-span-6">
-							<TextInput
-								id="phone"
-								label="Phone Number"
-								onChange={(e) => handleChange("phone", e.target.value)}
-								placeholder="+1 123-444-555"
-								required
-							/>
+							<PhoneInput required onChange={handlePhoneChange} />
 						</div>
 
 						<div className="sm:col-span-3">
