@@ -1,5 +1,4 @@
 import { Modal, PageWrapper } from "@/components";
-import { getButtonStyles } from "@/components/Button/Button.styles";
 import { type PerksData, perksData } from "@/data/perks";
 import { paths } from "@/providers/RoutesProvider/data";
 import { useEffect, useRef, useState } from "react";
@@ -142,9 +141,6 @@ const PerksPage = () => {
 									href={selectedPerk.link}
 									target="_blank"
 									rel="noopener noreferrer"
-									className={getButtonStyles({
-										className: "bg-tbrand rounded-lg",
-									})}
 								>
 									{selectedPerk.buttonTitle || "Learn More"}
 								</a>
@@ -156,9 +152,6 @@ const PerksPage = () => {
 										href={action.link}
 										target="_blank"
 										rel="noopener noreferrer"
-										className={getButtonStyles({
-											className: "p-3 bg-tbrand rounded-lg",
-										})}
 									>
 										{action.title}
 									</a>

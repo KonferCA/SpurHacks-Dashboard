@@ -1,5 +1,6 @@
 import type { ComponentProps } from "@/components/types";
 import { useHeaderInfo } from "@/providers";
+import { Box } from "@chakra-ui/react";
 import { Navbar } from "@components";
 import type { FC } from "react";
 
@@ -17,12 +18,12 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 	}
 
 	return (
-		<div>
+		<Box bg="#13151C">
 			<Navbar />
 
 			{/* right hand side */}
 			<div className="md:pl-72">
-				<div className="md:sticky top-0 z-10 shrink-0 px-6 md:py-8 py-2 border-b-2 border-b-gray-300 bg-white">
+				<div className="md:sticky top-0 z-10 shrink-0 px-6 md:py-8 py-2">
 					<h1 className="text-xl md:text-4xl text-gray-800 font-bold font-sans">
 						{headerInfo.title}
 					</h1>
@@ -44,6 +45,6 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 				</div>
 				<div className="px-6 py-6">{children}</div>
 			</div>
-		</div>
+		</Box>
 	);
 };
