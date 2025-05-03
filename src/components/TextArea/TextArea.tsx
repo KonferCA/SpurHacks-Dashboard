@@ -1,14 +1,6 @@
-import {
-	type TextInputStylesProps,
-	getTextInputDescriptionStyles,
-	getTextInputLabelStyles,
-	getTextInputStyles,
-} from "@/components/TextInput/TextInput.styles";
-import { Textarea, type TextareaProps } from "@chakra-ui/react";
+import { Field, Textarea, type TextareaProps } from "@chakra-ui/react";
 
-interface Props
-	extends TextInputStylesProps,
-		React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+interface Props extends TextareaProps {
 	/**
 	 * Label text of the input. For accessibility reasons, all inputs should have a label.
 	 */
@@ -20,15 +12,13 @@ interface Props
 	srLabel?: boolean;
 
 	/**
-	 * Force the usage of id to match label to input.
-	 * This avoids dynamically generating a new id in runtime.
-	 */
-	id: string;
-
-	/**
 	 * Description of the input field.
 	 */
 	description?: string;
+
+	invalid?: boolean;
+
+	error?: string;
 }
 
 export type TextAreaProps = Props & TextareaProps;
@@ -38,38 +28,19 @@ export const TextArea: React.FC<TextAreaProps> = ({
 	className,
 	invalid,
 	description,
-	srLabel = false,
 	required,
-	...textAreaProps
+	error,
+	...props
 }) => {
-	const describedby = `text-input-description-${textAreaProps.id}`;
 	return (
-		<div>
-			<label
-				htmlFor={textAreaProps.id}
-				className={getTextInputLabelStyles({ srLabel })}
-			>
+		<Field.Root required={required} invalid={invalid}>
+			<Field.Label>
 				{label}
-				{required ? <span className="text-red-600 ml-1">*</span> : null}
-			</label>
-			<div className="mt-2">
-				<Textarea
-					{...textAreaProps}
-					aria-describedby={[
-						textAreaProps["aria-describedby"] ?? "",
-						describedby,
-					].join(" ")}
-					className={getTextInputStyles({ invalid, className })}
-				/>
-			</div>
-			{description && (
-				<p
-					className={getTextInputDescriptionStyles({ invalid })}
-					id={describedby}
-				>
-					{description}
-				</p>
-			)}
-		</div>
+				{required && <Field.RequiredIndicator />}
+			</Field.Label>
+			<Textarea bg="black" {...props} />
+			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
+		</Field.Root>
 	);
 };
