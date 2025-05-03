@@ -3,11 +3,7 @@ import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
-import {
-	getResumeURL,
-	uploadGeneralResume,
-	uploadMentorResume,
-} from "@/services/firebase/files";
+import { getResumeURL, uploadGeneralResume } from "@/services/firebase/files";
 import type { ResumeVisibility, Socials } from "@/services/firebase/types";
 import { getSocials, updateSocials } from "@/services/firebase/user";
 import { useUserStore } from "@/stores/user.store";
@@ -131,12 +127,7 @@ export const NetworkingPage = () => {
 	const submitFile = async () => {
 		if (!file || !currentUser || !userApp) return;
 
-		let ref = "";
-		if (userApp.participatingAs === "Mentor") {
-			ref = await uploadMentorResume(file, currentUser.uid);
-		} else {
-			ref = await uploadGeneralResume(file, currentUser.uid);
-		}
+		const ref = await uploadGeneralResume(file, currentUser.uid);
 
 		try {
 			await updateSocials({ ...mediaValues, resumeRef: ref });

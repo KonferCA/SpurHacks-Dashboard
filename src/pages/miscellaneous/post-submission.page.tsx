@@ -1,5 +1,4 @@
 import { AirBalloon, CloudLL, CloudRR, Logo } from "@/assets";
-import { getButtonStyles } from "@/components/Button/Button.styles";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
 import { Link, Navigate } from "react-router-dom";
@@ -71,15 +70,7 @@ export const PostSubmissionPage = () => {
 					server!
 				</p>
 				<div className="mt-12">
-					<Link
-						to="/"
-						className={getButtonStyles({
-							className:
-								"relative rounded-lg border border-charcoalBlack font-bold bg-gradient-to-b from-deepMarine to-tbrand-highlight before:absolute before:inset-0 before:translate-y-0.5 before:bg-black before:-z-10 before:rounded-lg before:translate-x-0.5 after:absolute after:rounded-lg after:bg-white/10 after:opacity-0 after:inset-0 after:hover:opacity-100 after:transition",
-						})}
-					>
-						Back to Home
-					</Link>
+					<Link to="/">Back to Home</Link>
 				</div>
 				<div className="flex gap-2 items-center mt-12">
 					<img alt="Hawkhacks logo" src={Logo} className="w-6 h-6" />

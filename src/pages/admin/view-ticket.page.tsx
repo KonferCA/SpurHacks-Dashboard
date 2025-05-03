@@ -1,5 +1,4 @@
 import { LoadingAnimation, Modal, PageWrapper } from "@/components";
-import { getButtonStyles } from "@/components/Button/Button.styles";
 import { toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/providers";
 import { getRedeemableItems, redeemItem } from "@/services/firebase/redeem";
@@ -158,10 +157,6 @@ export const AdminViewTicketPage = () => {
 													</div>
 													<button
 														type="button"
-														className={getButtonStyles({
-															className: "p-2",
-															intent: checked ? "secondary" : "primary",
-														})}
 														onClick={() => {
 															setActiveEvent(e);
 															setActiveAction(checked ? "uncheck" : "check");
