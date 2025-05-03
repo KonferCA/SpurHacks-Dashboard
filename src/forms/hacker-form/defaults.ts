@@ -1,4 +1,4 @@
-import type { ApplicationData } from "@/components/forms/types";
+import type { ApplicationData } from "@/forms/hacker-form/types";
 
 export const defaultApplication: ApplicationData = {
 	firstName: "",
