@@ -11,6 +11,7 @@ import Logo from "./spur-logo-white.svg";
 import FullLogo from "./spurhacks-full-logo-white.svg";
 import IpadKidHawks from "./ipadKidHawks.svg";
 import LoadingDots from "./loading.svg";
+import Knots from "./404-knots.svg";
 
 export {
 	FullLogo,
@@ -26,6 +27,7 @@ export {
 	GoogleWalletBadge,
 	AppleWalletBadge,
 	LoadingDots,
+	Knots,
 };
 
 /**
