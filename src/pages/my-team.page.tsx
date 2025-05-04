@@ -381,14 +381,14 @@ export const MyTeamPage = () => {
 								<TextInput
 									label="Team Name"
 									id="team-name-input"
-									description={
+									description={"Enter an awesome team name."}
+									error={
 										invalidTeamName
 											? "The entered team name is not valid."
-											: !isTeamNameTaken
-												? "Enter an awesome team name."
-												: "The team name has been taken. Please choose another one."
+											: isTeamNameTaken
+												? "The team name has been taken. Please choose another one."
+												: undefined
 									}
-									invalid={invalidTeamName || isTeamNameTaken}
 									required
 									value={teamName}
 									onChange={(e) => {
@@ -552,14 +552,14 @@ export const MyTeamPage = () => {
 											debounce(e.target.value);
 										}}
 										placeholder="Awesome Team Name Here!"
-										description={
+										description={"Enter an awesome team name."}
+										error={
 											invalidTeamName
 												? "The entered team name is not valid."
-												: !isTeamNameTaken
-													? ""
-													: "The team name has been taken. Please choose another one."
+												: isTeamNameTaken
+													? "The team name has been taken. Please choose another one."
+													: undefined
 										}
-										invalid={invalidTeamName || isTeamNameTaken}
 									/>
 									<div className="flex items-center justify-end">
 										<Button onClick={handleTeamNameUpdate} className="mt-8">
@@ -606,13 +606,12 @@ export const MyTeamPage = () => {
 				<TextInput
 					required
 					label="Email"
-					description={invalidEmailMsg}
 					id="invite-email"
 					type="email"
 					srLabel
 					placeholder="name@email.com"
-					invalid={!!invalidEmailMsg}
 					value={email}
+					error={invalidEmailMsg}
 					onChange={(e) => setEmail(e.target.value)}
 					onKeyDown={(e) => {
 						if (e.key === "Enter") {

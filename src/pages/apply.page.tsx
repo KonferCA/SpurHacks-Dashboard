@@ -16,7 +16,7 @@ import {
 	genders,
 	hackathonExps,
 	interests,
-	levelsOfStudy,
+	educationLevels,
 	majorsList,
 	programmingLanguages,
 	pronouns,
@@ -25,6 +25,7 @@ import {
 	schools,
 	sexualityList,
 } from "@/data";
+import { yearOfStudies } from "@/data/educationLevels";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
@@ -56,13 +57,15 @@ const stepFields: ApplicationDataKey[][] = [
 		"firstName",
 		"lastName",
 		"age",
-		"discord",
+		"phone",
+		"email",
+		"educationLevels",
+		"yearOfStudies",
+		"school",
+		"major",
 		"countryOfResidence",
 		"city",
-		"phone",
-		"school",
-		"levelOfStudy",
-		"major",
+		"discord",
 	],
 
 	// Step 1: Hacker questions
@@ -115,6 +118,7 @@ export const ApplyPage = () => {
 	const [application, setApplication] = useState<ApplicationData>(() => {
 		const app: ApplicationData = {
 			...defaultApplication,
+			email: currentUser.email ?? "",
 		};
 		return app;
 	});
@@ -124,6 +128,10 @@ export const ApplyPage = () => {
 			setApplication((application) => {
 				const updatedApp = { ...application };
 				updatedApp[name] = data;
+				if (name === "educationLevels") {
+					// reset this value if the education level changes
+					updatedApp.yearOfStudies = undefined;
+				}
 				return updatedApp;
 			});
 
@@ -350,35 +358,11 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={{ base: 6, sm: 4 }}>
 								<TextInput
-									label="What is your Discord username?"
-									id="discord"
-									placeholder="@username or username#1234"
-									value={application.discord}
-									onChange={(e) => handleChange("discord", e.target.value)}
-									description="Discord will be our primary form of communication."
-									error={errors["discord"]}
-									required
-								/>
-							</GridItem>
-
-							<GridItem colSpan={{ base: 6, sm: 3 }}>
-								<Select
-									label="Which country do you currently reside in?"
-									options={countryNames}
-									onChange={(opt) =>
-										handleChange("countryOfResidence", opt[0] ?? "")
-									}
-									error={errors["countryOfResidence"]}
-									required
-								/>
-							</GridItem>
-
-							<GridItem colSpan={{ base: 6, sm: 3 }}>
-								<TextInput
-									label="Which city do you live in?"
-									value={application.city}
-									onChange={(e) => handleChange("city", e.target.value)}
-									error={errors["city"]}
+									label="What email can we use to contact you with?"
+									type="email"
+									defaultValue={application.email}
+									description="The email can't be changed. If this is not the correct email, please create a new account with the desire email."
+									disabled
 									required
 								/>
 							</GridItem>
@@ -391,36 +375,99 @@ export const ApplyPage = () => {
 								/>
 							</GridItem>
 
-							<GridItem colSpan={{ base: 6, sm: 3 }}>
+							<GridItem colSpan={6}>
+								{/* TODO: allow other */}
+								<Select
+									label="What is your current education level?"
+									placeholder="Select education level"
+									options={educationLevels}
+									onChange={(opt) =>
+										// @ts-ignore
+										handleChange("educationLevels", opt[0] ?? "")
+									}
+									error={errors.educationLevels}
+									required
+								/>
+							</GridItem>
+
+							{yearOfStudies[application.educationLevels] && (
+								<GridItem colSpan={6}>
+									<Select
+										label={`What is the year of ${application.educationLevels} are you in?`}
+										placeholder="Select year"
+										options={
+											yearOfStudies[application.educationLevels] as string[]
+										}
+										onChange={(opt) =>
+											handleChange("yearOfStudies", opt[0] ?? "")
+										}
+										error={errors.yearOfStudies}
+										required
+									/>
+								</GridItem>
+							)}
+
+							<GridItem colSpan={6}>
+								{/* TODO: allow other */}
 								<Select
 									label="Which school are you currently attending?"
+									placeholder="Select school"
 									options={schools}
 									onChange={(opt) => handleChange("school", opt[0] ?? "")}
 									allowCustomValue
-									error={errors["school"]}
+									error={errors.school}
 									description="If you recently graduated, pick the school you graduated from."
 									required
 								/>
 							</GridItem>
 
+							<GridItem colSpan={6}>
+								{/* TODO: allow other */}
+								<Select
+									label="What is your major/field of study?"
+									placeholder="Select major/field of study"
+									options={majorsList}
+									onChange={(opts) => handleChange("major", opts)}
+									error={errors.major}
+									multiple
+									required
+									allowCustomValue
+								/>
+							</GridItem>
+
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
 								<Select
-									label="What is your current level of study?"
-									options={levelsOfStudy}
-									onChange={(opt) => handleChange("levelOfStudy", opt[0] ?? "")}
-									error={errors["levelOfStudy"]}
+									label="Which country do you currently reside in?"
+									placeholder="Select country"
+									options={countryNames}
+									onChange={(opt) =>
+										handleChange("countryOfResidence", opt[0] ?? "")
+									}
+									error={errors.countryOfResidence}
+									required
+								/>
+							</GridItem>
+
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<TextInput
+									label="Which city do you live in?"
+									placeholder="City name"
+									value={application.city}
+									onChange={(e) => handleChange("city", e.target.value)}
+									error={errors.city}
 									required
 								/>
 							</GridItem>
 
 							<GridItem colSpan={6}>
-								<Select
-									multiple
-									label="What is your major/field of study?"
-									options={majorsList}
-									onChange={(opts) => handleChange("major", opts)}
-									allowCustomValue
-									error={errors["major"]}
+								<TextInput
+									label="What is your Discord username?"
+									id="discord"
+									placeholder="@username or username#1234"
+									value={application.discord}
+									onChange={(e) => handleChange("discord", e.target.value)}
+									description="Discord will be our primary form of communication."
+									error={errors["discord"]}
 									required
 								/>
 							</GridItem>

@@ -1,16 +1,22 @@
+import type { EducationLevel } from "@/data/educationLevels";
 import type { Timestamp } from "firebase/firestore";
 
 export interface ApplicationData {
+	// Basic information
 	firstName: string;
 	lastName: string;
+	age: string;
 	phone: string;
+	email: string; // this field is disabled and auto popullated
+	educationLevels: EducationLevel;
+	// this is conditional, only required when educationLevels is middle,high,secondary school, college, or univerity
+	yearOfStudies?: string;
 	school: string;
-	levelOfStudy: string;
+	major: string[];
 	countryOfResidence: string;
 	city: string;
-	age: string;
 	discord: string;
-	major: string[];
+
 	gender: string;
 	pronouns: string[];
 	sexuality: string;
@@ -31,7 +37,6 @@ export interface ApplicationData {
 	reasonToBeInHawkHacks: string;
 	revolutionizingTechnology: string;
 	timestamp?: Timestamp;
-	email: string;
 	hackathonYear?: string;
 	rsvp?: boolean;
 	applicationStatus?: "pending" | "rejected" | "accepted";

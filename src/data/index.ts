@@ -2,7 +2,7 @@ export { schools } from "./schools";
 export { countryNames } from "./countryNames";
 export { majorsList } from "./majorsList";
 export { ages } from "./ages";
-export { levelsOfStudy } from "./levelsOfStudy";
+export { educationLevels } from "./educationLevels";
 export { cityNames } from "./cities";
 
 export { faqs } from "./faqs";

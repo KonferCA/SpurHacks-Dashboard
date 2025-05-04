@@ -1,6 +1,7 @@
 import { SafeParseReturnType, z } from "zod";
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import { ages, countryNames, hackathonExps } from "@/data";
+import { educationLevels } from "@/data/educationLevels";
 
 function formatResult<T, R>({ success, error }: SafeParseReturnType<T, R>) {
 	let errStr = "";
@@ -38,8 +39,16 @@ export const validations: {
 		formatResult(z.string().nonempty("Phone number is empty").safeParse(v)),
 	school: (v) =>
 		formatResult(z.string().nonempty("School is empty").safeParse(v)),
-	levelOfStudy: (v) =>
-		formatResult(z.string().nonempty("Level of study is empty").safeParse(v)),
+	educationLevels: (v) =>
+		formatResult(
+			z
+				.enum(educationLevels, { message: "Level of study is empty." })
+				.safeParse(v),
+		),
+	yearOfStudies: (v) =>
+		formatResult(
+			z.string().nonempty("Please select the year you're in.").safeParse(v),
+		),
 	age: (v) =>
 		formatResult(
 			z.enum(ages, { message: "Please provide your age." }).safeParse(v),

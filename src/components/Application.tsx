@@ -51,7 +51,7 @@ export const Application: FC<ApplicationProps> = ({ app }) => {
 			</div>
 			<div className="py-2 space-y-2">
 				<Field label="School:" value={app.school} />
-				<Field label="Level of Study:" value={app.levelOfStudy} />
+				<Field label="Level of Study:" value={app.educationLevels} />
 				<Field label="Major:" value={app.major} />
 			</div>
 			<div className="py-2 space-y-2">
