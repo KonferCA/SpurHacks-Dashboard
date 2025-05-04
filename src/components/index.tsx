@@ -21,13 +21,6 @@ export { Select } from "./Select/Select";
 
 /*
  *
- * @component MultiSelect
- *
- */
-export { MultiSelect } from "./MultiSelect/MultiSelect";
-
-/*
- *
  * @component PageWrapper
  *
  */

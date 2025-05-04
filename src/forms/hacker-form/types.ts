@@ -1,10 +1,4 @@
-import type {
-	MultiSelectProps,
-	SelectProps,
-	TextInputProps,
-} from "@/components/types";
 import type { Timestamp } from "firebase/firestore";
-import type { TextAreaProps } from "@/components/TextArea/TextArea";
 
 export interface ApplicationData {
 	firstName: string;
@@ -46,33 +40,3 @@ export interface ApplicationData {
 }
 
 export type ApplicationDataKey = keyof ApplicationData;
-
-export interface TextFormInput {
-	type: "text";
-	props: TextInputProps;
-	name: ApplicationDataKey;
-}
-
-export interface TextAreaFormInput {
-	type: "textarea";
-	props: TextAreaProps;
-	name: ApplicationDataKey;
-}
-
-export interface SelectFormInput {
-	type: "select";
-	props: SelectProps;
-	name: ApplicationDataKey;
-}
-
-export interface MultiSelectFormInput {
-	type: "multiselect";
-	props: MultiSelectProps;
-	name: ApplicationDataKey;
-}
-
-export type FormInput =
-	| TextFormInput
-	| SelectFormInput
-	| MultiSelectFormInput
-	| TextAreaFormInput;

@@ -45,9 +45,8 @@ export const PhoneInput: FC<PhoneInputProps> = ({ onChange, required }) => {
 				<Select
 					label="Country Code"
 					required={required}
-					initialValue={country}
 					options={countryCodes}
-					onChange={(v) => handleChange(true, v)}
+					onChange={(v) => handleChange(true, v[0] ?? countryCodes[0])}
 				/>
 			</GridItem>
 			<GridItem colSpan={9}>
