@@ -4,7 +4,7 @@ import type { AccessControlContext } from "@/navigation";
 import { RouteConfig, useAuth } from "@/providers";
 import { useRouteDefinitions, useUser } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Box } from "@chakra-ui/react";
+import { Box, Flex, Link as ChakraLink, Text, Image } from "@chakra-ui/react";
 import {
 	CalendarDaysIcon,
 	CodeBracketIcon,
@@ -14,11 +14,12 @@ import {
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FiLogOut, FiMapPin } from "react-icons/fi";
 import { RiDiscordLine } from "react-icons/ri";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
 
 const navItems = {
 	[paths.home]: {
@@ -55,124 +56,126 @@ const MobileNav = ({ availableRoutes }: { availableRoutes: RouteConfig[] }) => {
 	const { logout, currentUser: user } = useAuth();
 	const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-	const renderNavItems = useCallback(() => {
-		return (
-			availableRoutes
-				// @ts-ignore
-				.filter(({ path }) => path && !!navItems[path])
-				.map(({ path }) => {
-					// @ts-ignore
-					const { label, Icon } = navItems[path];
-					if (
-						(path === paths.myTeam && !window.localStorage.getItem(path)) ||
-						(path === paths.myTicket && !window.localStorage.getItem(path)) ||
-						(path === paths.perks && !window.localStorage.getItem(path))
-					) {
-						return (
-							<Link key={label} to={path as string} className="relative w-full">
-								<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-									<Icon className="w-4 h-4" />
-									<span className="relative">
-										{label}
-
-										<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-											<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-											<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
-										</span>
-									</span>
-								</li>
-							</Link>
-						);
-					}
-
-					return (
-						<Link key={label} to={path as string} className="w-full">
-							<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-								<Icon className="w-4 h-4" />
-								<span>{label}</span>
-							</li>
-						</Link>
-					);
-				})
-		);
-	}, [availableRoutes]);
-
 	useEffect(() => {
 		setMobileMenuOpen(false);
 	}, [location]);
 
 	return (
 		<>
-			<nav className="flex items-center justify-between p-4">
-				<div className="flex items-center justify-start">
-					<Link className="flex gap-4 items-center z-10" to="/profile">
-						<img className="h-10 w-10" src={Logo} alt="SpurHacks Logo" />
-					</Link>
-				</div>
-				<div>
-					<Hamburger
-						toggled={isMobileMenuOpen}
-						toggle={setMobileMenuOpen}
-						size={24}
-						label="Show navigation menu"
-					/>
-				</div>
-			</nav>
-
-			<div
-				className={`fixed z-20 right-0 top-0 h-full max-w-full p-10 py-24 backdrop-blur-xl transition-all duration-300 ease-in-out ${
-					isMobileMenuOpen
-						? "translate-x-0 opacity-100"
-						: "translate-x-full opacity-0"
-				}`}
+			<Flex
+				as="nav"
+				alignItems="center"
+				justifyContent="space-between"
+				padding="1rem"
 			>
-				<div className="absolute right-2 top-2">
+				<Flex alignItems="center" justifyContent="start">
+					<Link to="/profile">
+						<Image
+							width="2.5rem"
+							height="2.5rem"
+							src={Logo}
+							alt="SpurHacks Logo"
+						/>
+					</Link>
+				</Flex>
+				<Box>
 					<Hamburger
 						toggled={isMobileMenuOpen}
 						toggle={setMobileMenuOpen}
 						size={24}
 						label="Show navigation menu"
 					/>
-				</div>
-				<ul className="flex flex-col items-start justify-start">
-					{user &&
-						(user.type === "mentor" ||
-							user.type === "volunteer" ||
-							(user.type === "hacker" && user.rsvpVerified))}
+				</Box>
+			</Flex>
 
-					<a
+			<Box
+				position="fixed"
+				zIndex={20}
+				right={0}
+				top={0}
+				maxWidth="full"
+				blur="xl"
+				height="full"
+				transitionTimingFunction="ease-in-out"
+				transitionDuration="300ms"
+				transition="all"
+				translateX={isMobileMenuOpen ? "0" : "100%"}
+				opacity={isMobileMenuOpen ? 100 : 0}
+			>
+				<Box position="absolute" right="0.5rem" top="0.5rem">
+					<Hamburger
+						toggled={isMobileMenuOpen}
+						toggle={setMobileMenuOpen}
+						size={24}
+						label="Show navigation menu"
+					/>
+				</Box>
+				<Flex
+					as="ul"
+					direction="column"
+					alignItems="start"
+					justifyContent="start"
+				>
+					<ChakraLink
 						href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="w-full"
+						width="full"
 					>
-						<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
+						<Flex
+							as="li"
+							padding="1rem"
+							transition="colors"
+							cursor="pointer"
+							alignItems="center"
+							justifyContent="start"
+							gap="0.5rem"
+						>
 							Location
-						</li>
-					</a>
-					{user && renderNavItems()}
-					<a
+						</Flex>
+					</ChakraLink>
+					{availableRoutes
+						// @ts-ignore
+						.filter(({ path }) => path && !!navItems[path])
+						.map(({ path }) => {
+							// @ts-ignore
+							const { label, Icon } = navItems[path];
+							return (
+								<Link key={label} to={path as string} className="w-full">
+									<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
+										<Icon className="w-4 h-4" />
+										<span>{label}</span>
+									</li>
+								</Link>
+							);
+						})}
+					<ChakraLink
 						href="https://discord.com/invite/GxwvFEn9TB"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="w-full"
+						width="full"
 					>
-						<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
+						<Flex
+							as="li"
+							padding="1rem"
+							transition="colors"
+							cursor="pointer"
+							alignItems="center"
+							justifyContent="start"
+							gap="0.5rem"
+						>
 							Discord Support
-						</li>
-					</a>
-				</ul>
+						</Flex>
+					</ChakraLink>
+				</Flex>
 
 				{user && (
-					<button
-						className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full flex items-center justify-start gap-2"
-						type="button"
-						onClick={logout}
-					>
-						Sign out
-					</button>
+					<Button type="button" onClick={logout}>
+						<FiLogOut size="1.5rem" />
+						<Text>Sign out</Text>
+					</Button>
 				)}
-			</div>
+			</Box>
 		</>
 	);
 };
@@ -211,11 +214,6 @@ export const Navbar = () => {
 		setIsMobile(window.innerWidth <= 768);
 	};
 
-	const firstName =
-		applicationsCtx.applications[0]?.firstName ||
-		user?.displayName?.split(" ")[0] ||
-		"Unknown";
-
 	useEffect(() => {
 		window.addEventListener("resize", updateNavbarState);
 		return () => {
@@ -223,141 +221,104 @@ export const Navbar = () => {
 		};
 	}, []);
 
-	// TODO: groom routes rendering
-
-	const renderNavItems = (isMobile: boolean) => {
-		return (
-			availableRoutes
-				// @ts-ignore
-				.filter(({ path }) => path && !!navItems[path])
-				.map(({ path }) => {
-					// @ts-ignore
-					const { label, Icon } = navItems[path];
-					if (
-						(path === paths.myTeam && !window.localStorage.getItem(path)) ||
-						(path === paths.myTicket && !window.localStorage.getItem(path)) ||
-						(path === paths.perks && !window.localStorage.getItem(path))
-					) {
-						return (
-							<Link key={label} to={path as string} className="relative w-full">
-								<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-									{isMobile ? (
-										<>
-											<Icon className="w-4 h-4" />
-											<span className="relative">
-												{label}
-
-												<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-													<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-													<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
-												</span>
-											</span>
-										</>
-									) : (
-										<>
-											<Icon className="w-8 h-8" />
-											<span className="relative hidden md:flex">
-												{label}
-												<span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-													<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
-													<span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500" />
-												</span>
-											</span>
-										</>
-									)}
-								</li>
-							</Link>
-						);
-					}
-
-					return (
-						<Link key={label} to={path as string} className="w-full">
-							<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-								{isMobile ? (
-									<>
-										<Icon className="w-4 h-4" />
-										<span>{label}</span>
-									</>
-								) : (
-									<>
-										<Icon className="w-8 h-8" />
-										<span className="hidden md:flex">{label}</span>
-									</>
-								)}
-							</li>
-						</Link>
-					);
-				})
-		);
-	};
-
 	return (
 		<>
 			{isMobile ? (
 				<MobileNav availableRoutes={availableRoutes} />
 			) : (
-				<nav className="h-screen p-4 transition-all duration-300 gap-12 flex-col w-[60px] font-medium hidden md:block md:fixed md:inset-y-0 md:z-10 md:w-72">
-					<div className="flex items-start justify-start p-4">
-						<Link
-							className="flex gap-4 items-center justify-start"
-							to={paths.home}
-						>
+				<Flex as="nav" height="vh" width={60} padding="1rem" direction="column">
+					<Flex alignItems="center" justifyContent="center" padding="1rem">
+						<Link to={paths.home}>
 							<Box width="full" height="30px">
-								<img
-									src={FullLogo}
-									alt="SpurHacks Logo"
-									className="w-full h-full"
-								/>
+								<img src={FullLogo} alt="SpurHacks Logo" />
 							</Box>
 						</Link>
-					</div>
+					</Flex>
 
-					<div className="flex items-left justify-left p-4">
-						Welcome, <span className="ml-1 font-bold"> {firstName} </span> !
-					</div>
-
-					<aside className="flex flex-col items-start justify-between h-[83%] overflow-y-auto">
-						<ul className="flex flex-col items-start justify-start gap-4 w-full">
-							{user &&
-								(user.type === "mentor" ||
-									user.type === "volunteer" ||
-									(user.type === "hacker" && user.rsvpVerified))}
-							<a
+					<Flex
+						as="aside"
+						direction="column"
+						alignItems="center"
+						justifyContent="space-between"
+						height="83%"
+						overflowY="auto"
+					>
+						<Flex
+							as="ul"
+							direction="column"
+							alignItems="center"
+							justifyContent="start"
+							gap="1rem"
+							width="full"
+						>
+							<ChakraLink
+								width="full"
 								href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="w-full"
 							>
-								<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-									<FiMapPin size={32} />
+								<Flex
+									padding="1rem"
+									alignItems="center"
+									justifyContent="start"
+									gap="0.5rem"
+									cursor="pointer"
+								>
+									<FiMapPin size="1.5rem" />
 									Location
-								</li>
-							</a>
-							{user && renderNavItems(false)}
-							<a
-								href="https://discord.com/invite/GxwvFEn9TB"
+								</Flex>
+							</ChakraLink>
+							{availableRoutes
+								// @ts-ignore
+								.filter(({ path }) => path && !!navItems[path])
+								.map(({ path }) => {
+									// @ts-ignore
+									const { label, Icon } = navItems[path];
+									return (
+										<Link key={label} to={path as string} className="w-full">
+											<Flex
+												as="li"
+												padding="1rem"
+												width="full"
+												cursor="pointer"
+												gap="0.5rem"
+												alignItems="center"
+												justifyContent="start"
+											>
+												<Box asChild width="1.5rem" height="1.5rem">
+													<Icon />
+												</Box>
+												<Text>{label}</Text>
+											</Flex>
+										</Link>
+									);
+								})}
+							<ChakraLink
+								width="full"
+								href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
 								target="_blank"
 								rel="noopener noreferrer"
-								className="w-full"
 							>
-								<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-									<RiDiscordLine size={32} />
+								<Flex
+									padding="1rem"
+									alignItems="center"
+									justifyContent="start"
+									gap="0.5rem"
+									cursor="pointer"
+								>
+									<RiDiscordLine size="1.5rem" />
 									Discord Support
-								</li>
-							</a>
-						</ul>
+								</Flex>
+							</ChakraLink>
+						</Flex>
 						{user && (
-							<button
-								className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full flex items-center justify-start gap-2 "
-								type="button"
-								onClick={logout}
-							>
-								<FiLogOut size={32} />
-								<span className="hidden md:flex">Sign out</span>
-							</button>
+							<Button type="button" onClick={logout}>
+								<FiLogOut size="1.5rem" />
+								<Text>Sign out</Text>
+							</Button>
 						)}
-					</aside>
-				</nav>
+					</Flex>
+				</Flex>
 			)}
 		</>
 	);
