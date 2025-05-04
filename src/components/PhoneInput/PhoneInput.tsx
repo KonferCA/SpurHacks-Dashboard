@@ -2,14 +2,21 @@ import { countryCodes } from "@/data/countryPhoneCodes";
 import { type FC, useEffect, useState } from "react";
 import { Select } from "@/components/Select/Select";
 import { TextInput } from "@/components/TextInput/TextInput";
-import { GridItem, SimpleGrid } from "@chakra-ui/react";
+import { Fieldset, GridItem, SimpleGrid } from "@chakra-ui/react";
 
 export interface PhoneInputProps {
 	onChange: (phone: string) => void; // concat the country code + phone number
 	required?: boolean;
+	error?: string;
+	description?: string;
 }
 
-export const PhoneInput: FC<PhoneInputProps> = ({ onChange, required }) => {
+export const PhoneInput: FC<PhoneInputProps> = ({
+	onChange,
+	required,
+	error,
+	description,
+}) => {
 	const [country, setCountry] = useState("Canada (+1)");
 	const [phone, setPhone] = useState("");
 
@@ -40,24 +47,28 @@ export const PhoneInput: FC<PhoneInputProps> = ({ onChange, required }) => {
 	}, [country, phone, onChange]);
 
 	return (
-		<SimpleGrid columns={12} gap={4}>
-			<GridItem colSpan={3}>
-				<Select
-					label="Country Code"
-					required={required}
-					options={countryCodes}
-					onChange={(v) => handleChange(true, v[0] ?? countryCodes[0])}
-				/>
-			</GridItem>
-			<GridItem colSpan={9}>
-				<TextInput
-					required={required}
-					value={phone}
-					onChange={(e) => handleChange(false, e.target.value)}
-					placeholder="999-999-9999"
-					label="Phone Number"
-				/>
-			</GridItem>
-		</SimpleGrid>
+		<Fieldset.Root invalid={!!error}>
+			<SimpleGrid columns={12} gap={4}>
+				<GridItem colSpan={3}>
+					<Select
+						label="Country Code"
+						required={required}
+						options={countryCodes}
+						onChange={(v) => handleChange(true, v[0] ?? countryCodes[0])}
+					/>
+				</GridItem>
+				<GridItem colSpan={9}>
+					<TextInput
+						required={required}
+						value={phone}
+						onChange={(e) => handleChange(false, e.target.value)}
+						placeholder="999-999-9999"
+						label="Phone Number"
+					/>
+				</GridItem>
+			</SimpleGrid>
+			<Fieldset.HelperText>{description}</Fieldset.HelperText>
+			<Fieldset.ErrorText>{error}</Fieldset.ErrorText>
+		</Fieldset.Root>
 	);
 };
