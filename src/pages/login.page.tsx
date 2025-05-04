@@ -2,16 +2,36 @@ import { useAuth, useRouteDefinitions } from "@/providers";
 import type { ProviderName } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { AppleLogo, GithubLogo, GoogleLogo } from "@assets";
-import { Button } from "@chakra-ui/react";
-import { TextInput } from "@components";
+import SpurhacksLogo from "@/assets/spurhacks-full-logo-white.svg";
+import knotsSvg from "@/assets/knots.svg";
+import {
+	Box,
+	Button,
+	Flex,
+	Grid,
+	GridItem,
+	Heading,
+	Icon,
+	Image,
+	Input,
+	InputGroup,
+	Link,
+	Stack,
+	Text,
+	Separator,
+	} from "@chakra-ui/react";
 import { type FormEventHandler, useState } from "react";
 import { flushSync } from "react-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
+import { Field } from "@/components/ui/field";
 
 // email validation with zod, double guard just in case someone changes the input type in html
 const emailParser = z.string().email();
 
+// Restore the full list of auth providers
 const authProviders: { name: ProviderName; logo: string }[] = [
 	{ name: "github", logo: GithubLogo },
 	{ name: "google", logo: GoogleLogo },
@@ -30,6 +50,9 @@ export const LoginPage = () => {
 
 	// control for password reset form
 	const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
+	// state for password visibility toggle
+	const [showPassword, setShowPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 	// custom password err msg, can also be done for email but it shouldn't really need any msgs.
 	const [passwordErrMsg, setPasswordErrMsg] = useState("");
@@ -62,10 +85,8 @@ export const LoginPage = () => {
 			setIsInvalidEmail(true);
 			return;
 		}
-		if (isInvalidEmail) {
-			// upon revalidation, if success, reset to normal styles
-			setIsInvalidEmail(false);
-		}
+		// reset error state if validation passes
+		setIsInvalidEmail(false);
 
 		// only check for matching password when creating a new account
 		if (!isLogin) {
@@ -86,45 +107,72 @@ export const LoginPage = () => {
 				setPasswordErrMsg("Password must be longer than 8 characters!");
 				return;
 			}
-		} else if (isInvalidPassword) {
-			// if is not a new account, but we have set invalid styles then reset to normal styles
+			// reset error state if validation passes
 			setIsInvalidPassword(false);
+			setPasswordErrMsg("");
+		} else {
+			// reset password error state if switching back to login
+			setIsInvalidPassword(false);
+			setPasswordErrMsg("");
 		}
 
 		if (isLogin) {
 			if (showResetPasswordForm) {
-				await resetPassword(email);
-				setShowResetPasswordForm(false);
+				try {
+					await resetPassword(email);
+					setShowResetPasswordForm(false);
+				} catch (error) {
+					console.error("Password reset failed:", error);
+					setIsInvalidEmail(true); // indicate error on email field maybe?
+				}
 				return;
 			}
-			await login(email, password);
+			try {
+				await login(email, password);
+				// navigation handled by the redirect logic below
+			} catch (error) {
+				console.error("Login failed:", error);
+				setIsInvalidPassword(true); // mark password as invalid on login failure
+				setPasswordErrMsg("Invalid email or password."); // provide generic error
+			}
 		} else {
-			await createAccount(email, password);
-			flushSync(() => {
-				setIsLogin(true);
-				setPassword("");
-				setConfirmPass("");
-			});
+			try {
+				await createAccount(email, password);
+				flushSync(() => {
+					setIsLogin(true);
+					setPassword("");
+					setConfirmPass("");
+				});
+			} catch (error) {
+				console.error("Account creation failed:", error);
+				// check error type, maybe email already exists?
+				setIsInvalidEmail(true); // or set specific error message
+			}
 		}
 	};
 
 	const toggleForm = () => {
 		setConfirmPass("");
 		setPassword("");
+		setEmail(""); // clear email too when switching form
 		setIsLogin(!isLogin);
+		// reset all error states
+		setIsInvalidEmail(false);
+		setIsInvalidPassword(false);
+		setPasswordErrMsg("");
+		setShowResetPasswordForm(false); // ensure reset form is hidden when toggling
 	};
 
 	const toggleResetPassword = () => {
 		setShowResetPasswordForm(!showResetPasswordForm);
-		setIsLogin(true);
+		// don't necessarily set isLogin here, depends on desired flow
+		// reset fields and errors when toggling reset form
+		setEmail(""); // also clear email when toggling reset
 		setPassword("");
 		setConfirmPass("");
-	};
-
-	const handleReset: FormEventHandler = (e) => {
-		e.preventDefault();
-		resetPassword(email);
-		toggleResetPassword();
+		setIsInvalidEmail(false);
+		setIsInvalidPassword(false);
+		setPasswordErrMsg("");
 	};
 
 	// leverage access to current user to decide whether we need to proceed rendering page
@@ -149,169 +197,285 @@ export const LoginPage = () => {
 	}
 
 	return (
-		<div className="bg-gradient-to-b from-[#0F1922] via-[#1A2834] to-[#253545] font-medium text-white">
-			<div className="py-4 flex justify-center items-center min-h-screen">
-				<div className="mx-auto max-w-2xl px-4 sm:px-6 md:px-8">
-					<div>
-						<h1 className="text-center sm:text-left text-2xl sm:text-4xl text-white font-body font-bold">
-							{showResetPasswordForm
-								? "Reset Password"
-								: isLogin
-									? "Log into your account"
-									: "Create your account"}
-						</h1>
-						{!showResetPasswordForm ? (
-							<p className="text-white mt-2">
-								Join hundreds of students across Canada in a 36 hour period of
-								exploration, creativity, and learning!
-							</p>
-						) : null}
-					</div>
-					<div className="h-8" />
-					<div>
-						{!showResetPasswordForm && (
-							<>
-								<div className="w-full">
-									<form
-										onSubmit={handlerSubmit}
-										className="mt-6 space-y-6"
-										aria-label="Authentication form"
-									>
-										<TextInput
-											label="Email"
-											id="email"
-											type="email"
-											placeholder="awesome@hawkhack.ca"
-											className="py-4 px-5 rounded-lg text-white bg-white/20"
-											value={email}
-											invalid={isInvalidEmail}
-											description={isInvalidEmail ? "Invalid email!" : ""}
-											onChange={({ target: { value } }) => setEmail(value)}
-											required
-										/>
-										<TextInput
-											label="Password"
+		<Grid
+			templateColumns={{ base: "1fr", md: "1fr 1fr" }}
+			minH="100vh"
+			style={{
+                background: `radial-gradient(
+                    circle at top left,
+                    #000000 0%,
+                    #191C26 30%,
+                    #26252F 52%,
+                    #332D38 65%,
+                    #4D3E4A 78%,
+                    #6B5C6D 90%,
+                    #897B90 99%,
+                    #C5B8D6 120%
+                )`,
+            }}
+			color="white"
+		>
+			<GridItem
+				w="full"
+				display="flex"
+				alignItems="center"
+				justifyContent="center"
+				py={{ base: 12, md: 16 }}
+				px={{ base: 4, sm: 6, md: 8 }}
+			>
+				<Box maxW="md" w="full">
+					{/* spurhacks logo placeholder*/}
+					<Image src={SpurhacksLogo} alt="SpurHacks Logo" h={10} mb={8} />
+
+					{/* heading */}
+					<Heading as="h1" size="xl" fontWeight="bold" mb={2}>
+						{showResetPasswordForm
+							? "Reset Password"
+							: isLogin
+								? "Log into your account"
+								: "Create your account"}
+					</Heading>
+
+					{!showResetPasswordForm && (
+						<Text color="gray.400" mb={8}>
+							Join thousands of hackers across Canada in a 36 hour period of
+							exploration, creativity, and learning!
+						</Text>
+					)}
+
+					<form onSubmit={handlerSubmit}>
+						<Stack gap={5}>
+							<Field
+								label="Email"
+								invalid={isInvalidEmail}
+								required
+								errorText={isInvalidEmail ? "Invalid email address." : undefined}
+							>
+								<Input
+									id="email"
+									type="email"
+									placeholder="example@email.com"
+									value={email}
+									onChange={({ target: { value } }) => setEmail(value)}
+									bg="whiteAlpha.200"
+									borderColor="transparent"
+									borderRadius="full"
+									_placeholder={{ color: "gray.500" }}
+									size="lg"
+								/>
+							</Field>
+
+							{!showResetPasswordForm && (
+								<Field
+									label="Password"
+									invalid={isInvalidPassword}
+									required
+									errorText={
+										isInvalidPassword ? passwordErrMsg : undefined
+									}
+								>
+									<InputGroup>
+										<Input
 											id="password"
-											type="password"
-											placeholder="your very awesome and secure password"
-											className="py-4 px-5 rounded-lg text-white bg-white/20"
-											minLength={isLogin ? 0 : 8}
+											type={showPassword ? "text" : "password"}
+											placeholder="iloveinstantnoodles123"
+											minLength={isLogin ? undefined : 8}
 											value={password}
-											invalid={!isLogin && isInvalidPassword}
 											onChange={({ target: { value } }) => setPassword(value)}
-											required
+											bg="whiteAlpha.200"
+											borderColor="transparent"
+											borderRadius="full"
+											_placeholder={{ color: "gray.500" }}
+											size="lg"
 										/>
-										{!isLogin && (
-											<TextInput
-												label="Confirm Password:"
-												id="confirmPassword"
-												type="password"
-												className="py-4 px-5 rounded-lg text-white bg-white/20"
-												minLength={8}
-												value={confirmPass}
-												invalid={isInvalidPassword}
-												description={passwordErrMsg}
-												onChange={({ target: { value } }) =>
-													setConfirmPass(value)
-												}
-												required
+									</InputGroup>
+								</Field>
+							)}
+
+							{!isLogin && !showResetPasswordForm && (
+								<Field
+									label="Confirm Password"
+									invalid={isInvalidPassword}
+									required
+									errorText={
+										isInvalidPassword ? passwordErrMsg : undefined
+									}
+								>
+									<InputGroup>
+										<Input
+											id="confirmPassword"
+											type={showConfirmPassword ? "text" : "password"}
+											placeholder="re-enter your password"
+											minLength={8}
+											value={confirmPass}
+											onChange={({ target: { value } }) =>
+												setConfirmPass(value)
+											}
+											bg="whiteAlpha.200"
+											borderColor="transparent"
+											borderRadius="full"
+											_placeholder={{ color: "gray.500" }}
+											size="lg"
+										/>
+									</InputGroup>
+								</Field>
+							)}
+
+							{isLogin && !showResetPasswordForm && (
+								<Flex justify="flex-end">
+									<Link
+										onClick={toggleResetPassword}
+										fontSize="sm"
+										color="gray.400"
+										_hover={{ color: "white", textDecoration: "underline" }}
+									>
+										Forgot Password?
+									</Link>
+								</Flex>
+							)}
+
+							<Button
+								type="submit"
+								bg="orange.400"
+								color="gray.900"
+								_hover={{ bg: "orange.500" }}
+								_active={{ bg: "orange.600" }}
+								size="lg"
+								fontSize="md"
+								fontWeight="bold"
+								borderRadius="full"
+								w="full"
+							>
+								{showResetPasswordForm
+									? "Send Reset Link"
+									: isLogin
+										? "Log In"
+										: "Sign Up"}
+							</Button>
+						</Stack>
+					</form>
+
+					{!showResetPasswordForm && (
+						<Flex align="center" my={6}>
+							<Box
+								h="1px"
+								bg="gray.600"
+								flexGrow={1}
+							/> 
+							<Text px={4} flexShrink={0} color="gray.400" fontSize="sm">
+								OR
+							</Text>
+							<Box
+								h="1px"
+								bg="gray.600"
+								flexGrow={1}
+							/>
+						</Flex>
+					)}
+
+					{!showResetPasswordForm && (
+						<Stack gap={4}>
+							{authProviders.map((provider) => (
+								<Button
+									key={provider.name}
+									onClick={async () => {
+										try {
+											await loginWithProvider(provider.name);
+										} catch (error) {
+											console.error(
+												`${provider.name} login failed:`,
+												error,
+											);
+										}
+									}}
+									variant="outline"
+									colorScheme="gray"
+									borderColor="whiteAlpha.400"
+									color="white"
+									_hover={{ bg: "whiteAlpha.100" }}
+									_active={{ bg: "whiteAlpha.200" }}
+									size="lg"
+									fontSize="md"
+									fontWeight="medium"
+									borderRadius="full"
+									w="full"
+								>
+									<Flex align="center" justify="center" gap={2}>
+										{provider.name === "google" ? (
+											<Icon as={FcGoogle} boxSize={5} />
+										) : (
+											<Image
+												src={provider.logo}
+												alt={`${provider.name} logo`}
+												boxSize={5}
 											/>
 										)}
-										{isLogin && (
-											<div className="flex justify-end">
-												<button
-													className="text-white font-bold underline hover:text-tbrand-hover"
-													type="button"
-													onClick={toggleResetPassword}
-												>
-													Forgot Password
-												</button>
-											</div>
-										)}
-										{/* just a separator line */}
-										<div className="bg-transparent" />
-										<Button
-											type="submit"
-											className="rounded-lg w-full bg-gradient-to-b from-tbrand to-tbrand-hover"
-										>
-											{isLogin ? "Log In" : "Sign Up"}
-										</Button>
-									</form>
-									<p className="mt-6 text-center text-white font-medium">
-										<span>
-											{isLogin
-												? "Don't have an account? "
-												: "Already have an account? "}
-										</span>
-										<button
-											className="text-white font-bold underline hover:text-tbrand-hover"
-											type="button"
-											onClick={toggleForm}
-										>
-											{isLogin ? "Sign Up" : "Log In"}
-										</button>
-									</p>
-								</div>
-								{/* just a separator line */}
-								<div className="h-0.5 bg-transparent my-6" />
-								<div>
-									<div className="w-full space-y-4">
-										{authProviders.map((provider) => (
-											<Button
-												key={provider.name}
-												onClick={async () => {
-													await loginWithProvider(provider.name);
-													navigate(paths.verifyEmail);
-												}}
-												className="rounded-lg w-full bg-white capitalize text-white flex justify-center items-center gap-4 hover:bg-gray-100 active:bg-gray-200"
-											>
-												<img
-													alt={`${provider.name} logo`}
-													src={provider.logo}
-													aria-hidden="true"
-													className="w-8 h-8"
-												/>
-												<span className="text-black">{`continue with ${provider.name}`}</span>
-											</Button>
-										))}
-									</div>
-								</div>
+										<Text as="span">
+											{`Log In with ${provider.name.charAt(0).toUpperCase() + provider.name.slice(1)}`}
+										</Text>
+									</Flex>
+								</Button>
+							))}
+						</Stack>
+					)}
+
+					<Text mt={8} textAlign="center" fontSize="sm" color="gray.400">
+						{showResetPasswordForm ? (
+							<Link
+								onClick={toggleResetPassword}
+								fontWeight="medium"
+								color="white"
+								_hover={{ textDecoration: "underline" }}
+							>
+								Back to Log In
+							</Link>
+						) : isLogin ? (
+							<>
+								Don't have an account?{" "}
+								<Link
+									onClick={toggleForm}
+									fontWeight="medium"
+									color="white"
+									_hover={{ textDecoration: "underline" }}
+								>
+									Sign up
+								</Link>
+							</>
+						) : (
+							<>
+								Already have an account?{" "}
+								<Link
+									onClick={toggleForm}
+									fontWeight="medium"
+									color="white"
+									_hover={{ textDecoration: "underline" }}
+								>
+									Log In
+								</Link>
 							</>
 						)}
-						{showResetPasswordForm && (
-							<div className="w-full">
-								<form onSubmit={handleReset}>
-									<TextInput
-										label="Email"
-										id="resetEmail"
-										type="email"
-										placeholder="awesome@hawkhack.ca"
-										className="py-4 px-5 rounded-lg text-white bg-white/20"
-										value={email}
-										invalid={isInvalidEmail}
-										description={isInvalidEmail ? "Invalid email!" : ""}
-										onChange={({ target: { value } }) => setEmail(value)}
-										required
-									/>
-									<Button
-										type="submit"
-										className="rounded-lg w-full bg-gradient-to-b from-tbrand to-tbrand-hover mt-2 my-8"
-									>
-										Reset Password
-									</Button>
-								</form>
-								<button
-									className="text-white font-bold underline hover:text-tbrand-hover"
-									type="button"
-									onClick={toggleResetPassword}
-								>
-									Go Back
-								</button>
-							</div>
-						)}
-					</div>
-				</div>
-			</div>
-		</div>
+					</Text>
+				</Box>
+			</GridItem>
+
+			<GridItem
+				display={{ base: "none", md: "flex" }}
+				alignItems="stretch"
+				position="relative"
+				overflow="hidden"
+				h="full"
+			>
+				<Image
+					src={knotsSvg}
+					alt="Abstract decorative knots graphic"
+					h="full"
+					w="auto"
+					maxW="none"
+					maxH="100vh"
+					objectFit="contain"
+					ml="auto"
+				/>
+			</GridItem>
+		</Grid>
 	);
 };
