@@ -1,6 +1,6 @@
 import type { ComponentProps } from "@/components/types";
 import { useHeaderInfo } from "@/providers";
-import { Box } from "@chakra-ui/react";
+import { Box, Heading, Text, Link as ChakraLink } from "@chakra-ui/react";
 import { Navbar } from "@components";
 import type { FC } from "react";
 
@@ -22,29 +22,38 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 			<Navbar />
 
 			{/* right hand side */}
-			<div className="md:pl-72">
-				<div className="md:sticky top-0 z-10 shrink-0 px-6 md:py-8 py-2">
-					<h1 className="text-xl md:text-4xl text-gray-800 font-bold font-sans">
-						{headerInfo.title}
-					</h1>
-					<p className="text-md md:text-xl text-gray-500 md:mt-4 font-sans whitespace-pre-line">
+			<Box paddingLeft={{ md: "18rem" }}>
+				<Box
+					position="fixed"
+					top={0}
+					zIndex={10}
+					flexShrink={0}
+					paddingX={6}
+					paddingY={{ base: 2, md: 8 }}
+				>
+					<Heading size={{ base: "xl", md: "4xl" }}>{headerInfo.title}</Heading>
+					<Text
+						fontSize={{ base: "md", md: "xl" }}
+						marginTop={{ base: "0", md: "1rem" }}
+					>
 						{headerInfo.subTitle}
-					</p>
-					<p className="text-gray-800 mt-2">
+					</Text>
+					<Text className="text-gray-800 mt-2">
 						Having trouble? Get help in our{" "}
-						<a
+						<ChakraLink
 							href="https://discord.com/invite/GxwvFEn9TB"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="text-sky-600 font-bold underline"
+							color="skyblue"
+							textDecor="underline"
 						>
 							Discord
-						</a>{" "}
+						</ChakraLink>{" "}
 						support channel.
-					</p>
-				</div>
-				<div className="px-6 py-6">{children}</div>
-			</div>
+					</Text>
+				</Box>
+				<Box padding={6}>{children}</Box>
+			</Box>
 		</Box>
 	);
 };
