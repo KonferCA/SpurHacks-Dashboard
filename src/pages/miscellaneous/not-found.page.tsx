@@ -14,6 +14,8 @@ export const NotFoundPage = () => {
 	return (
 		<Box
 			minH="100vh"
+			position="relative" // <-- important so the image is positioned relative to this
+			overflow="hidden"
 			style={{
 				background: `radial-gradient(
                     circle at top left,
@@ -28,6 +30,16 @@ export const NotFoundPage = () => {
                 )`,
 			}}
 		>
+			<Image
+				src={Knots}
+				position="absolute"
+				top={0}
+				left={0}
+				w="100vw"
+				h="100vh"
+				objectFit="cover"
+				zIndex={0}
+			/>
 			<Flex
 				direction="column"
 				align="center"
@@ -50,9 +62,10 @@ export const NotFoundPage = () => {
 				</Text>
 				<Link textDecoration="none" href={paths.home}>
 					<Button
-						bgGradient="linear(to-r, #2B6469, #00CEDB)"
+						bg="#FFA75F"
 						_hover={{
-							bgGradient: "linear(to-r, #27695E, #00B2AA)",
+							bg: "#FFAF6E",
+							opacity: 0.9,
 						}}
 						color="black"
 						fontWeight="bold"
