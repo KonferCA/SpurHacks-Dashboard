@@ -1,6 +1,12 @@
 import type { ComponentProps } from "@/components/types";
 import { type FC, useEffect, useMemo, useRef, useState } from "react";
-import { BrowserRouter, type RouteObject, useRoutes } from "react-router-dom";
+import {
+	createBrowserRouter,
+	RouterProvider,
+	Outlet,
+	createRoutesFromElements,
+	Route,
+} from "react-router-dom";
 
 import { LoadingAnimation } from "@/components";
 import { useApplications } from "@/hooks/use-applications";
@@ -46,74 +52,68 @@ import {
 } from "./accessChecks";
 import { RoutesContext } from "./context";
 import { paths } from "./data";
-import { useRouter } from "./hooks";
 import type { RouteConfig } from "./types";
 
 /**
- * Converts RouteConfig to React Router's RouteObject with AccessControl wrapper
- * This handles applying access control to routes that require it
+ * Creates a wrapper component for routes with access control
  */
-const convertToRouteObjects = (routeConfigs: RouteConfig[]): RouteObject[] => {
+const createAccessControlWrapper = (config: RouteConfig) => {
+	const AccessControlWrapper = () => (
+		<AccessControl
+			accessCheck={config.accessCheck}
+			fallbackRedirect={config.fallbackRedirect}
+		>
+			<Outlet />
+		</AccessControl>
+	);
+
+	return AccessControlWrapper;
+};
+
+/**
+ * Converts RouteConfig to React Router's Route elements for createRoutesFromElements
+ */
+const convertToRouteElements = (routeConfigs: RouteConfig[]) => {
 	return routeConfigs.map((config) => {
-		// If there's an access check, wrap the element with AccessControl
+		// If there's an access check, create a wrapper component with AccessControl
 		if (config.accessCheck) {
-			return {
-				path: config.path,
-				element: (
-					<AccessControl
-						accessCheck={config.accessCheck}
-						fallbackRedirect={config.fallbackRedirect}
-					/>
-				),
-				children: [
-					{
-						path: "",
-						element: config.element,
-						children: config.children
-							? convertToRouteObjects(config.children)
-							: undefined,
-					},
-				],
-			};
+			const AccessControlWrapper = createAccessControlWrapper(config);
+
+			return (
+				<Route
+					key={config.path}
+					path={config.path}
+					element={<AccessControlWrapper />}
+				>
+					<Route index element={config.element} />
+					{config.children && convertToRouteElements(config.children)}
+				</Route>
+			);
 		}
 
-		// No access check, return the route object directly
-		return {
-			path: config.path,
-			element: config.element,
-			children: config.children
-				? convertToRouteObjects(config.children)
-				: undefined,
-		};
+		// No access check, return the route element directly
+		return (
+			<Route key={config.path} path={config.path} element={config.element}>
+				{config.children && convertToRouteElements(config.children)}
+			</Route>
+		);
 	});
 };
 
 /**
- * Inner router component that uses React Router's useRoutes hook
- * Handles loading state while routes are being prepared
+ * Router component that creates data router from route configurations
  */
-const InnerRouter = () => {
-	const { routes, loadingRoutes } = useRouter();
-	const routeObjs = useMemo(() => {
-		// Convert to React Router compatible objects
-		return convertToRouteObjects(routes);
-	}, [routes]);
-	const availableRoutes = useRoutes(routeObjs);
+const Router = ({ routes }: { routes: RouteConfig[] }) => {
+	// Convert route configs to route elements
+	const routeElements = useMemo(() => convertToRouteElements(routes), [routes]);
 
-	if (loadingRoutes) return <LoadingAnimation />;
-
-	return availableRoutes;
-};
-
-/**
- * Router component that wraps InnerRouter with BrowserRouter
- */
-const Router = () => {
-	return (
-		<BrowserRouter>
-			<InnerRouter />
-		</BrowserRouter>
+	// Create the data router using createRoutesFromElements
+	const router = useMemo(
+		() => createBrowserRouter(createRoutesFromElements(<>{routeElements}</>)),
+		[routeElements],
 	);
+
+	return <RouterProvider router={router} />;
 };
 
 /**
@@ -297,7 +297,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				loadingRoutes,
 			}}
 		>
-			<Router />
+			{loadingRoutes ? <LoadingAnimation /> : <Router routes={routes} />}
 		</RoutesContext.Provider>
 	);
 };

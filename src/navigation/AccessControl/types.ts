@@ -1,5 +1,6 @@
 import type { ApplicationsHookValue } from "@/hooks/use-applications";
 import type { UserWithClaims } from "@/providers";
+import { ReactNode } from "react";
 
 /**
  * Context object provided to access control functions
@@ -24,4 +25,5 @@ export type AccessControlFn = (context: AccessControlContext) => boolean;
 export interface AccessControlProps {
 	accessCheck?: AccessControlFn | AccessControlFn[];
 	fallbackRedirect?: string;
+	children?: ReactNode;
 }

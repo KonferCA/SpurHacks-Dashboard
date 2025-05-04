@@ -1,7 +1,7 @@
 import { useApplications } from "@/hooks/use-applications";
 import { useUser } from "@/providers";
 import { type FC, useMemo } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Redirect } from "../redirect";
 import type { AccessControlContext, AccessControlProps } from "./types";
 
@@ -17,6 +17,7 @@ import type { AccessControlContext, AccessControlProps } from "./types";
 export const AccessControl: FC<AccessControlProps> = ({
 	accessCheck,
 	fallbackRedirect = "/not-found",
+	children,
 }) => {
 	// Get current user and application data from context
 	const { user } = useUser();
@@ -65,5 +66,5 @@ export const AccessControl: FC<AccessControlProps> = ({
 		);
 	}
 
-	return <Outlet />;
+	return children;
 };
