@@ -234,6 +234,9 @@ export const Navbar = () => {
 					width="18rem"
 					padding="1rem"
 					direction="column"
+					borderRightColor="#1F1E2E"
+					borderRightStyle="solid"
+					borderRightWidth={1}
 				>
 					<Flex alignItems="center" justifyContent="center" padding="1rem">
 						<Link to={paths.home}>

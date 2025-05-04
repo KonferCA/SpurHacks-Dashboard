@@ -18,24 +18,24 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 	}
 
 	return (
-		<Box bg="#13151C">
+		<Box>
 			<Navbar />
 
 			{/* right hand side */}
 			<Box paddingLeft={{ md: "18rem" }}>
 				<Box
-					position="fixed"
+					position="sticky"
 					top={0}
 					zIndex={10}
-					flexShrink={0}
-					paddingX={6}
-					paddingY={{ base: 2, md: 8 }}
+					paddingX="1.5rem"
+					paddingY={{ base: "0.5rem", md: "2rem" }}
+					width="full"
+					borderBottomWidth={1}
+					borderBottomColor="#1F1E2E"
+					borderBottomStyle="solid"
 				>
-					<Heading size={{ base: "xl", md: "4xl" }}>{headerInfo.title}</Heading>
-					<Text
-						fontSize={{ base: "md", md: "xl" }}
-						marginTop={{ base: "0", md: "1rem" }}
-					>
+					<Heading size={{ base: "lg", md: "3xl" }}>{headerInfo.title}</Heading>
+					<Text marginTop={{ base: "0", md: "1rem" }}>
 						{headerInfo.subTitle}
 					</Text>
 					<Text className="text-gray-800 mt-2">
@@ -52,7 +52,7 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 						support channel.
 					</Text>
 				</Box>
-				<Box padding={6}>{children}</Box>
+				<Box padding="1.5rem">{children}</Box>
 			</Box>
 		</Box>
 	);
