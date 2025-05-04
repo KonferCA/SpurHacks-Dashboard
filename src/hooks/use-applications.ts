@@ -3,7 +3,7 @@ import { useUser } from "@/providers";
 import { getUserApplications } from "@/services/firebase/application";
 import { getDeadlines } from "@/services/firebase/deadlines";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { isAfter, isBefore, parseISO } from "date-fns";
+import { format, isAfter, isBefore, parseISO } from "date-fns";
 import { useCallback, useMemo } from "react";
 
 export type ApplicationsHookValue = {
@@ -47,7 +47,10 @@ export const useApplications = () => {
 						beforeStart: false,
 						afterClose: false,
 						inRange: false,
+						startDateStr: "",
+						closeDateStr: "",
 					};
+
 				const today = new Date();
 				const startDate = parseISO(deadlines.appStartDate);
 				const closeDate = parseISO(deadlines.appCloseDate);
@@ -58,6 +61,8 @@ export const useApplications = () => {
 					beforeStart: before,
 					afterClose: after,
 					inRange: between,
+					startDateStr: format(startDate, "MMM d, yyyy"),
+					closeDateStr: format(closeDate, "MMM d, yyyy"),
 				};
 			} catch (error) {
 				console.error(error);
