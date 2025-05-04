@@ -30,9 +30,13 @@ export const paths = {
  * Used for displaying consistent header information
  */
 export const titles: Record<string, HeaderInfo> = {
+	[paths.root]: {
+		title: "Home",
+		subTitle: "The dashboard for all your needs.",
+	},
 	[paths.home]: {
 		title: "Home",
-		subTitle: "Welcome to the home page",
+		subTitle: "The dashboard for all your needs.",
 	},
 	[paths.schedule]: {
 		title: "Schedule",
