@@ -24,7 +24,6 @@ export const defaultApplication: ApplicationData = {
 	participatingAs: "Hacker",
 	applicantId: "",
 	agreedToMLHCoC: false,
-	agreedToWLUCoC: false,
 	agreedToHawkHacksCoC: false,
 	agreedToReceiveEmailsFromMLH: false,
 	agreedToMLHToCAndPrivacyPolicy: false,

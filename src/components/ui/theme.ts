@@ -6,6 +6,8 @@ const config = defineConfig({
 			colors: {
 				brand: {
 					primary: { value: "#FFB65F" },
+					subtle: { value: "#666484" },
+					bg: { value: "#13151c" },
 				},
 				offwhite: {
 					primary: { value: "#DEEBFF" },

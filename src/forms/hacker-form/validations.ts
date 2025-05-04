@@ -108,7 +108,6 @@ export const validations: {
 		),
 	applicantId: (v) => formatResult(z.string().safeParse(v)),
 	agreedToHawkHacksCoC: (v) => formatResult(z.boolean().safeParse(v)),
-	agreedToWLUCoC: (v) => formatResult(z.boolean().safeParse(v)),
 	agreedToMLHCoC: (v) => formatResult(z.boolean().safeParse(v)),
 	agreedToMLHToCAndPrivacyPolicy: (v) => formatResult(z.boolean().safeParse(v)),
 	agreedToReceiveEmailsFromMLH: (v) => formatResult(z.boolean().safeParse(v)),

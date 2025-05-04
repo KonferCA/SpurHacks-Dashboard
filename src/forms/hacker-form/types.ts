@@ -23,7 +23,6 @@ export interface ApplicationData {
 	participatingAs: "Hacker";
 	applicantId: string;
 	agreedToHawkHacksCoC: boolean;
-	agreedToWLUCoC: boolean;
 	agreedToMLHCoC: boolean;
 	agreedToMLHToCAndPrivacyPolicy: boolean;
 	agreedToReceiveEmailsFromMLH: boolean;

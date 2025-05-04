@@ -1,5 +1,4 @@
 import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
-import { Modal } from "@/components/Modal";
 import { TextArea } from "@/components/TextArea/TextArea";
 import { defaultApplication } from "@/forms/hacker-form/defaults";
 import type {
@@ -32,14 +31,20 @@ import { paths } from "@/providers/RoutesProvider/data";
 import { analytics } from "@/services/firebase";
 import { submitApplication } from "@/services/firebase/application";
 import { uploadGeneralResume } from "@/services/firebase/files";
-import { Button } from "@chakra-ui/react";
 import {
-	LoadingAnimation,
-	PageWrapper,
-	Select,
+	Box,
+	Button,
+	Checkbox,
+	Flex,
+	GridItem,
+	Heading,
+	SimpleGrid,
 	Steps,
-	TextInput,
-} from "@components";
+	Text,
+	Link as ChakraLink,
+	Field,
+} from "@chakra-ui/react";
+import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import { logEvent } from "firebase/analytics";
 import {
 	type FormEvent,
@@ -94,7 +99,6 @@ function getLogEventName(component: string) {
 }
 
 export const ApplyPage = () => {
-	// TODO: save steps in firebase to save progress
 	const [steps, setSteps] = useState<Step[]>([
 		{ position: 0, name: "Basic profile", status: "current" },
 		{ position: 1, name: "Hacker questions", status: "upcoming" },
@@ -274,9 +278,7 @@ export const ApplyPage = () => {
 		const allRequiredChecked =
 			// don't have the CoC for HH yet so we don't have to make it required for now
 			// application.agreedToHawkHacksCoC &&
-			application.agreedToWLUCoC &&
-			application.agreedToMLHCoC &&
-			application.agreedToMLHToCAndPrivacyPolicy;
+			application.agreedToMLHCoC && application.agreedToMLHToCAndPrivacyPolicy;
 
 		if (!allRequiredChecked) {
 			setErrors(["Please read and check all the required boxes to proceed."]);
@@ -355,137 +357,150 @@ export const ApplyPage = () => {
 	return (
 		<PageWrapper>
 			<div>
-				<nav aria-label="Application progress">
-					<Steps steps={steps} onClick={jumpTo} />
-				</nav>
-				{errors.length > 0 ? (
-					<div className="my-8">{/* <ErrorAlert errors={errors} /> */}</div>
-				) : null}
-				<h3 className="text-center my-8">
-					All fields with an <span className="font-bold">asterisk</span> are{" "}
-					<span className="font-bold">required</span>.
-				</h3>
+				<Box as="nav" aria-label="Application progress" marginBottom="2rem">
+					<Steps.Root
+						step={activeStep}
+						defaultStep={0}
+						count={steps.length}
+						onStepChange={(e) => jumpTo(e.step)}
+					>
+						<Steps.List>
+							{steps.map((step, index) => (
+								<Steps.Item key={step.position} index={index} title={step.name}>
+									<Steps.Trigger>
+										<Steps.Indicator />
+										<Steps.Title>{step.name}</Steps.Title>
+									</Steps.Trigger>
+									<Steps.Separator />
+								</Steps.Item>
+							))}
+						</Steps.List>
+					</Steps.Root>
+				</Box>
+				<Heading size="md" textAlign="center" marginY="2rem">
+					All fields with an asterisk{"(*)"} are required.
+				</Heading>
 				<form onSubmit={submitApp} className="mt-12">
 					{/* basic profile */}
-					<div
-						className={`mx-auto lg:grid max-w-4xl space-y-8 lg:gap-x-6 lg:gap-y-8 lg:space-y-0 lg:grid-cols-6${
-							activeStep !== 0 ? " hidden lg:hidden" : ""
-						}`}
-					>
-						<div className="sm:col-span-3">
-							<TextInput
-								label="What is your first name?"
-								type="text"
-								id="firstName"
-								autoComplete="given-name"
-								placeholder="Steven"
-								value={application.firstName}
-								onChange={(e) => handleChange("firstName", e.target.value)}
-								required
-							/>
-						</div>
+					{activeStep === 0 && (
+						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<TextInput
+									label="What is your first name?"
+									type="text"
+									id="firstName"
+									autoComplete="given-name"
+									placeholder="Steven"
+									value={application.firstName}
+									onChange={(e) => handleChange("firstName", e.target.value)}
+									required
+								/>
+							</GridItem>
 
-						<div className="sm:col-span-3">
-							<TextInput
-								label="What is your last name?"
-								type="text"
-								id="lastName"
-								autoComplete="family-name"
-								placeholder="Wu"
-								value={application.lastName}
-								onChange={(e) => handleChange("lastName", e.target.value)}
-								required
-							/>
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<TextInput
+									label="What is your last name?"
+									type="text"
+									id="lastName"
+									autoComplete="family-name"
+									placeholder="Wu"
+									value={application.lastName}
+									onChange={(e) => handleChange("lastName", e.target.value)}
+									required
+								/>
+							</GridItem>
 
-						<div className="sm:col-span-2">
-							<Select
-								label="How old are you?"
-								options={ages}
-								onChange={(opt) => handleChange("age", opt[0] ?? "")}
-								required
-							/>
-						</div>
-						<div className="sm:col-span-4">
-							<TextInput
-								label="What is your Discord username?"
-								id="discord"
-								placeholder="@username or username#1234"
-								value={application.discord}
-								onChange={(e) => handleChange("discord", e.target.value)}
-								description="Discord will be our primary form of communication."
-								required
-							/>
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 2 }}>
+								<Select
+									label="How old are you?"
+									options={ages}
+									onChange={(opt) => handleChange("age", opt[0] ?? "")}
+									required
+								/>
+							</GridItem>
 
-						<div className="sm:col-span-3">
-							<Select
-								label="Which country do you currently reside in?"
-								options={countryNames}
-								onChange={(opt) =>
-									handleChange("countryOfResidence", opt[0] ?? "")
-								}
-								required
-							/>
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 4 }}>
+								<TextInput
+									label="What is your Discord username?"
+									id="discord"
+									placeholder="@username or username#1234"
+									value={application.discord}
+									onChange={(e) => handleChange("discord", e.target.value)}
+									description="Discord will be our primary form of communication."
+									required
+								/>
+							</GridItem>
 
-						<div className="sm:col-span-3">
-							<TextInput
-								label="Which city do you live in?"
-								value={application.city}
-								onChange={(e) => handleChange("city", e.target.value)}
-								required
-							/>
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<Select
+									label="Which country do you currently reside in?"
+									options={countryNames}
+									onChange={(opt) =>
+										handleChange("countryOfResidence", opt[0] ?? "")
+									}
+									required
+								/>
+							</GridItem>
 
-						<div className="col-span-6">
-							<PhoneInput required onChange={handlePhoneChange} />
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<TextInput
+									label="Which city do you live in?"
+									value={application.city}
+									onChange={(e) => handleChange("city", e.target.value)}
+									required
+								/>
+							</GridItem>
 
-						<div className="sm:col-span-3">
-							<Select
-								label="Which school are you currently attending?"
-								options={schools}
-								onChange={(opt) => handleChange("school", opt[0] ?? "")}
-								allowCustomValue
-								required
-							/>
-							<p className="mt-2 text-sageGray">
-								If you recently graduated, pick the school you graduated from.
-							</p>
-						</div>
-						<div className="sm:col-span-3">
-							<Select
-								label="What is your current level of study?"
-								options={levelsOfStudy}
-								onChange={(opt) => handleChange("levelOfStudy", opt[0] ?? "")}
-								required
-							/>
-						</div>
+							<GridItem colSpan={6}>
+								<PhoneInput required onChange={handlePhoneChange} />
+							</GridItem>
 
-						<div className="sm:col-span-full">
-							<Select
-								multiple
-								label="What is your major/field of study?"
-								options={majorsList}
-								onChange={(opts) => handleChange("major", opts)}
-								allowCustomValue
-								required
-							/>
-						</div>
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<Select
+									label="Which school are you currently attending?"
+									options={schools}
+									onChange={(opt) => handleChange("school", opt[0] ?? "")}
+									allowCustomValue
+									required
+								/>
+								<p className="mt-2 text-sageGray">
+									If you recently graduated, pick the school you graduated from.
+								</p>
+							</GridItem>
 
-						{/* end of basic profile */}
+							<GridItem colSpan={{ base: 6, sm: 3 }}>
+								<Select
+									label="What is your current level of study?"
+									options={levelsOfStudy}
+									onChange={(opt) => handleChange("levelOfStudy", opt[0] ?? "")}
+									required
+								/>
+							</GridItem>
 
-						{/* hacker specific questions */}
-						<div
-							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-								activeStep !== 1 ? " hidden sm:hidden" : ""
-							}`}
+							<GridItem colSpan={6}>
+								<Select
+									multiple
+									label="What is your major/field of study?"
+									options={majorsList}
+									onChange={(opts) => handleChange("major", opts)}
+									allowCustomValue
+									required
+								/>
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of basic profile */}
+
+					{/* hacker specific questions */}
+					{activeStep === 1 && (
+						<SimpleGrid
+							marginX="auto"
+							columns={6}
+							display={activeStep !== 1 ? "hidden" : "grid"}
+							gapX="1.5rem"
+							gapY="2rem"
 						>
-							<div className="sm:col-span-full space-y-4">
-								<input type="hidden" name="participatingAs" value="Hacker" />
-							</div>
-							<div className="sm:col-span-full">
+							<GridItem colSpan={6}>
 								<TextArea
 									id="hacker-specific-q1"
 									label="Why do you want to participate at HawkHacks?"
@@ -500,8 +515,8 @@ export const ApplyPage = () => {
 											: ""
 									}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+							<GridItem colSpan={6}>
 								<TextArea
 									id="hacker-specific-q2"
 									label="In a few sentences, what up-and-coming or revolutionizing technology are you most excited about?"
@@ -516,17 +531,21 @@ export const ApplyPage = () => {
 											: ""
 									}
 								/>
-							</div>
-						</div>
-						{/* end of hacker specific questions */}
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of hacker specific questions */}
 
-						{/* general questions */}
-						<div
-							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-								activeStep !== 2 ? " hidden sm:hidden" : ""
-							}`}
+					{/* general questions */}
+					{activeStep === 2 && (
+						<SimpleGrid
+							marginX="auto"
+							columns={6}
+							display={activeStep !== 2 ? "hidden" : "grid"}
+							gapX="1.5rem"
+							gapY="2rem"
 						>
-							<div className="sm:col-span-full">
+							<GridItem colSpan={6}>
 								<Select
 									label="What gender do you identify as?"
 									options={genders}
@@ -534,8 +553,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opt) => handleChange("gender", opt[0] ?? "")}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									label="What are your pronouns?"
 									options={pronouns}
@@ -543,8 +563,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opts) => handleChange("pronouns", opts)}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									label="Please select any of the following that resonates with you:"
 									options={sexualityList}
@@ -552,8 +573,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opt) => handleChange("sexuality", opt[0] ?? "")}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									label="Which of the following best describes your racial or ethnic background?"
 									options={races}
@@ -561,8 +583,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opt) => handleChange("race", opt[0] ?? "")}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									multiple
 									label="Do you have any dietary restrictions?"
@@ -571,8 +594,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opts) => handleChange("diets", opts)}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									multiple
 									label="Are there any allergens you have that we should be aware of?"
@@ -581,8 +605,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opts) => handleChange("allergies", opts)}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									multiple
 									label="Which of the following fields interests you?"
@@ -591,8 +616,9 @@ export const ApplyPage = () => {
 									required={true}
 									onChange={(opts) => handleChange("interests", opts)}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									label="How many Hackathons have you attended as a participant in the past?"
 									options={hackathonExps}
@@ -601,8 +627,9 @@ export const ApplyPage = () => {
 										handleChange("hackathonExperience", opt[0] ?? "")
 									}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+
+							<GridItem colSpan={6}>
 								<Select
 									multiple
 									label="What programming languages are you the most comfortable with or passionate about?"
@@ -612,26 +639,30 @@ export const ApplyPage = () => {
 										handleChange("programmingLanguages", opts)
 									}
 								/>
-							</div>
-						</div>
-						{/* end of general questions */}
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of general questions */}
 
-						{/* final steps - agreements */}
-						<div
-							className={`mx-auto sm:grid max-w-2xl space-y-8 sm:gap-x-6 sm:gap-y-8 sm:space-y-0 sm:grid-cols-6${
-								activeStep !== 3 ? " hidden sm:hidden" : ""
-							}`}
+					{/* final steps - agreements */}
+					{activeStep === 3 && (
+						<SimpleGrid
+							marginX="auto"
+							columns={6}
+							display={activeStep !== 3 ? "hidden" : "grid"}
+							gapX="1.5rem"
+							gapY="2rem"
 						>
-							<div className="sm:col-span-full">
-								<p className="text-gray-900 font-medium">
+							<GridItem colSpan={6}>
+								<Text fontWeight="medium" color="gray.400">
 									If you would like to share your resume with our sponsors,
 									please do so now.
-								</p>
-								<p className="text-sm italic">
+								</Text>
+								<Text fontSize="sm" fontStyle="italic">
 									Sponsors will be conducting coffee chats/interviews during the
 									hackathon, or might reach out via email for career or job
 									opportunities.
-								</p>
+								</Text>
 								<FileBrowser
 									label="Resume"
 									inputId="sponsors-resume-file-input"
@@ -650,8 +681,8 @@ export const ApplyPage = () => {
 										file && setGeneralResumeFile(file[0] ?? null);
 									}}
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+							<GridItem colSpan={6}>
 								<Select
 									multiple
 									label="How did you hear about us?"
@@ -660,8 +691,8 @@ export const ApplyPage = () => {
 									allowCustomValue
 									required
 								/>
-							</div>
-							<div className="sm:col-span-full">
+							</GridItem>
+							<GridItem colSpan={6}>
 								<TextInput
 									label="How would you describe the taste of salt to someone who hasn't tasted it, and can't ever taste it?"
 									id="funsie-1"
@@ -669,112 +700,128 @@ export const ApplyPage = () => {
 									required
 									value={application.describeSalt}
 								/>
-							</div>
-							<div className="sm:col-span-full h-12" />
-							<div className="sm:col-span-full flex items-start gap-x-2">
-								<input
-									type="checkbox"
-									checked={application.agreedToWLUCoC}
-									onChange={(e) =>
-										handleChange("agreedToWLUCoC", e.target.checked)
-									}
-								/>
-								<p>
-									* I have read and agree to abide by the{" "}
-									<a
-										href="https://www.wlu.ca/about/governance/assets/resources/12.3-non-academic-student-code-of-conduct.html"
-										target="_blank"
-										rel="noopener noreferrer"
-										className="text-sky-600 underline"
+							</GridItem>
+							<GridItem colSpan={6} spaceY="1rem">
+								<Field.Root required>
+									<Checkbox.Root
+										checked={application.agreedToMLHCoC}
+										onCheckedChange={(e) =>
+											handleChange(
+												"agreedToMLHCoC",
+												typeof e.checked === "boolean" && e.checked,
+											)
+										}
 									>
-										Wilfrid Laurier University Code of Conduct
-									</a>{" "}
-									during the hackathon.
-								</p>
-							</div>
-							<div className="sm:col-span-full flex items-start gap-x-2">
-								<input
-									type="checkbox"
-									checked={application.agreedToMLHCoC}
-									onChange={(e) =>
-										handleChange("agreedToMLHCoC", e.target.checked)
-									}
-								/>
-								<p>
-									* I have read and agree to the{" "}
-									<a
-										className="text-sky-600 underline"
-										href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
+										<Checkbox.HiddenInput />
+										<Checkbox.Control />
+										<Checkbox.Label>
+											I have read and agree to the{" "}
+											<ChakraLink
+												color="skyblue"
+												textDecor="underline"
+												href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
+											>
+												MLH Code of Conduct
+											</ChakraLink>
+											.
+											<Field.RequiredIndicator />
+										</Checkbox.Label>
+									</Checkbox.Root>
+								</Field.Root>
+								<Field.Root required>
+									<Checkbox.Root
+										checked={application.agreedToMLHToCAndPrivacyPolicy}
+										onCheckedChange={(e) =>
+											handleChange(
+												"agreedToMLHToCAndPrivacyPolicy",
+												typeof e.checked === "boolean" && e.checked,
+											)
+										}
 									>
-										MLH Code of Conduct
-									</a>
-									.
-								</p>
-							</div>
-							<div className="sm:col-span-full flex items-start gap-x-2">
-								<input
-									type="checkbox"
-									checked={application.agreedToMLHToCAndPrivacyPolicy}
-									onChange={(e) =>
-										handleChange(
-											"agreedToMLHToCAndPrivacyPolicy",
-											e.target.checked,
-										)
-									}
-								/>
-								<p>
-									* I authorize you to share my application/registration
-									information with Major League Hacking for event
-									administration, ranking, and MLH administration in line with
-									the{" "}
-									<a
-										className="text-sky-600 underline"
-										href="https://mlh.io/privacy"
+										<Checkbox.HiddenInput />
+										<Checkbox.Control />
+										<Checkbox.Label>
+											<Text>
+												I authorize you to share my application/registration
+												information with Major League Hacking for event
+												administration, ranking, and MLH administration in-line
+												with the{" "}
+												<ChakraLink
+													color="skyblue"
+													textDecor="underline"
+													href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+												>
+													MLH Privacy Policy
+												</ChakraLink>
+												. I further agree to the terms of both the{" "}
+												<ChakraLink
+													color="skyblue"
+													textDecor="underline"
+													href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md"
+												>
+													MLH Contest Terms and Conditions{" "}
+												</ChakraLink>{" "}
+												and the{" "}
+												<ChakraLink
+													color="skyblue"
+													textDecor="underline"
+													href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+												>
+													MLH Privacy Policy
+												</ChakraLink>
+												.
+												<Field.RequiredIndicator />
+											</Text>
+										</Checkbox.Label>
+									</Checkbox.Root>
+								</Field.Root>
+								<Field.Root>
+									<Checkbox.Root
+										checked={application.agreedToReceiveEmailsFromMLH}
+										onCheckedChange={(e) =>
+											handleChange(
+												"agreedToReceiveEmailsFromMLH",
+												typeof e.checked === "boolean" && e.checked,
+											)
+										}
 									>
-										MLH Privacy Policy
-									</a>
-									. I further agree to the terms of both the{" "}
-									<a
-										className="text-sky-600 underline"
-										href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md)and"
-									>
-										MLH Contest Terms and Conditions
-									</a>
-									.
-								</p>
-							</div>
-							<div className="sm:col-span-full flex items-start gap-x-2">
-								<input
-									type="checkbox"
-									checked={application.agreedToReceiveEmailsFromMLH}
-									onChange={(e) =>
-										handleChange(
-											"agreedToReceiveEmailsFromMLH",
-											e.target.checked,
-										)
-									}
-								/>
-								<p>
-									I authorize MLH to send me occasional emails about relevant
-									events, career opportunities, and community announcements.
-								</p>
-							</div>
-						</div>
-						{/* end of final steps - agreements */}
-					</div>
+										<Checkbox.HiddenInput />
+										<Checkbox.Control />
+										<Checkbox.Label>
+											<Text>
+												I authorize MLH to send me occasional emails about
+												relevant events, career opportunities, and community
+												announcements.
+											</Text>
+										</Checkbox.Label>
+									</Checkbox.Root>
+								</Field.Root>
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of final steps - agreements */}
+
 					{/* adding some more white space between the last input field and the buttons */}
-					<div className="h-12 md:h-28" />
+					<Box height="3rem" />
+
 					{/* just a separator line */}
-					<div className="h-0.5 bg-gray-300 my-6" />
+					<Box height="0.125rem" marginY="1.5rem" bg="#1F1E2E" />
+
 					<div>
 						{errors.length > 0 ? (
-							<p className="text-center text-red-600">
+							<Text textAlign="center" color="red">
 								Oh no! It appears that the are errors in the form.
-							</p>
+							</Text>
 						) : null}
 					</div>
-					<div className="flex items-center justify-between px-4 py-4 sm:px-8">
-						<div className="space-x-4">
+
+					<Flex
+						alignItems="center"
+						justifyContent="space-between"
+						paddingX={{ base: "1rem", sm: "2rem" }}
+						paddingY="1rem"
+					>
+						<Box spaceX="1rem">
 							<Button
 								disabled={activeStep === 0 || isSubmitting}
 								onClick={prevStep}
@@ -783,14 +830,19 @@ export const ApplyPage = () => {
 								Back
 							</Button>
 							<Button
-								className="text-charcoalBlack"
+								variant="outline"
+								_hover={{
+									bg: "brand.subtle/10",
+								}}
+								color="brand.subtle"
 								onClick={() => navigate(paths.home)}
 								type="button"
 							>
 								Cancel
 							</Button>
-						</div>
+						</Box>
 						<Button
+							color="black"
 							type="submit"
 							disabled={isSubmitting}
 							// I mean.... why not? for funsies
@@ -804,31 +856,9 @@ export const ApplyPage = () => {
 										: "Submit"
 									: "Next"}
 						</Button>
-					</div>
+					</Flex>
 				</form>
 			</div>
-
-			<Modal
-				title="Confirm Re-submission"
-				subTitle=""
-				open={openConfirmPopUp}
-				onClose={() => setOpenConfirmPopUp(false)}
-			>
-				<div className="mt-12 space-y-4 text-center">
-					<p>This will replace your previous submission.</p>
-					<p>Are you sure you want to continue?</p>
-				</div>
-				<div className="flex gap-12 justify-center items-center mt-12">
-					<Button onClick={() => setOpenConfirmPopUp(false)}>Cancel</Button>
-					<Button
-						onClick={() => {
-							submitApp();
-						}}
-					>
-						Confirm
-					</Button>
-				</div>
-			</Modal>
 		</PageWrapper>
 	);
 };

@@ -33,6 +33,7 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 					borderBottomWidth={1}
 					borderBottomColor="#1F1E2E"
 					borderBottomStyle="solid"
+					bg="brand.bg"
 				>
 					<Heading size={{ base: "lg", md: "3xl" }}>{headerInfo.title}</Heading>
 					<Text marginTop={{ base: "0", md: "1rem" }}>

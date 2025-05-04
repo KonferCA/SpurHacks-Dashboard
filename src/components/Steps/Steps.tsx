@@ -1,3 +1,4 @@
+import { Box, Button } from "@chakra-ui/react";
 import type { FC } from "react";
 
 export type StepStatus = "complete" | "current" | "upcoming" | "inprogress";
@@ -15,15 +16,27 @@ export interface StepProps {
 
 export const Steps: FC<StepProps> = ({ steps, onClick }) => {
 	return (
-		<ol className="space-y-4 md:flex md:space-x-8 md:space-y-0">
+		<Box
+			as="ol"
+			spaceY={{ base: "1rem", md: "0" }}
+			spaceX={{ base: 0, md: "2rem" }}
+			display={{ md: "flex" }}
+		>
 			{steps.map((step) => (
 				<li key={step.position} className="md:flex-1">
 					{step.status === "complete" ||
 					step.status === "current" ||
 					step.status === "inprogress" ? (
-						<button
+						<Button
 							type="button"
-							className="w-full flex flex-col border-l-4 border-tbrand py-2 pl-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4"
+							width="full"
+							display="flex"
+							flexDirection="column"
+							borderTopWidth={{ base: 0, md: "1rem" }}
+							borderLeftWidth={{ base: "1rem", md: 0 }}
+							borderLeftColor="brand.primary"
+							paddingY="0.5rem"
+							paddingLeft={{ base: "1rem", md: 0 }}
 							aria-current="step"
 							onClick={() => onClick(step.position)}
 						>
@@ -31,7 +44,7 @@ export const Steps: FC<StepProps> = ({ steps, onClick }) => {
 								{`Step ${step.position + 1}`}
 							</span>
 							<span className="text-left text-sm font-medium">{step.name}</span>
-						</button>
+						</Button>
 					) : (
 						<button
 							type="button"
@@ -46,6 +59,6 @@ export const Steps: FC<StepProps> = ({ steps, onClick }) => {
 					)}
 				</li>
 			))}
-		</ol>
+		</Box>
 	);
 };
