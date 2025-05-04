@@ -21,21 +21,19 @@ export interface TextInputProps extends InputProps {
 	 * Function to validate the input value.
 	 */
 	validate?: (value: string) => boolean;
-	invalid?: boolean;
 	id?: string;
 	error?: string;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
 	label,
-	invalid,
 	description,
 	required,
 	error,
 	...props
 }) => {
 	return (
-		<Field.Root required={required} invalid={invalid}>
+		<Field.Root required={required} invalid={!!error}>
 			<Field.Label>
 				{label}
 				{required && <Field.RequiredIndicator />}

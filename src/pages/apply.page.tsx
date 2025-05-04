@@ -28,7 +28,6 @@ import {
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { analytics } from "@/services/firebase";
 import { submitApplication } from "@/services/firebase/application";
 import { uploadGeneralResume } from "@/services/firebase/files";
 import {
@@ -43,17 +42,11 @@ import {
 	Text,
 	Link as ChakraLink,
 	Field,
+	Fieldset,
 } from "@chakra-ui/react";
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
-import { logEvent } from "firebase/analytics";
-import {
-	type FormEvent,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { type FormEvent, useCallback, useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 
 // Define fields to validate for each step
@@ -92,11 +85,9 @@ const stepFields: ApplicationDataKey[][] = [
 	["referralSources", "describeSalt"],
 ];
 
-// Form validations
-function getLogEventName(component: string) {
-	if (import.meta.env.PROD) return `app_interaction_${component}`;
-	return "dev_app_interaction"; // not logging the different components becuase it will fill the reports with spam
-}
+type FormErrors = { _hasErrors: boolean } & Partial<
+	Record<ApplicationDataKey, string>
+>;
 
 export const ApplyPage = () => {
 	const [steps, setSteps] = useState<Step[]>([
@@ -106,20 +97,16 @@ export const ApplyPage = () => {
 		{ position: 3, name: "Final checks", status: "upcoming" },
 	]);
 	const [activeStep, setActiveStep] = useState(0); // index
-	const [errors, setErrors] = useState<string[]>([]);
+	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [generalResumeFile, setGeneralResumeFile] = useState<File | null>(null);
-	const [submitted, setSubmitted] = useState(false);
-	const [openConfirmPopUp, setOpenConfirmPopUp] = useState(false);
 	const {
 		applications,
 		isLoading: loadingApplications,
 		refreshApplications,
 	} = useApplications();
 	const userApp = applications[0] || null;
-	const progressTrackRef = useRef(new Set<string>());
-	const [sp] = useSearchParams();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -132,35 +119,13 @@ export const ApplyPage = () => {
 		return app;
 	});
 
-	useEffect(() => {
-		if (userApp && !sp.get("restart")) {
-			setApplication({
-				...userApp,
-			});
-		}
-	}, [userApp, sp]);
-
-	const trackProgress = (component: string) => {
-		try {
-			const event = getLogEventName(component);
-			if (!progressTrackRef.current.has(event)) {
-				logEvent(analytics, event);
-				progressTrackRef.current.add(event);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	};
-
 	const handleChange = useCallback(
 		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
-			if (name === "phone") console.log(data);
 			setApplication((application) => {
 				const updatedApp = { ...application };
 				updatedApp[name] = data;
 				return updatedApp;
 			});
-			trackProgress(name);
 
 			// Clear errors
 			clearErrors();
@@ -168,7 +133,7 @@ export const ApplyPage = () => {
 		[],
 	);
 
-	const clearErrors = () => setErrors([]);
+	const clearErrors = () => setErrors({ _hasErrors: false });
 
 	const validateField = <K extends ApplicationDataKey>(field: K) => {
 		if (validations[field]) {
@@ -181,38 +146,18 @@ export const ApplyPage = () => {
 		clearErrors();
 
 		const fieldsToValidate = stepFields[activeStep];
-		const stepErrors: string[] = [];
+		const stepErrors: FormErrors = { _hasErrors: false };
 
 		for (const field of fieldsToValidate) {
 			const error = validateField(field);
 			if (error) {
-				stepErrors.push(error);
+				stepErrors._hasErrors = true;
+				stepErrors[field] = error;
 			}
 		}
 
-		if (stepErrors.length > 0) {
+		if (stepErrors._hasErrors) {
 			setErrors(stepErrors);
-			return false;
-		}
-
-		return true;
-	};
-
-	const validate = () => {
-		clearErrors();
-		const allErrors: string[] = [];
-
-		// Validate all required fields
-		Object.keys(validations).forEach((field) => {
-			const key = field as keyof ApplicationData;
-			const error = validateField(key);
-			if (error) {
-				allErrors.push(error);
-			}
-		});
-
-		if (allErrors.length > 0) {
-			setErrors(allErrors);
 			return false;
 		}
 
@@ -224,7 +169,6 @@ export const ApplyPage = () => {
 			// Validate current step before proceeding
 			if (!validateCurrentStep()) return;
 
-			trackProgress(`step_${activeStep}`);
 			setSteps((s) => {
 				s[activeStep].status = "complete";
 				s[activeStep + 1].status = "current";
@@ -264,7 +208,6 @@ export const ApplyPage = () => {
 
 		// If we're not on the final step, just validate the current step
 		if (activeStep !== steps.length - 1) {
-			if (!validateCurrentStep()) return;
 			nextStep();
 			return;
 		}
@@ -272,22 +215,13 @@ export const ApplyPage = () => {
 		// On the final step, validate the current step first
 		if (!validateCurrentStep()) return;
 
-		// Then validate the entire form before submission
-		if (!validate()) return;
-
 		const allRequiredChecked =
 			// don't have the CoC for HH yet so we don't have to make it required for now
 			// application.agreedToHawkHacksCoC &&
 			application.agreedToMLHCoC && application.agreedToMLHToCAndPrivacyPolicy;
 
 		if (!allRequiredChecked) {
-			setErrors(["Please read and check all the required boxes to proceed."]);
-			return;
-		}
-
-		if (userApp && !openConfirmPopUp) {
-			// show pop up to confirm resubmission
-			setOpenConfirmPopUp(true);
+			setErrors({ _hasErrors: true });
 			return;
 		}
 
@@ -311,7 +245,6 @@ export const ApplyPage = () => {
 		}
 
 		try {
-			trackProgress("submit");
 			application.email = currentUser.email as string;
 			await submitApplication(application, currentUser.uid);
 			toaster.success({
@@ -327,8 +260,8 @@ export const ApplyPage = () => {
 			});
 			console.error(e);
 		} finally {
-			setSubmitted(true);
-			setIsSubmitting(false);
+			// navigate to post submission page
+			navigate(paths.submitted);
 		}
 	};
 
@@ -339,20 +272,12 @@ export const ApplyPage = () => {
 		[handleChange],
 	);
 
-	useEffect(() => {
-		if (!loadingApplications && !userApp) {
-			trackProgress("open");
-		}
-	}, [userApp, loadingApplications]);
-
 	if (loadingApplications)
 		return (
 			<PageWrapper>
 				<LoadingAnimation />
 			</PageWrapper>
 		);
-
-	if (submitted) return <Navigate to={paths.submitted} />;
 
 	return (
 		<PageWrapper>
@@ -380,7 +305,7 @@ export const ApplyPage = () => {
 				<Heading size="md" textAlign="center" marginY="2rem">
 					All fields with an asterisk{"(*)"} are required.
 				</Heading>
-				<form onSubmit={submitApp} className="mt-12">
+				<form className="mt-12">
 					{/* basic profile */}
 					{activeStep === 0 && (
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
@@ -393,6 +318,7 @@ export const ApplyPage = () => {
 									placeholder="Steven"
 									value={application.firstName}
 									onChange={(e) => handleChange("firstName", e.target.value)}
+									error={errors["firstName"]}
 									required
 								/>
 							</GridItem>
@@ -406,6 +332,7 @@ export const ApplyPage = () => {
 									placeholder="Wu"
 									value={application.lastName}
 									onChange={(e) => handleChange("lastName", e.target.value)}
+									error={errors["lastName"]}
 									required
 								/>
 							</GridItem>
@@ -416,6 +343,7 @@ export const ApplyPage = () => {
 									placeholder="Select age"
 									options={ages}
 									onChange={(opt) => handleChange("age", opt[0] ?? "")}
+									error={errors["age"]}
 									required
 								/>
 							</GridItem>
@@ -428,6 +356,7 @@ export const ApplyPage = () => {
 									value={application.discord}
 									onChange={(e) => handleChange("discord", e.target.value)}
 									description="Discord will be our primary form of communication."
+									error={errors["discord"]}
 									required
 								/>
 							</GridItem>
@@ -439,6 +368,7 @@ export const ApplyPage = () => {
 									onChange={(opt) =>
 										handleChange("countryOfResidence", opt[0] ?? "")
 									}
+									error={errors["countryOfResidence"]}
 									required
 								/>
 							</GridItem>
@@ -448,12 +378,17 @@ export const ApplyPage = () => {
 									label="Which city do you live in?"
 									value={application.city}
 									onChange={(e) => handleChange("city", e.target.value)}
+									error={errors["city"]}
 									required
 								/>
 							</GridItem>
 
 							<GridItem colSpan={6}>
-								<PhoneInput required onChange={handlePhoneChange} />
+								<PhoneInput
+									required
+									onChange={handlePhoneChange}
+									error={errors["phone"]}
+								/>
 							</GridItem>
 
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
@@ -462,11 +397,10 @@ export const ApplyPage = () => {
 									options={schools}
 									onChange={(opt) => handleChange("school", opt[0] ?? "")}
 									allowCustomValue
+									error={errors["school"]}
+									description="If you recently graduated, pick the school you graduated from."
 									required
 								/>
-								<p className="mt-2 text-sageGray">
-									If you recently graduated, pick the school you graduated from.
-								</p>
 							</GridItem>
 
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
@@ -474,6 +408,7 @@ export const ApplyPage = () => {
 									label="What is your current level of study?"
 									options={levelsOfStudy}
 									onChange={(opt) => handleChange("levelOfStudy", opt[0] ?? "")}
+									error={errors["levelOfStudy"]}
 									required
 								/>
 							</GridItem>
@@ -485,6 +420,7 @@ export const ApplyPage = () => {
 									options={majorsList}
 									onChange={(opts) => handleChange("major", opts)}
 									allowCustomValue
+									error={errors["major"]}
 									required
 								/>
 							</GridItem>
@@ -515,6 +451,7 @@ export const ApplyPage = () => {
 											? application.reasonToBeInHawkHacks
 											: ""
 									}
+									error={errors["reasonToBeInHawkHacks"]}
 								/>
 							</GridItem>
 							<GridItem colSpan={6}>
@@ -531,6 +468,7 @@ export const ApplyPage = () => {
 											? application.revolutionizingTechnology
 											: ""
 									}
+									error={errors["revolutionizingTechnology"]}
 								/>
 							</GridItem>
 						</SimpleGrid>
@@ -553,6 +491,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opt) => handleChange("gender", opt[0] ?? "")}
+									error={errors["gender"]}
 								/>
 							</GridItem>
 
@@ -563,6 +502,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("pronouns", opts)}
+									error={errors["pronouns"]}
 								/>
 							</GridItem>
 
@@ -573,6 +513,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opt) => handleChange("sexuality", opt[0] ?? "")}
+									error={errors["sexuality"]}
 								/>
 							</GridItem>
 
@@ -583,6 +524,7 @@ export const ApplyPage = () => {
 									allowCustomValue={false}
 									required={true}
 									onChange={(opt) => handleChange("race", opt[0] ?? "")}
+									error={errors["race"]}
 								/>
 							</GridItem>
 
@@ -594,6 +536,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("diets", opts)}
+									error={errors["diets"]}
 								/>
 							</GridItem>
 
@@ -605,6 +548,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("allergies", opts)}
+									error={errors["allergies"]}
 								/>
 							</GridItem>
 
@@ -616,6 +560,7 @@ export const ApplyPage = () => {
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("interests", opts)}
+									error={errors["interests"]}
 								/>
 							</GridItem>
 
@@ -627,6 +572,7 @@ export const ApplyPage = () => {
 									onChange={(opt) =>
 										handleChange("hackathonExperience", opt[0] ?? "")
 									}
+									error={errors["hackathonExperience"]}
 								/>
 							</GridItem>
 
@@ -639,6 +585,7 @@ export const ApplyPage = () => {
 									onChange={(opts) =>
 										handleChange("programmingLanguages", opts)
 									}
+									error={errors["programmingLanguages"]}
 								/>
 							</GridItem>
 						</SimpleGrid>
@@ -681,6 +628,7 @@ export const ApplyPage = () => {
 									onChange={(file) => {
 										file && setGeneralResumeFile(file[0] ?? null);
 									}}
+									error={errors["generalResumeRef"]}
 								/>
 							</GridItem>
 							<GridItem colSpan={6}>
@@ -690,6 +638,7 @@ export const ApplyPage = () => {
 									options={referralSources}
 									onChange={(opts) => handleChange("referralSources", opts)}
 									allowCustomValue
+									error={errors["referralSources"]}
 									required
 								/>
 							</GridItem>
@@ -700,103 +649,115 @@ export const ApplyPage = () => {
 									onChange={(e) => handleChange("describeSalt", e.target.value)}
 									required
 									value={application.describeSalt}
+									error={errors["describeSalt"]}
 								/>
 							</GridItem>
 							<GridItem colSpan={6} spaceY="1rem">
-								<Field.Root required>
-									<Checkbox.Root
-										checked={application.agreedToMLHCoC}
-										onCheckedChange={(e) =>
-											handleChange(
-												"agreedToMLHCoC",
-												typeof e.checked === "boolean" && e.checked,
-											)
-										}
-									>
-										<Checkbox.HiddenInput />
-										<Checkbox.Control />
-										<Checkbox.Label>
-											I have read and agree to the{" "}
-											<ChakraLink
-												color="skyblue"
-												textDecor="underline"
-												href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
-											>
-												MLH Code of Conduct
-											</ChakraLink>
-											.
-											<Field.RequiredIndicator />
-										</Checkbox.Label>
-									</Checkbox.Root>
-								</Field.Root>
-								<Field.Root required>
-									<Checkbox.Root
-										checked={application.agreedToMLHToCAndPrivacyPolicy}
-										onCheckedChange={(e) =>
-											handleChange(
-												"agreedToMLHToCAndPrivacyPolicy",
-												typeof e.checked === "boolean" && e.checked,
-											)
-										}
-									>
-										<Checkbox.HiddenInput />
-										<Checkbox.Control />
-										<Checkbox.Label>
-											<Text>
-												I authorize you to share my application/registration
-												information with Major League Hacking for event
-												administration, ranking, and MLH administration in-line
-												with the{" "}
+								<Fieldset.Root
+									invalid={
+										!!errors["agreedToMLHCoC"] ||
+										!!errors["agreedToMLHToCAndPrivacyPolicy"]
+									}
+								>
+									<Fieldset.ErrorText>
+										Please check all required fields (marked with *) before
+										continuing.
+									</Fieldset.ErrorText>
+									<Field.Root required>
+										<Checkbox.Root
+											checked={application.agreedToMLHCoC}
+											onCheckedChange={(e) =>
+												handleChange(
+													"agreedToMLHCoC",
+													typeof e.checked === "boolean" && e.checked,
+												)
+											}
+										>
+											<Checkbox.HiddenInput />
+											<Checkbox.Control />
+											<Checkbox.Label>
+												I have read and agree to the{" "}
 												<ChakraLink
 													color="skyblue"
 													textDecor="underline"
-													href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+													href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
 												>
-													MLH Privacy Policy
-												</ChakraLink>
-												. I further agree to the terms of both the{" "}
-												<ChakraLink
-													color="skyblue"
-													textDecor="underline"
-													href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md"
-												>
-													MLH Contest Terms and Conditions{" "}
-												</ChakraLink>{" "}
-												and the{" "}
-												<ChakraLink
-													color="skyblue"
-													textDecor="underline"
-													href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
-												>
-													MLH Privacy Policy
+													MLH Code of Conduct
 												</ChakraLink>
 												.
 												<Field.RequiredIndicator />
-											</Text>
-										</Checkbox.Label>
-									</Checkbox.Root>
-								</Field.Root>
-								<Field.Root>
-									<Checkbox.Root
-										checked={application.agreedToReceiveEmailsFromMLH}
-										onCheckedChange={(e) =>
-											handleChange(
-												"agreedToReceiveEmailsFromMLH",
-												typeof e.checked === "boolean" && e.checked,
-											)
-										}
-									>
-										<Checkbox.HiddenInput />
-										<Checkbox.Control />
-										<Checkbox.Label>
-											<Text>
-												I authorize MLH to send me occasional emails about
-												relevant events, career opportunities, and community
-												announcements.
-											</Text>
-										</Checkbox.Label>
-									</Checkbox.Root>
-								</Field.Root>
+											</Checkbox.Label>
+										</Checkbox.Root>
+									</Field.Root>
+									<Field.Root required>
+										<Checkbox.Root
+											checked={application.agreedToMLHToCAndPrivacyPolicy}
+											onCheckedChange={(e) =>
+												handleChange(
+													"agreedToMLHToCAndPrivacyPolicy",
+													typeof e.checked === "boolean" && e.checked,
+												)
+											}
+										>
+											<Checkbox.HiddenInput />
+											<Checkbox.Control />
+											<Checkbox.Label>
+												<Text>
+													I authorize you to share my application/registration
+													information with Major League Hacking for event
+													administration, ranking, and MLH administration
+													in-line with the{" "}
+													<ChakraLink
+														color="skyblue"
+														textDecor="underline"
+														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+													>
+														MLH Privacy Policy
+													</ChakraLink>
+													. I further agree to the terms of both the{" "}
+													<ChakraLink
+														color="skyblue"
+														textDecor="underline"
+														href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md"
+													>
+														MLH Contest Terms and Conditions{" "}
+													</ChakraLink>{" "}
+													and the{" "}
+													<ChakraLink
+														color="skyblue"
+														textDecor="underline"
+														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+													>
+														MLH Privacy Policy
+													</ChakraLink>
+													.
+													<Field.RequiredIndicator />
+												</Text>
+											</Checkbox.Label>
+										</Checkbox.Root>
+									</Field.Root>
+									<Field.Root>
+										<Checkbox.Root
+											checked={application.agreedToReceiveEmailsFromMLH}
+											onCheckedChange={(e) =>
+												handleChange(
+													"agreedToReceiveEmailsFromMLH",
+													typeof e.checked === "boolean" && e.checked,
+												)
+											}
+										>
+											<Checkbox.HiddenInput />
+											<Checkbox.Control />
+											<Checkbox.Label>
+												<Text>
+													I authorize MLH to send me occasional emails about
+													relevant events, career opportunities, and community
+													announcements.
+												</Text>
+											</Checkbox.Label>
+										</Checkbox.Root>
+									</Field.Root>
+								</Fieldset.Root>
 							</GridItem>
 						</SimpleGrid>
 					)}
@@ -809,11 +770,11 @@ export const ApplyPage = () => {
 					<Box height="0.125rem" marginY="1.5rem" bg="#1F1E2E" />
 
 					<div>
-						{errors.length > 0 ? (
+						{errors._hasErrors && (
 							<Text textAlign="center" color="red">
 								Oh no! It appears that the are errors in the form.
 							</Text>
-						) : null}
+						)}
 					</div>
 
 					<Flex
@@ -844,7 +805,8 @@ export const ApplyPage = () => {
 						</Box>
 						<Button
 							color="black"
-							type="submit"
+							onClick={submitApp}
+							type="button"
 							disabled={isSubmitting}
 							// I mean.... why not? for funsies
 							className={isSubmitting ? "animate-spin" : ""}

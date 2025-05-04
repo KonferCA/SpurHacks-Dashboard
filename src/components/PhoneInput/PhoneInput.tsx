@@ -67,8 +67,8 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 					/>
 				</GridItem>
 			</SimpleGrid>
-			<Fieldset.HelperText>{description}</Fieldset.HelperText>
-			<Fieldset.ErrorText>{error}</Fieldset.ErrorText>
+			{description && <Fieldset.HelperText>{description}</Fieldset.HelperText>}
+			{error && <Fieldset.ErrorText>{error}</Fieldset.ErrorText>}
 		</Fieldset.Root>
 	);
 };

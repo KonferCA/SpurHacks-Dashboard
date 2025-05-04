@@ -118,9 +118,9 @@ export const hackathonExps = [
 ] as const;
 
 export const referralSources = [
-	"HawkHacks Discord",
-	"HawkHacks TikTok",
-	"HawkHacks LinkedIn",
+	"SpurHacks Discord",
+	"SpurHacks TikTok",
+	"SpurHacks LinkedIn",
 	"MLH Website",
 	"MLH Discord",
 	"MLH Socials",

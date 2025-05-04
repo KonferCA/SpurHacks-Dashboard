@@ -16,8 +16,6 @@ interface Props extends TextareaProps {
 	 */
 	description?: string;
 
-	invalid?: boolean;
-
 	error?: string;
 }
 
@@ -26,14 +24,13 @@ export type TextAreaProps = Props & TextareaProps;
 export const TextArea: React.FC<TextAreaProps> = ({
 	label,
 	className,
-	invalid,
 	description,
 	required,
 	error,
 	...props
 }) => {
 	return (
-		<Field.Root required={required} invalid={invalid}>
+		<Field.Root required={required} invalid={!!error}>
 			<Field.Label>
 				{label}
 				{required && <Field.RequiredIndicator />}

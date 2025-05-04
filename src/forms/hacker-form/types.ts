@@ -22,7 +22,6 @@ export interface ApplicationData {
 	programmingLanguages: string[];
 	participatingAs: "Hacker";
 	applicantId: string;
-	agreedToHawkHacksCoC: boolean;
 	agreedToMLHCoC: boolean;
 	agreedToMLHToCAndPrivacyPolicy: boolean;
 	agreedToReceiveEmailsFromMLH: boolean;

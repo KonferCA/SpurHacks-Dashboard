@@ -7,8 +7,8 @@ export interface FileBrowserProps
 	label: string;
 	inputId?: string;
 	description?: string;
-	subdescription?: string;
 	required?: boolean;
+	error?: string;
 	onChange?: (files: File[]) => void;
 }
 
@@ -17,10 +17,12 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 	maxFiles = 1,
 	accept = ["image/*", "video/*"],
 	required,
+	error,
+	description,
 	onChange,
 }) => {
 	return (
-		<Field.Root required={required}>
+		<Field.Root required={required} invalid={!!error}>
 			<FileUpload.Root
 				required={required}
 				maxFiles={maxFiles}
@@ -54,6 +56,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					</FileUpload.Context>
 				</FileUpload.ItemGroup>
 			</FileUpload.Root>
+			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);
 };
