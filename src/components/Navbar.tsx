@@ -226,7 +226,15 @@ export const Navbar = () => {
 			{isMobile ? (
 				<MobileNav availableRoutes={availableRoutes} />
 			) : (
-				<Flex as="nav" height="vh" width={60} padding="1rem" direction="column">
+				<Flex
+					as="nav"
+					height="vh"
+					position="fixed"
+					insetY="0"
+					width="18rem"
+					padding="1rem"
+					direction="column"
+				>
 					<Flex alignItems="center" justifyContent="center" padding="1rem">
 						<Link to={paths.home}>
 							<Box width="full" height="30px">
