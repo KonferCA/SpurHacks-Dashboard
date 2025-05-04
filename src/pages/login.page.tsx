@@ -224,8 +224,16 @@ export const LoginPage = () => {
 				px={{ base: 4, sm: 6, md: 8 }}
 			>
 				<Box maxW="md" w="full">
-					{/* spurhacks logo placeholder*/}
-					<Image src={SpurhacksLogo} alt="SpurHacks Logo" h={10} mb={8} />
+					
+					<Image
+						src={SpurhacksLogo}
+						alt="SpurHacks Logo"
+						h={10}
+						mb={8}
+						maxW="100%"
+						w="auto"
+						style={{ minWidth: 0 }}
+					/>
 
 					{/* heading */}
 					<Heading as="h1" size="xl" fontWeight="bold" mb={2}>
