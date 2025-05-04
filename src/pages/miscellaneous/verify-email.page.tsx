@@ -2,9 +2,11 @@ import { PageWrapper } from "@/components";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { auth } from "@/services/firebase";
-import { Button } from "@chakra-ui/react";
+import { Box, Flex, Heading, Icon, Link, Stack, Text } from "@chakra-ui/react";
+import { Button } from "@/components/ui/button";
 import { sendEmailVerification } from "firebase/auth";
 import { useRef, useState } from "react";
+import { FiCheckCircle } from "react-icons/fi";
 import { Navigate } from "react-router-dom";
 
 export const VerifyEmailPage = () => {
@@ -30,27 +32,49 @@ export const VerifyEmailPage = () => {
 
 	return (
 		<PageWrapper>
-			<div className="px-4 sm:px-6 lg:px-8">
-				<div className="">
-					<p className="text-2xl">One more step!</p>
-					<p className="mt-4 text-xl text-gray-700">
-						Once you have verified your email, please click on the{" "}
-						<span className="text-tbrand font-semibold">Check Email</span>{" "}
-						button.
-					</p>
-					<p className="mt-4 text-xl text-gray-700">
-						Account Email:
-						<span className="ml-2 text-tbrand font-semibold">
-							{currentUser?.email ? currentUser.email : "N/A"}
-						</span>
-					</p>
-					{/* TODO: button is here for dev, should be taken away once side navbar is completed */}
-					<Button className="mt-4" onClick={logout}>
-						Log Out
-					</Button>
-				</div>
-				<div className="mt-12 sm:flex gap-4">
-					<div className="space-x-4">
+			<Box px={{ base: 4, sm: 6, lg: 8 }} py={8}>
+				<Stack gap={8} maxW="xl" mx="auto">
+					<Stack gap={4}>
+						<Heading as="h1" size="lg" fontWeight="bold">
+							One more step!
+						</Heading>
+						<Text color="gray.400">
+							We've sent a verification link to your email address. Please check
+							your inbox (and spam folder!) and click the link.
+						</Text>
+						<Text color="gray.400">
+							Once you have verified your email, click the{" "}
+							<Text as="span" color="orange.400" fontWeight="semibold">
+								Check Verification Status
+							</Text>{" "}
+							button below.
+						</Text>
+					</Stack>
+
+					<Box>
+						<Text fontSize="sm" fontWeight="medium" mb={1} color="gray.700">
+							Account Email
+						</Text>
+						{currentUser?.emailVerified ? (
+							<Flex align="center" color="green.500" fontSize="sm">
+								<Text mr={2}>Your email has been verified.</Text>
+								<Icon as={FiCheckCircle} />
+							</Flex>
+						) : null}
+						<Box
+							mt={currentUser?.emailVerified ? 2 : 0}
+							bg="whiteAlpha.200"
+							color="white"
+							px={4}
+							py={3}
+							borderRadius="full"
+							fontSize="md"
+						>
+							{currentUser?.email ?? "N/A"}
+						</Box>
+					</Box>
+
+					<Stack direction={{ base: "column", sm: "row" }} gap={4} justify="center">
 						<Button
 							onClick={() => {
 								if (resendSeconds <= 0 && auth.currentUser) {
@@ -60,15 +84,42 @@ export const VerifyEmailPage = () => {
 								}
 							}}
 							disabled={resendSeconds > 0}
+							variant="outline"
+							colorScheme="gray"
+							borderColor="whiteAlpha.400"
+							color="white"
+							_hover={{ bg: "whiteAlpha.100" }}
+							_active={{ bg: "whiteAlpha.200" }}
+							size="lg"
+							fontSize="md"
+							borderRadius="full"
 						>
 							{resendSeconds <= 0
-								? "Resend Email Verification"
-								: `${resendSeconds}s Left Before Resend`}
+								? "Resend Verification Email"
+								: `Resend available in ${resendSeconds}s`}
 						</Button>
-						<Button onClick={reloadUser}>Check Email</Button>
-					</div>
-				</div>
-			</div>
+						<Button
+							onClick={reloadUser}
+							bg="orange.400"
+							color="gray.900"
+							_hover={{ bg: "orange.500" }}
+							_active={{ bg: "orange.600" }}
+							size="lg"
+							fontSize="md"
+							fontWeight="bold"
+							borderRadius="full"
+						>
+							Check Verification Status
+						</Button>
+					</Stack>
+
+					<Flex justify="center" mt={8}>
+						<Link onClick={logout} color="gray.400" _hover={{ color: "white" }}>
+							Log Out
+						</Link>
+					</Flex>
+				</Stack>
+			</Box>
 		</PageWrapper>
 	);
 };
