@@ -20,7 +20,7 @@ const HomePage = () => {
 							onClick={() => navigate(paths.apply)}
 							size="lg"
 							rounded="full"
-							className="mt-2"
+							marginTop="1rem"
 						>
 							Apply Now
 						</Button>
@@ -28,7 +28,9 @@ const HomePage = () => {
 				)}
 				{deadlines.beforeStart && (
 					<div>
-						<p>Applications for SpurHacks 2025 open on May 5, 2025.</p>
+						<p>
+							Applications for SpurHacks 2025 open on {deadlines.startDateStr}.
+						</p>
 					</div>
 				)}
 				{deadlines.afterClose && (
