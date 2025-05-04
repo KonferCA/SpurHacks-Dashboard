@@ -40,7 +40,14 @@ export const TextInput: React.FC<TextInputProps> = ({
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
-			<Input bg="black" {...props} />
+			<Input
+				bg="#333147"
+				borderColor="transparent"
+				borderRadius="full"
+				_placeholder={{ color: "#666484" }}
+				size="lg"
+				{...props}
+			/>
 			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>

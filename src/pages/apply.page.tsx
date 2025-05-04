@@ -413,6 +413,7 @@ export const ApplyPage = () => {
 							<GridItem colSpan={{ base: 6, sm: 2 }}>
 								<Select
 									label="How old are you?"
+									placeholder="Select age"
 									options={ages}
 									onChange={(opt) => handleChange("age", opt[0] ?? "")}
 									required

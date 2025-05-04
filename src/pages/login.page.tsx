@@ -18,13 +18,11 @@ import {
 	Link,
 	Stack,
 	Text,
-	Separator,
-	} from "@chakra-ui/react";
+} from "@chakra-ui/react";
 import { type FormEventHandler, useState } from "react";
 import { flushSync } from "react-dom";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { Field } from "@/components/ui/field";
 
@@ -51,8 +49,8 @@ export const LoginPage = () => {
 	// control for password reset form
 	const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
 	// state for password visibility toggle
-	const [showPassword, setShowPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+	const [showPassword] = useState(false);
+	const [showConfirmPassword] = useState(false);
 
 	// custom password err msg, can also be done for email but it shouldn't really need any msgs.
 	const [passwordErrMsg, setPasswordErrMsg] = useState("");
@@ -71,8 +69,6 @@ export const LoginPage = () => {
 	const routes = useRouteDefinitions();
 
 	const [searchParams] = useSearchParams();
-
-	const navigate = useNavigate();
 
 	const handlerSubmit: FormEventHandler = async (e) => {
 		// prevent page refresh when form is submitted
@@ -201,7 +197,7 @@ export const LoginPage = () => {
 			templateColumns={{ base: "1fr", md: "1fr 1fr" }}
 			minH="100vh"
 			style={{
-                background: `radial-gradient(
+				background: `radial-gradient(
                     circle at top left,
                     #000000 0%,
                     #191C26 30%,
@@ -212,7 +208,7 @@ export const LoginPage = () => {
                     #897B90 99%,
                     #C5B8D6 120%
                 )`,
-            }}
+			}}
 			color="white"
 		>
 			<GridItem
@@ -224,7 +220,6 @@ export const LoginPage = () => {
 				px={{ base: 4, sm: 6, md: 8 }}
 			>
 				<Box maxW="md" w="full">
-					
 					<Image
 						src={SpurhacksLogo}
 						alt="SpurHacks Logo"
@@ -257,7 +252,9 @@ export const LoginPage = () => {
 								label="Email"
 								invalid={isInvalidEmail}
 								required
-								errorText={isInvalidEmail ? "Invalid email address." : undefined}
+								errorText={
+									isInvalidEmail ? "Invalid email address." : undefined
+								}
 							>
 								<Input
 									id="email"
@@ -278,9 +275,7 @@ export const LoginPage = () => {
 									label="Password"
 									invalid={isInvalidPassword}
 									required
-									errorText={
-										isInvalidPassword ? passwordErrMsg : undefined
-									}
+									errorText={isInvalidPassword ? passwordErrMsg : undefined}
 								>
 									<InputGroup>
 										<Input
@@ -305,9 +300,7 @@ export const LoginPage = () => {
 									label="Confirm Password"
 									invalid={isInvalidPassword}
 									required
-									errorText={
-										isInvalidPassword ? passwordErrMsg : undefined
-									}
+									errorText={isInvalidPassword ? passwordErrMsg : undefined}
 								>
 									<InputGroup>
 										<Input
@@ -365,19 +358,11 @@ export const LoginPage = () => {
 
 					{!showResetPasswordForm && (
 						<Flex align="center" my={6}>
-							<Box
-								h="1px"
-								bg="gray.600"
-								flexGrow={1}
-							/> 
+							<Box h="1px" bg="gray.600" flexGrow={1} />
 							<Text px={4} flexShrink={0} color="gray.400" fontSize="sm">
 								OR
 							</Text>
-							<Box
-								h="1px"
-								bg="gray.600"
-								flexGrow={1}
-							/>
+							<Box h="1px" bg="gray.600" flexGrow={1} />
 						</Flex>
 					)}
 
@@ -390,10 +375,7 @@ export const LoginPage = () => {
 										try {
 											await loginWithProvider(provider.name);
 										} catch (error) {
-											console.error(
-												`${provider.name} login failed:`,
-												error,
-											);
+											console.error(`${provider.name} login failed:`, error);
 										}
 									}}
 									variant="outline"

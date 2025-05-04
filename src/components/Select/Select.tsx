@@ -21,6 +21,8 @@ export interface SelectProps {
 	required?: boolean;
 	description?: string;
 	multiple?: boolean;
+	placeholder?: string;
+	error?: string;
 	onChange?: (selected: string[]) => void;
 }
 
@@ -31,6 +33,8 @@ export const Select: FC<SelectProps> = ({
 	disabled,
 	description,
 	multiple = false,
+	placeholder,
+	error,
 	onChange,
 }) => {
 	const [visibleOptions, setVisibleOptions] = useState<string[]>([]);
@@ -82,12 +86,13 @@ export const Select: FC<SelectProps> = ({
 	}, [options]);
 
 	return (
-		<Field.Root required={required}>
+		<Field.Root required={required} invalid={!!error}>
 			<ChakraSelect.Root
 				collection={collection}
 				onValueChange={handleChange}
 				disabled={disabled}
 				multiple={multiple}
+				size="lg"
 			>
 				<ChakraSelect.Label>
 					{label}
@@ -95,8 +100,13 @@ export const Select: FC<SelectProps> = ({
 				</ChakraSelect.Label>
 				<ChakraSelect.HiddenSelect />
 				<ChakraSelect.Control>
-					<ChakraSelect.Trigger>
-						<ChakraSelect.ValueText />
+					<ChakraSelect.Trigger
+						bg="#333147"
+						borderColor="transparent"
+						borderRadius="full"
+						_placeholder={{ color: "#666484" }}
+					>
+						<ChakraSelect.ValueText placeholder={placeholder} />
 					</ChakraSelect.Trigger>
 					<ChakraSelect.IndicatorGroup>
 						<ChakraSelect.Indicator />
@@ -104,9 +114,18 @@ export const Select: FC<SelectProps> = ({
 					</ChakraSelect.IndicatorGroup>
 				</ChakraSelect.Control>
 				<ChakraSelect.Positioner>
-					<ChakraSelect.Content ref={contentRef} onScroll={handleScroll}>
+					<ChakraSelect.Content
+						ref={contentRef}
+						onScroll={handleScroll}
+						bg="#333147"
+						rounded="xl"
+					>
 						{visibleOptions.map((item, index) => (
 							<ChakraSelect.Item
+								_hover={{
+									bg: "#1F1E2E",
+								}}
+								rounded="xl"
 								item={item}
 								key={item}
 								ref={
@@ -124,6 +143,7 @@ export const Select: FC<SelectProps> = ({
 			</ChakraSelect.Root>
 
 			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);
 };

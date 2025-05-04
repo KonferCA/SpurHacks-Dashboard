@@ -38,7 +38,14 @@ export const TextArea: React.FC<TextAreaProps> = ({
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
-			<Textarea bg="black" {...props} />
+			<Textarea
+				bg="#333145"
+				borderColor="transparent"
+				borderRadius="full"
+				_placeholder={{ color: "#666484" }}
+				size="lg"
+				{...props}
+			/>
 			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
