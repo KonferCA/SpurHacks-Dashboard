@@ -4,7 +4,16 @@ import type { AccessControlContext } from "@/navigation";
 import { RouteConfig, useAuth } from "@/providers";
 import { useRouteDefinitions, useUser } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Box, Flex, Link as ChakraLink, Text, Image } from "@chakra-ui/react";
+import {
+	Box,
+	Flex,
+	Link as ChakraLink,
+	Text,
+	Image,
+	Drawer,
+	Portal,
+	CloseButton,
+} from "@chakra-ui/react";
 import {
 	CalendarDaysIcon,
 	CodeBracketIcon,
@@ -52,8 +61,13 @@ const navItems = {
 	},
 };
 
-const MobileNav = ({ availableRoutes }: { availableRoutes: RouteConfig[] }) => {
-	const { logout, currentUser: user } = useAuth();
+const MobileNav = ({
+	availableRoutes,
+	isMobile,
+}: {
+	availableRoutes: RouteConfig[];
+	isMobile: boolean;
+}) => {
 	const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	useEffect(() => {
@@ -62,6 +76,7 @@ const MobileNav = ({ availableRoutes }: { availableRoutes: RouteConfig[] }) => {
 
 	return (
 		<>
+			{/* Mobile: Navbar Closed */}
 			<Flex
 				as="nav"
 				alignItems="center"
@@ -78,111 +93,186 @@ const MobileNav = ({ availableRoutes }: { availableRoutes: RouteConfig[] }) => {
 						/>
 					</Link>
 				</Flex>
-				<Box>
-					<Hamburger
-						toggled={isMobileMenuOpen}
-						toggle={setMobileMenuOpen}
-						size={24}
-						label="Show navigation menu"
-					/>
-				</Box>
-			</Flex>
-
-			<Box
-				position="fixed"
-				zIndex={20}
-				right={0}
-				top={0}
-				maxWidth="full"
-				blur="xl"
-				height="full"
-				transitionTimingFunction="ease-in-out"
-				transitionDuration="300ms"
-				transition="all"
-				translateX={isMobileMenuOpen ? "0" : "100%"}
-				opacity={isMobileMenuOpen ? 100 : 0}
-			>
-				<Box position="absolute" right="0.5rem" top="0.5rem">
-					<Hamburger
-						toggled={isMobileMenuOpen}
-						toggle={setMobileMenuOpen}
-						size={24}
-						label="Show navigation menu"
-					/>
-				</Box>
-				<Flex
-					as="ul"
-					direction="column"
-					alignItems="start"
-					justifyContent="start"
+				<Drawer.Root
+					open={isMobileMenuOpen}
+					onOpenChange={(e) => setMobileMenuOpen(e.open)}
 				>
-					<ChakraLink
-						href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
-						target="_blank"
-						rel="noopener noreferrer"
-						width="full"
-					>
-						<Flex
-							as="li"
-							padding="1rem"
-							transition="colors"
-							cursor="pointer"
-							alignItems="center"
-							justifyContent="start"
-							gap="0.5rem"
-						>
-							Location
-						</Flex>
-					</ChakraLink>
-					{availableRoutes
-						// @ts-ignore
-						.filter(({ path }) => path && !!navItems[path])
-						.map(({ path }) => {
-							// @ts-ignore
-							const { label, Icon } = navItems[path];
-							return (
-								<Link key={label} to={path as string} className="w-full">
-									<li className="p-4 hover:bg-[#1F1E2E] duration-300 transition-colors rounded-md w-full  cursor-pointer flex items-center justify-start gap-2">
-										<Icon className="w-4 h-4" />
-										<span>{label}</span>
-									</li>
-								</Link>
-							);
-						})}
-					<ChakraLink
-						href="https://discord.com/invite/GxwvFEn9TB"
-						target="_blank"
-						rel="noopener noreferrer"
-						width="full"
-					>
-						<Flex
-							as="li"
-							padding="1rem"
-							transition="colors"
-							cursor="pointer"
-							alignItems="center"
-							justifyContent="start"
-							gap="0.5rem"
-						>
-							Discord Support
-						</Flex>
-					</ChakraLink>
-				</Flex>
+					<Drawer.Trigger asChild>
+						<Hamburger
+							toggled={isMobileMenuOpen}
+							toggle={setMobileMenuOpen}
+							size={24}
+							label="Show navigation menu"
+						/>
+					</Drawer.Trigger>
+					<Portal>
+						<Drawer.Backdrop />
+						<Drawer.Positioner>
+							<Drawer.Content bg="#181C2B">
+								<Drawer.Header>
+									<Drawer.Title></Drawer.Title>
+								</Drawer.Header>
+								<Drawer.Body>
+									<Flex
+										direction="column"
+										alignItems="center"
+										justifyContent="space-between"
+										height="full"
+										pb="10"
+									>
+										<NavbarContent
+											availableRoutes={availableRoutes}
+											isMobile={isMobile}
+										/>
+									</Flex>
+								</Drawer.Body>
+								<Drawer.CloseTrigger asChild>
+									<CloseButton size="sm" />
+								</Drawer.CloseTrigger>
+							</Drawer.Content>
+						</Drawer.Positioner>
+					</Portal>
+				</Drawer.Root>
+			</Flex>
+		</>
+	);
+};
 
-				{user && (
-					<Button type="button" onClick={logout}>
-						<FiLogOut size="1.5rem" />
-						<Text>Sign out</Text>
-					</Button>
-				)}
-			</Box>
+const NavbarContent = ({
+	availableRoutes,
+	isMobile,
+}: {
+	availableRoutes: RouteConfig[];
+	isMobile: boolean;
+}) => {
+	const { logout, currentUser: user } = useAuth();
+	return (
+		<>
+			<Flex
+				as="ul"
+				direction="column"
+				alignItems="start"
+				justifyContent="start"
+				gap="1rem"
+				w="full"
+				pt={5}
+				px={2}
+			>
+				<ChakraLink
+					w="full"
+					href="https://maps.app.goo.gl/u8BRhzLz3Wz8z3NP8"
+					target="_blank"
+					rel="noopener noreferrer"
+					textDecoration="none"
+					color="#666484"
+					rounded="full"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
+				>
+					<Flex
+						padding="1rem"
+						alignItems="center"
+						justifyContent="start"
+						gap="0.5rem"
+						cursor="pointer"
+					>
+						<FiMapPin size="1.5rem" />
+						Location
+					</Flex>
+				</ChakraLink>
+				{availableRoutes
+					// @ts-ignore
+					.filter(({ path }) => path && !!navItems[path])
+					.map(({ path }) => {
+						// @ts-ignore
+						const { label, Icon } = navItems[path];
+						const isActive = location.pathname === path;
+						return (
+							<ChakraLink
+								key={label}
+								as={Link}
+								w="full"
+								textDecoration="none"
+								color="#666484"
+								rounded="full"
+								bg={isActive ? "#1F1E2E" : "#666484"}
+								_hover={{
+									bg: "#1F1E2E",
+								}}
+							>
+								<Link key={label} to={path as string} className="w-full">
+									<Flex
+										as="li"
+										padding="1rem"
+										w="full"
+										cursor="pointer"
+										gap="0.5rem"
+										alignItems="center"
+										justifyContent="center"
+									>
+										<Box asChild width="1.5rem" height="1.5rem">
+											<Icon color={isActive ? "#FFA75F" : "#666483"} />
+										</Box>
+										<Text color={isActive ? "#DEEBFF" : "#666484"}>
+											{label}
+										</Text>
+									</Flex>
+								</Link>
+							</ChakraLink>
+						);
+					})}
+				<ChakraLink
+					w="full"
+					href="https://discord.spurhacks.com"
+					target="_blank"
+					rel="noopener noreferrer"
+					textDecoration="none"
+					color="#666484"
+					rounded="full"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
+				>
+					<Flex
+						padding="1rem"
+						alignItems="center"
+						justifyContent="start"
+						gap="0.5rem"
+						cursor="pointer"
+					>
+						<RiDiscordLine size="1.5rem" />
+						Discord Support
+					</Flex>
+				</ChakraLink>
+			</Flex>
+			{user && (
+				<Button type="button" rounded="full" onClick={logout}>
+					<FiLogOut size="1.5rem" color="black" />
+					<Text color="black">Sign out</Text>
+				</Button>
+			)}
 		</>
 	);
 };
 
 export const Navbar = () => {
-	const { logout } = useAuth();
-
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 	const { user } = useUser();
 	const applicationsCtx = useApplications();
@@ -224,7 +314,7 @@ export const Navbar = () => {
 	return (
 		<>
 			{isMobile ? (
-				<MobileNav availableRoutes={availableRoutes} />
+				<MobileNav availableRoutes={availableRoutes} isMobile={isMobile} />
 			) : (
 				<Flex
 					as="nav"
@@ -254,80 +344,10 @@ export const Navbar = () => {
 						height="83%"
 						overflowY="auto"
 					>
-						<Flex
-							as="ul"
-							direction="column"
-							alignItems="center"
-							justifyContent="start"
-							gap="1rem"
-							width="full"
-						>
-							<ChakraLink
-								width="full"
-								href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<Flex
-									padding="1rem"
-									alignItems="center"
-									justifyContent="start"
-									gap="0.5rem"
-									cursor="pointer"
-								>
-									<FiMapPin size="1.5rem" />
-									Location
-								</Flex>
-							</ChakraLink>
-							{availableRoutes
-								// @ts-ignore
-								.filter(({ path }) => path && !!navItems[path])
-								.map(({ path }) => {
-									// @ts-ignore
-									const { label, Icon } = navItems[path];
-									return (
-										<Link key={label} to={path as string} className="w-full">
-											<Flex
-												as="li"
-												padding="1rem"
-												width="full"
-												cursor="pointer"
-												gap="0.5rem"
-												alignItems="center"
-												justifyContent="start"
-											>
-												<Box asChild width="1.5rem" height="1.5rem">
-													<Icon />
-												</Box>
-												<Text>{label}</Text>
-											</Flex>
-										</Link>
-									);
-								})}
-							<ChakraLink
-								width="full"
-								href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<Flex
-									padding="1rem"
-									alignItems="center"
-									justifyContent="start"
-									gap="0.5rem"
-									cursor="pointer"
-								>
-									<RiDiscordLine size="1.5rem" />
-									Discord Support
-								</Flex>
-							</ChakraLink>
-						</Flex>
-						{user && (
-							<Button type="button" onClick={logout}>
-								<FiLogOut size="1.5rem" />
-								<Text>Sign out</Text>
-							</Button>
-						)}
+						<NavbarContent
+							availableRoutes={availableRoutes}
+							isMobile={isMobile}
+						/>
 					</Flex>
 				</Flex>
 			)}
