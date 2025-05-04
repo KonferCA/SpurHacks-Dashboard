@@ -12,7 +12,6 @@ import { toaster } from "@/components/ui/toaster";
 import {
 	ages,
 	allergies,
-	cityNames,
 	countryNames,
 	diets,
 	genders,
@@ -36,15 +35,21 @@ import { uploadGeneralResume } from "@/services/firebase/files";
 import { Button } from "@chakra-ui/react";
 import {
 	LoadingAnimation,
-	MultiSelect,
 	PageWrapper,
 	Select,
 	Steps,
 	TextInput,
 } from "@components";
 import { logEvent } from "firebase/analytics";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import {
+	type FormEvent,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 
 // Define fields to validate for each step
 const stepFields: ApplicationDataKey[][] = [
@@ -143,18 +148,21 @@ export const ApplyPage = () => {
 		}
 	};
 
-	const handleChange = <K extends ApplicationDataKey>(
-		name: K,
-		data: ApplicationData[K],
-	) => {
-		const updatedApp = { ...application };
-		updatedApp[name] = data;
-		setApplication(updatedApp);
-		trackProgress(name);
+	const handleChange = useCallback(
+		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
+			if (name === "phone") console.log(data);
+			setApplication((application) => {
+				const updatedApp = { ...application };
+				updatedApp[name] = data;
+				return updatedApp;
+			});
+			trackProgress(name);
 
-		// Clear errors
-		clearErrors();
-	};
+			// Clear errors
+			clearErrors();
+		},
+		[],
+	);
 
 	const clearErrors = () => setErrors([]);
 
@@ -322,6 +330,13 @@ export const ApplyPage = () => {
 		}
 	};
 
+	const handlePhoneChange = useCallback(
+		(phone: string) => {
+			handleChange("phone", phone);
+		},
+		[handleChange],
+	);
+
 	useEffect(() => {
 		if (!loadingApplications && !userApp) {
 			trackProgress("open");
@@ -336,8 +351,6 @@ export const ApplyPage = () => {
 		);
 
 	if (submitted) return <Navigate to={paths.submitted} />;
-
-	console.log(errors);
 
 	return (
 		<PageWrapper>
@@ -389,8 +402,7 @@ export const ApplyPage = () => {
 							<Select
 								label="How old are you?"
 								options={ages}
-								initialValue={application.age ?? ""}
-								onChange={(opt) => handleChange("age", opt)}
+								onChange={(opt) => handleChange("age", opt[0] ?? "")}
 								required
 							/>
 						</div>
@@ -410,39 +422,31 @@ export const ApplyPage = () => {
 							<Select
 								label="Which country do you currently reside in?"
 								options={countryNames}
-								initialValue={application.countryOfResidence ?? ""}
-								onChange={(opt) => handleChange("countryOfResidence", opt)}
+								onChange={(opt) =>
+									handleChange("countryOfResidence", opt[0] ?? "")
+								}
 								required
 							/>
 						</div>
 
 						<div className="sm:col-span-3">
-							<Select
+							<TextInput
 								label="Which city do you live in?"
-								options={cityNames}
-								initialValue={application.city ?? ""}
-								onChange={(opt) => handleChange("city", opt)}
-								allowCustomValue
+								value={application.city}
+								onChange={(e) => handleChange("city", e.target.value)}
 								required
 							/>
 						</div>
 
 						<div className="col-span-6">
-							<TextInput
-								id="phone"
-								label="Phone Number"
-								onChange={(e) => handleChange("phone", e.target.value)}
-								placeholder="+1 123-444-555"
-								required
-							/>
+							<PhoneInput required onChange={handlePhoneChange} />
 						</div>
 
 						<div className="sm:col-span-3">
 							<Select
 								label="Which school are you currently attending?"
 								options={schools}
-								initialValue={application.school ?? ""}
-								onChange={(opt) => handleChange("school", opt)}
+								onChange={(opt) => handleChange("school", opt[0] ?? "")}
 								allowCustomValue
 								required
 							/>
@@ -454,20 +458,17 @@ export const ApplyPage = () => {
 							<Select
 								label="What is your current level of study?"
 								options={levelsOfStudy}
-								initialValue={application.levelOfStudy ?? ""}
-								onChange={(opt) => handleChange("levelOfStudy", opt)}
+								onChange={(opt) => handleChange("levelOfStudy", opt[0] ?? "")}
 								required
 							/>
 						</div>
 
 						<div className="sm:col-span-full">
-							<MultiSelect
+							<Select
+								multiple
 								label="What is your major/field of study?"
 								options={majorsList}
 								onChange={(opts) => handleChange("major", opts)}
-								initialValues={
-									application.major.length ? application.major : []
-								}
 								allowCustomValue
 								required
 							/>
@@ -531,20 +532,16 @@ export const ApplyPage = () => {
 									options={genders}
 									allowCustomValue={true}
 									required={true}
-									onChange={(opt) => handleChange("gender", opt)}
-									initialValue={application.gender || ""}
+									onChange={(opt) => handleChange("gender", opt[0] ?? "")}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
 									label="What are your pronouns?"
 									options={pronouns}
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("pronouns", opts)}
-									initialValues={
-										application.pronouns.length > 0 ? application.pronouns : []
-									}
 								/>
 							</div>
 							<div className="sm:col-span-full">
@@ -553,8 +550,7 @@ export const ApplyPage = () => {
 									options={sexualityList}
 									allowCustomValue={true}
 									required={true}
-									onChange={(opt) => handleChange("sexuality", opt)}
-									initialValue={application.sexuality || ""}
+									onChange={(opt) => handleChange("sexuality", opt[0] ?? "")}
 								/>
 							</div>
 							<div className="sm:col-span-full">
@@ -563,48 +559,37 @@ export const ApplyPage = () => {
 									options={races}
 									allowCustomValue={false}
 									required={true}
-									onChange={(opt) => handleChange("race", opt)}
-									initialValue={application.race || ""}
+									onChange={(opt) => handleChange("race", opt[0] ?? "")}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
+									multiple
 									label="Do you have any dietary restrictions?"
 									options={diets}
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("diets", opts)}
-									initialValues={
-										application.diets.length > 0 ? application.diets : []
-									}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
+									multiple
 									label="Are there any allergens you have that we should be aware of?"
 									options={allergies}
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("allergies", opts)}
-									initialValues={
-										application.allergies.length > 0
-											? application.allergies
-											: []
-									}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
+									multiple
 									label="Which of the following fields interests you?"
 									options={interests}
 									allowCustomValue={true}
 									required={true}
 									onChange={(opts) => handleChange("interests", opts)}
-									initialValues={
-										application.interests.length > 0
-											? application.interests
-											: []
-									}
 								/>
 							</div>
 							<div className="sm:col-span-full">
@@ -612,22 +597,19 @@ export const ApplyPage = () => {
 									label="How many Hackathons have you attended as a participant in the past?"
 									options={hackathonExps}
 									required={true}
-									onChange={(opt) => handleChange("hackathonExperience", opt)}
-									initialValue={application.hackathonExperience || ""}
+									onChange={(opt) =>
+										handleChange("hackathonExperience", opt[0] ?? "")
+									}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
+									multiple
 									label="What programming languages are you the most comfortable with or passionate about?"
 									options={programmingLanguages}
 									allowCustomValue={true}
 									onChange={(opts) =>
 										handleChange("programmingLanguages", opts)
-									}
-									initialValues={
-										application.programmingLanguages.length > 0
-											? application.programmingLanguages
-											: []
 									}
 								/>
 							</div>
@@ -651,8 +633,9 @@ export const ApplyPage = () => {
 									opportunities.
 								</p>
 								<FileBrowser
+									label="Resume"
 									inputId="sponsors-resume-file-input"
-									allowedFileTypes={[
+									accept={[
 										"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
 										"application/pdf", //pdf
 										"application/msword", //doc, dot, wiz
@@ -664,22 +647,18 @@ export const ApplyPage = () => {
 										"application/vnd.oasis.opendocument.text", //odt
 									]}
 									onChange={(file) => {
-										file && setGeneralResumeFile(file);
+										file && setGeneralResumeFile(file[0] ?? null);
 									}}
 								/>
 							</div>
 							<div className="sm:col-span-full">
-								<MultiSelect
+								<Select
+									multiple
 									label="How did you hear about us?"
 									options={referralSources}
 									onChange={(opts) => handleChange("referralSources", opts)}
 									allowCustomValue
 									required
-									initialValues={
-										application.referralSources.length > 0
-											? application.referralSources
-											: []
-									}
 								/>
 							</div>
 							<div className="sm:col-span-full">

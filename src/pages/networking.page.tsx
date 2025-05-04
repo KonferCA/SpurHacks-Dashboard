@@ -435,15 +435,7 @@ export const NetworkingPage = () => {
 			>
 				<div className="space-y-12">
 					<div>
-						<Select
-							label="Resume Visibility"
-							initialValue={socials?.resumeVisibility ?? "Public"}
-							options={visibilityOptions}
-							onChange={(value) => {
-								if (value !== newVisibility) setEditMode("resume-visibility");
-								setNewVisibility(value as ResumeVisibility);
-							}}
-						/>
+						<Select label="Resume Visibility" options={visibilityOptions} />
 						<p>{visibilityDescription[newVisibility]}</p>
 						{editMode === "resume-visibility" && (
 							<div className="mt-4 flex gap-2">

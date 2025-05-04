@@ -224,9 +224,8 @@ export const AdminManageEventsPage = () => {
 								"Game/Chill",
 								"Networking",
 							]}
-							initialValue={newEvent.type}
 							onChange={(v) => {
-								handleEventChange("type", v);
+								handleEventChange("type", v[0] ?? "");
 							}}
 						/>
 
@@ -274,7 +273,7 @@ export const AdminManageEventsPage = () => {
 
 				<span className="underline">
 					{" "}
-					⚠️ Please note when updating events or foods, you must refresh the page
+					! Please note when updating events or foods, you must refresh the page
 					to see the changes.{" "}
 				</span>
 

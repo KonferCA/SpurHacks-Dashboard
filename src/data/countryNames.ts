@@ -6,7 +6,7 @@ const countryNames = [
 	"Albania",
 	"Algeria",
 	"American Samoa",
-	"AndorrA",
+	"Andorra",
 	"Angola",
 	"Anguilla",
 	"Antarctica",
@@ -245,4 +245,3 @@ const countryNames = [
 ] as const;
 
 export { countryNames };
-

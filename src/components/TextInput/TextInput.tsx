@@ -1,15 +1,7 @@
 import type React from "react";
-import { useState } from "react";
-import {
-	type TextInputStylesProps,
-	getTextInputDescriptionStyles,
-	getTextInputLabelStyles,
-	getTextInputStyles,
-} from "./TextInput.styles";
+import { Field, Input, InputProps } from "@chakra-ui/react";
 
-export interface TextInputProps
-	extends TextInputStylesProps,
-		React.InputHTMLAttributes<HTMLInputElement> {
+export interface TextInputProps extends InputProps {
 	/**
 	 * Label text of the input. For accessibility reasons, all inputs should have a label.
 	 */
@@ -21,12 +13,6 @@ export interface TextInputProps
 	srLabel?: boolean;
 
 	/**
-	 * Force the usage of id to match label to input.
-	 * This avoids dynamically generating a new id in runtime.
-	 */
-	id: string;
-
-	/**
 	 * Description of the input field.
 	 */
 	description?: string;
@@ -35,61 +21,28 @@ export interface TextInputProps
 	 * Function to validate the input value.
 	 */
 	validate?: (value: string) => boolean;
+	invalid?: boolean;
+	id?: string;
+	error?: string;
 }
 
 export const TextInput: React.FC<TextInputProps> = ({
 	label,
-	className,
 	invalid,
 	description,
-	srLabel = false,
 	required,
-	validate,
-	...inputProps
+	error,
+	...props
 }) => {
-	const describedby = `text-input-description-${inputProps.id}`;
-	const [error, setError] = useState<string | null>(null);
-
-	const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-		if (validate && !validate(event.target.value)) {
-			setError("Invalid URL format.");
-		} else {
-			setError(null);
-		}
-	};
-
 	return (
-		<div>
-			<label
-				htmlFor={inputProps.id}
-				className={getTextInputLabelStyles({ srLabel })}
-			>
+		<Field.Root required={required} invalid={invalid}>
+			<Field.Label>
 				{label}
-				{required ? <span className="text-red-600 ml-1">*</span> : null}
-			</label>
-			<div className="mt-2">
-				<input
-					{...inputProps}
-					aria-describedby={[
-						inputProps["aria-describedby"] ?? "",
-						describedby,
-					].join(" ")}
-					className={getTextInputStyles({
-						invalid,
-						className,
-					})}
-					onBlur={handleBlur}
-				/>
-			</div>
-			{error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-			{description && (
-				<p
-					className={getTextInputDescriptionStyles({ invalid })}
-					id={describedby}
-				>
-					{description}
-				</p>
-			)}
-		</div>
+				{required && <Field.RequiredIndicator />}
+			</Field.Label>
+			<Input bg="black" {...props} />
+			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
+		</Field.Root>
 	);
 };
