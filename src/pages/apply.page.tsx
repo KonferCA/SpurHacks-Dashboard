@@ -826,7 +826,7 @@ export const ApplyPage = () => {
 											>
 												HawkHacks 2025
 											</ChakraLink>
-											, hosted in Waterloo from June 25th - 27th?
+											, hosted in Waterloo from July 25th - 27th?
 										</Checkbox.Label>
 									</Checkbox.Root>
 									<Field.Root required>
