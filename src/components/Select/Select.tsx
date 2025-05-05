@@ -1,6 +1,7 @@
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import CreatableSelect from "react-select/creatable";
+import SelectComponent from "react-select";
 import { components } from "react-select";
 import type { MenuListProps, OptionProps, GroupBase } from "react-select";
 import { FixedSizeList } from "react-window";
@@ -236,6 +237,26 @@ export const Select: FC<SelectProps> = ({
 		[],
 	);
 
+	// common props for both select components
+	const commonSelectProps = {
+		options: mappedOptions,
+		onChange: handleChange,
+		value: value,
+		isMulti: multiple,
+		isDisabled: disabled,
+		placeholder: placeholder,
+		styles: customStyles,
+		components: {
+			MenuList,
+			Option: VirtualizedOption,
+		},
+		isClearable: true, // allow clearing selection
+		"aria-label": label, // accessibility
+		inputId: label, // link label to input for accessibility
+		maxMenuHeight: MENU_MAX_HEIGHT, // pass max height to component
+		closeMenuOnSelect: !multiple, // keep menu open for multi-select
+	};
+
 	return (
 		// use Chakra Field for layout, labels, errors, and IMPORTANTLY width control
 		<Field.Root
@@ -248,33 +269,25 @@ export const Select: FC<SelectProps> = ({
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
-			<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
-				// core props
-				options={mappedOptions}
-				onChange={handleChange}
-				value={value}
-				isMulti={multiple}
-				isDisabled={disabled}
-				placeholder={placeholder}
-				styles={customStyles}
-				components={{
-					MenuList, // use the virtualized menu list
-					Option: VirtualizedOption, // use the custom option wrapper
-				}}
-				// creatable props
-				formatCreateLabel={allowCustomValue ? formatCreateLabel : undefined}
-				// message when no options match search
-				noOptionsMessage={({ inputValue }) =>
-					allowCustomValue && inputValue
-						? formatCreateLabel(inputValue)
-						: "No options found"
-				}
-				// control props
-				isClearable // allow clearing selection
-				aria-label={label} // accessibility
-				inputId={label} // link label to input for accessibility
-				maxMenuHeight={MENU_MAX_HEIGHT} // pass max height to component
-			/>
+
+			{allowCustomValue ? (
+				<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
+					{...commonSelectProps}
+					// creatable props
+					formatCreateLabel={formatCreateLabel}
+					// message when no options match search
+					noOptionsMessage={({ inputValue }) =>
+						inputValue ? formatCreateLabel(inputValue) : "No options found"
+					}
+				/>
+			) : (
+				<SelectComponent<OptionType, typeof multiple, GroupBase<OptionType>>
+					{...commonSelectProps}
+					// message when no options match search
+					noOptionsMessage={() => "No options found"}
+				/>
+			)}
+
 			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
