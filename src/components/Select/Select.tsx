@@ -35,26 +35,27 @@ const OPTION_HEIGHT = 40; // height of each option in px
 const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
 
 // custom component for rendering individual options within the virtualized list
-const VirtualizedOption = ({ children, ...props }: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
+const VirtualizedOption = ({
+	children,
+	...props
+}: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { onMouseMove, onMouseOver, ...rest } = props.innerProps;
 	const newProps = { ...props, innerProps: rest };
 	return (
 		// use react-select's built-in Option component for consistent styling/behavior
-		<components.Option {...newProps}>
-			{children}
-		</components.Option>
+		<components.Option {...newProps}>{children}</components.Option>
 	);
 };
 
 // custom component for the virtualized menu list container
-const MenuList = (props: MenuListProps<OptionType, boolean, GroupBase<OptionType>>) => {
+const MenuList = (
+	props: MenuListProps<OptionType, boolean, GroupBase<OptionType>>,
+) => {
 	const { options, children, maxHeight, getValue } = props;
 	const [value] = getValue();
 	const initialOffset =
-		options.indexOf(value) !== -1
-			? options.indexOf(value) * OPTION_HEIGHT
-			: 0;
+		options.indexOf(value) !== -1 ? options.indexOf(value) * OPTION_HEIGHT : 0;
 
 	// ensure children is always an array for FixedSizeList
 	const childrenArray = Array.isArray(children) ? children : [children];
@@ -77,9 +78,7 @@ const MenuList = (props: MenuListProps<OptionType, boolean, GroupBase<OptionType
 		>
 			{({ index, style }) => (
 				// clone the option element and apply the style from react-window
-				<div style={style}>
-					{childrenArray[index]}
-				</div>
+				<div style={style}>{childrenArray[index]}</div>
 			)}
 		</FixedSizeList>
 	);
@@ -194,7 +193,7 @@ export const Select: FC<SelectProps> = ({
 						? "#1F1E2E" // hover color
 						: "transparent",
 				color: state.isSelected ? "#1A202C" : "white",
-				padding: '8px 12px',
+				padding: "8px 12px",
 				cursor: "pointer",
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
@@ -243,7 +242,12 @@ export const Select: FC<SelectProps> = ({
 			disabled={disabled}
 			width="100%"
 		>
-			<Field.Label>{label}</Field.Label>
+			<Field.Label>
+				{label}
+				{required && (
+					<span style={{ color: "#ee7981", marginLeft: "0.25rem" }}>*</span>
+				)}
+			</Field.Label>
 			<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
 				// core props
 				options={mappedOptions}
