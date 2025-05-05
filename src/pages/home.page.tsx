@@ -128,7 +128,7 @@ const HomePage = () => {
 								</Icon>
 							</Link>
 							<Link
-								href="https://discord.spurhacks.com"
+								href="https://discord.gg/NpnSUrZJQy"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
