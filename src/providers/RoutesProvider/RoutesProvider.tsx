@@ -27,19 +27,18 @@ import { PerksPage } from "@/pages/perks.page";
 import { SchedulePage } from "@/pages/schedule.page";
 
 // Admin pages
-import { AdminPage } from "@/pages/admin/Admin.page";
+import { AdminPage } from "@/pages/admin/admin.page";
 import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
 import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
-import { PostSubmissionPage } from "@/pages/miscellaneous/post-submission.page";
 import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
 import { VerifyRSVP } from "@/pages/miscellaneous/verify-rsvp.page";
 import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 import { Redirect } from "@/navigation/redirect";
-import { ApplicationPage } from "@/pages/application.page";
+
 // Local imports
 import {
 	hasApplied,
@@ -190,28 +189,11 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 					isAuthenticated,
 					hasVerifiedEmail,
 					(ctx) => {
-						if (hasApplied(ctx)) throw new Redirect(paths.application);
+						if (hasApplied(ctx)) throw new Redirect(paths.home);
 						return true;
 					},
 					isAppOpen,
 				],
-			},
-			{
-				path: paths.application,
-				element: <ApplicationPage />,
-				accessCheck: [
-					isAuthenticated,
-					hasVerifiedEmail,
-					(ctx) => {
-						if (!hasApplied(ctx)) throw new Redirect(paths.apply);
-						return true;
-					},
-				],
-			},
-			{
-				path: paths.submitted,
-				element: <PostSubmissionPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, hasApplied],
 			},
 			{
 				path: paths.verifyRSVP,
