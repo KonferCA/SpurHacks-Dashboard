@@ -100,22 +100,38 @@ const HomePage = () => {
 					</Card.Header>
 					<Card.Body>
 						<Flex alignItems="center" gap="1rem">
-							<Link href="https://www.instagram.com/spurhacks/">
+							<Link
+								href="https://www.instagram.com/spurhacks/"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								<Icon size="2xl">
 									<InstagramLogo />
 								</Icon>
 							</Link>
-							<Link href="https://www.linkedin.com/company/spurhacks">
+							<Link
+								href="https://www.linkedin.com/company/spurhacks"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								<Icon size="2xl">
 									<LinkedinLogo />
 								</Icon>
 							</Link>
-							<Link href="https://www.tiktok.com/@spur_hacks">
+							<Link
+								href="https://www.tiktok.com/@spur_hacks"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								<Icon size="2xl">
 									<TiktokLogo />
 								</Icon>
 							</Link>
-							<Link href="https://discord.spurhacks.com">
+							<Link
+								href="https://discord.spurhacks.com"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								<Icon size="2xl">
 									<DiscordLogo />
 								</Icon>
