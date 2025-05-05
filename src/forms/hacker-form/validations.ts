@@ -35,6 +35,13 @@ export const validations: {
 				)
 				.safeParse(v),
 		),
+	travel: (v) =>
+		formatResult(
+			z
+				.string()
+				.nonempty("Please tell us where you're travelling from.")
+				.safeParse(v),
+		),
 	phone: (v) =>
 		formatResult(z.string().nonempty("Phone number is empty").safeParse(v)),
 	school: (v) =>

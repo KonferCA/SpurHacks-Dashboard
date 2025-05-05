@@ -10,6 +10,7 @@ export const defaultApplication: ApplicationData = {
 	discord: "",
 	countryOfResidence: "",
 	city: "",
+	travel: "",
 	major: [],
 
 	gender: "",

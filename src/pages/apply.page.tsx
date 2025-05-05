@@ -52,6 +52,7 @@ import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import { type FormEvent, useCallback, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
+import { travelOptions } from "@/data/travel";
 
 enum StepsEnum {
 	BasicInformation,
@@ -91,6 +92,7 @@ const stepFields: ApplicationDataKey[][] = [
 		"major",
 		"countryOfResidence",
 		"city",
+		"travel",
 		"discord",
 	],
 
@@ -277,6 +279,7 @@ export const ApplyPage = () => {
 			major: ["Computer Science", "Data Science"],
 			countryOfResidence: "Canada",
 			city: "Waterloo",
+			travel: "No, I live in Kitchener-Waterloo",
 			discord: "@mydiscord",
 			interests: [
 				"Web3, Crypto, and Blockchain",
@@ -502,6 +505,18 @@ export const ApplyPage = () => {
 									value={application.city}
 									onChange={(e) => handleChange("city", e.target.value)}
 									error={errors.city}
+									required
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									value={mapOption(application.travel)}
+									label="Will you be travelling from outside the Kitchener-Waterloo area?"
+									placeholder="e.g., Kitchener/Waterloo, or outside of the city"
+									options={travelOptions}
+									onChange={(opt) => handleChange("travel", opt[0] ?? "")}
+									error={errors.travel}
 									required
 								/>
 							</GridItem>

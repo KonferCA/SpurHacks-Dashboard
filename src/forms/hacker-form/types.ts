@@ -15,6 +15,7 @@ export interface ApplicationData {
 	major: string[];
 	countryOfResidence: string;
 	city: string;
+	travel: string;
 	discord: string;
 
 	// Interests
