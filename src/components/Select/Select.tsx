@@ -1,22 +1,19 @@
-import {
-	type FC,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-	useMemo,
-} from "react";
-import {
-	Select as ChakraSelect,
-	createListCollection,
-	Field,
-	SelectValueChangeDetails,
-} from "@chakra-ui/react";
+import type { FC } from "react";
+import { useCallback, useMemo } from "react";
+import CreatableSelect from "react-select/creatable";
+import { Field } from "@chakra-ui/react"; // keep field for layout/errors
+import type { GroupBase, StylesConfig } from "react-select";
+
+// define the shape react-select expects for options
+interface OptionType {
+	value: string;
+	label: string;
+}
 
 export interface SelectProps {
 	label: string;
 	options: string[] | readonly string[];
-	allowCustomValue?: boolean;
+	allowOther?: boolean; // allow creating new options
 	disabled?: boolean;
 	required?: boolean;
 	description?: string;
@@ -24,11 +21,16 @@ export interface SelectProps {
 	placeholder?: string;
 	error?: string;
 	onChange?: (selected: string[]) => void;
+	// width prop is handled by the wrapping Field.Root now?? 
 }
+
+// helper to convert string array to OptionType array
+const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
+	options.map((opt) => ({ value: opt, label: opt }));
 
 export const Select: FC<SelectProps> = ({
 	label,
-	options,
+	options: initialOptions,
 	required,
 	disabled,
 	description,
@@ -36,112 +38,178 @@ export const Select: FC<SelectProps> = ({
 	placeholder,
 	error,
 	onChange,
+	allowOther = false,
 }) => {
-	const [visibleOptions, setVisibleOptions] = useState<string[]>([]);
-	const contentRef = useRef<HTMLDivElement>(null);
-	const lastOptionRef = useRef<HTMLDivElement>(null);
+	// memoize the options transformation
+	const mappedOptions = useMemo(
+		() => mapOptions(initialOptions),
+		[initialOptions],
+	);
 
-	// Initialize with first 50 options
-	useEffect(() => {
-		setVisibleOptions(options.slice(0, 50) as string[]);
-	}, [options]);
-
+	// use react-select's onChange to match the expected string[] signature
 	const handleChange = useCallback(
-		(details: SelectValueChangeDetails<string>) => {
-			if (onChange) onChange(details.value);
+		(selectedOption: unknown) => {
+			if (!onChange) return;
+
+			if (multiple) {
+				// handle multiple selections
+				const selected = selectedOption as OptionType[] | null;
+				onChange(selected ? selected.map((opt) => opt.value) : []);
+			} else {
+				// handle single selection
+				const selected = selectedOption as OptionType | null;
+				onChange(selected ? [selected.value] : []);
+			}
 		},
 		[onChange, multiple],
 	);
 
-	const handleScroll = useCallback(() => {
-		// If already rendered all options
-		if (visibleOptions.length >= options.length) return;
+	// style config to mimic chakra/previous look - sorry if you're maintaing this
+	const customStyles: StylesConfig<OptionType, typeof multiple> = useMemo(
+		() => ({
+			container: (provided) => ({
+				...provided,
+				width: "100%", // set width on the root container
+			}),
+			control: (provided, state) => ({
+				...provided,
+				backgroundColor: "#333147",
+				borderColor: state.isFocused ? "orange.400" : "transparent",
+				borderRadius: "9999px", // full
+				minHeight: "48px", // lg size
+				boxShadow: state.isFocused ? "0 0 0 1px orange.400" : "none", // focus ring
+				"&:hover": {
+					borderColor: state.isFocused ? "orange.400" : "transparent",
+				},
+			}),
+			valueContainer: (provided) => ({
+				...provided,
+				padding: "0 16px",
+			}),
+			placeholder: (provided) => ({
+				...provided,
+				color: "#666484", // gray.500 equivalent
+			}),
+			input: (provided) => ({
+				...provided,
+				color: "white",
+				margin: 0,
+				padding: 0,
+			}),
+			singleValue: (provided) => ({
+				...provided,
+				color: "white",
+			}),
+			multiValue: (provided) => ({
+				...provided,
+				backgroundColor: "rgba(255, 255, 255, 0.1)",
+				borderRadius: "4px",
+			}),
+			multiValueLabel: (provided) => ({
+				...provided,
+				color: "white",
+				padding: "2px 6px",
+			}),
+			multiValueRemove: (provided) => ({
+				...provided,
+				color: "#A0AEC0", // gray.400
+				"&:hover": {
+					backgroundColor: "rgba(255, 255, 255, 0.2)",
+					color: "white",
+				},
+			}),
+			menu: (provided) => ({
+				...provided,
+				backgroundColor: "#333147",
+				borderRadius: "0.75rem", // xl
+				zIndex: 2, // ensure menu is above other elements
+			}),
+			menuList: (provided) => ({
+				...provided,
+				paddingTop: "4px",
+				paddingBottom: "4px",
+			}),
+			option: (provided, state) => ({
+				...provided,
+				backgroundColor: state.isSelected
+					? "orange.400"
+					: state.isFocused
+						? "#1F1E2E" // hover color
+						: "transparent",
+				color: state.isSelected ? "#1A202C" : "white",
+				borderRadius: "0.75rem", // xl
+				margin: "0 4px",
+				width: "calc(100% - 8px)",
+				cursor: "pointer",
+				"&:active": {
+					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
+				},
+			}),
+			indicatorSeparator: () => ({
+				display: "none",
+			}),
+			dropdownIndicator: (provided) => ({
+				...provided,
+				color: "#A0AEC0", // gray.400
+				"&:hover": {
+					color: "white",
+				},
+			}),
+			clearIndicator: (provided) => ({
+				...provided,
+				color: "#A0AEC0",
+				"&:hover": {
+					color: "white",
+				},
+			}),
+			loadingIndicator: (provided) => ({
+				...provided,
+				color: "#A0AEC0",
+			}),
+			noOptionsMessage: (provided) => ({
+				...provided,
+				color: "#A0AEC0",
+			}),
+		}),
+		[],
+	);
 
-		if (!contentRef.current || !lastOptionRef.current) return;
-
-		const containerRect = contentRef.current.getBoundingClientRect();
-		const containerBottom = containerRect.bottom;
-
-		const lastItemRect = lastOptionRef.current.getBoundingClientRect();
-		const lastItemBottom = lastItemRect.bottom;
-
-		// If the last visible item is near the bottom of the container, load more
-		if (lastItemBottom <= containerBottom + 50) {
-			setVisibleOptions(
-				(prev) =>
-					[
-						...prev,
-						...options.slice(prev.length, prev.length + 50),
-					] as string[],
-			);
-		}
-	}, [visibleOptions, options]);
-
-	const collection = useMemo(() => {
-		return createListCollection({
-			items: options,
-			itemToValue: (item) => item,
-			itemToString: (item) => item,
-		});
-	}, [options]);
+	// function to display the create option prompt
+	const formatCreateLabel = useCallback(
+		(inputValue: string) => `Create "${inputValue}"`,
+		[],
+	);
 
 	return (
-		<Field.Root required={required} invalid={!!error}>
-			<ChakraSelect.Root
-				collection={collection}
-				onValueChange={handleChange}
-				disabled={disabled}
-				multiple={multiple}
-				size="lg"
-			>
-				<ChakraSelect.Label>
-					{label}
-					{required && <Field.RequiredIndicator />}
-				</ChakraSelect.Label>
-				<ChakraSelect.HiddenSelect />
-				<ChakraSelect.Control>
-					<ChakraSelect.Trigger
-						bg="#333147"
-						borderColor="transparent"
-						borderRadius="full"
-						_placeholder={{ color: "#666484" }}
-					>
-						<ChakraSelect.ValueText placeholder={placeholder} />
-					</ChakraSelect.Trigger>
-					<ChakraSelect.IndicatorGroup>
-						<ChakraSelect.Indicator />
-						<ChakraSelect.ClearTrigger />
-					</ChakraSelect.IndicatorGroup>
-				</ChakraSelect.Control>
-				<ChakraSelect.Positioner>
-					<ChakraSelect.Content
-						ref={contentRef}
-						onScroll={handleScroll}
-						bg="#333147"
-						rounded="xl"
-					>
-						{visibleOptions.map((item, index) => (
-							<ChakraSelect.Item
-								_hover={{
-									bg: "#1F1E2E",
-								}}
-								rounded="xl"
-								item={item}
-								key={item}
-								ref={
-									index === visibleOptions.length - 1
-										? lastOptionRef
-										: undefined
-								}
-							>
-								{item}
-								<ChakraSelect.ItemIndicator />
-							</ChakraSelect.Item>
-						))}
-					</ChakraSelect.Content>
-				</ChakraSelect.Positioner>
-			</ChakraSelect.Root>
-
+		// use Chakra Field for layout, labels, errors, and IMPORTANTLY width control
+		<Field.Root
+			required={required}
+			invalid={!!error}
+			disabled={disabled}
+			width="100%"
+		>
+			<Field.Label>{label}</Field.Label>
+			<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
+				// core props
+				options={mappedOptions}
+				onChange={handleChange}
+				isMulti={multiple}
+				isDisabled={disabled}
+				placeholder={placeholder}
+				styles={customStyles}
+				// creatable props
+				formatCreateLabel={allowOther ? formatCreateLabel : undefined}
+				// message when no options match search
+				noOptionsMessage={({ inputValue }) =>
+					allowOther && inputValue
+						? formatCreateLabel(inputValue) // show create prompt if allowed
+						: "No options found"
+				}
+				// control props
+				isClearable // allow clearing selection
+				aria-label={label} // accessibility
+				inputId={label} // link label to input for accessibility
+			/>
 			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
