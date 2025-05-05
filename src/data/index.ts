@@ -35,21 +35,20 @@ export const sexualityList = [
 ] as const;
 
 export const races = [
+	"Asian Indian",
 	"Black or African",
 	"Chinese",
 	"Filipino",
 	"Guamanian or Chamorro",
-	"Hispanic/Latino/Spanish Origin",
+	"Hispanic / Latino / Spanish Origin",
 	"Japanese",
 	"Korean",
 	"Middle Eastern",
-	"Native America or Alaskan Native",
+	"Native American or Alaskan Native",
 	"Native Hawaiian",
 	"Samoan",
-	"South Asian / Asian Indian",
 	"Vietnamese",
 	"White",
-	"Prefer not to answer",
 	"My racial or ethnic background isn't listed",
 ] as const;
 
@@ -78,35 +77,37 @@ export const allergies = [
 
 export const interests = [
 	"Web3, Crypto, and Blockchain",
+	"Quantum Computing",
+	"Artificial Intelligence (AI)",
+	"Robotics",
+	"Human-Computer Interface (HCI)",
 	"Distributed and Parallel Computing",
 	"Frontend Engineering",
 	"Backend Engineering",
 	"Full-stack Engineering",
 	"Data Science",
-	"Robotics",
 	"AR/VR Technology",
 	"Embedded Systems",
 	"Game Development",
 	"DevOps & Infrastructure Engineering",
-	"Artificial Intelligence (AI)",
-	"Human-Computer Interface (HCI)",
 	"Networking",
 	"Mobile Development",
+	"Project Management",
+	"Event/Hackathon Organizing",
 ] as const;
 
 export const programmingLanguages = [
-	"I'm new to programming",
-	"I'm not sure",
 	"C",
 	"C++",
 	"C#",
 	"Python",
 	"Java",
 	"Rust",
-	"Golang",
 	"JavaScript",
 	"TypeScript",
 	"Ruby",
+	"New to programming",
+	"Not sure",
 ] as const;
 
 export const hackathonExps = [
@@ -118,17 +119,18 @@ export const hackathonExps = [
 ] as const;
 
 export const referralSources = [
-	"SpurHacks Discord",
-	"SpurHacks TikTok",
-	"SpurHacks LinkedIn",
+	"Konfer or SpurHacks Instagram",
+	"Konfer or SpurHacks TikTok",
+	"Konfer or SpurHacks LinkedIn",
 	"MLH Website",
 	"MLH Discord",
-	"MLH Socials",
-	"Sponsor Social Media Account",
-	"Campus Posters/Advertisements",
-	"Advertisement from professor/class",
-	"Advertisement at high school",
-	"Word of Mouth",
-	"Advertisements on other Discords",
-	"Through Google",
+	"MLH social media accounts",
+	"Sponsor's or partner's social media accounts",
+	"Word of mouth",
+	"Physical poster or advertisement in Toronto",
+	"Physical poster or advertisement in Kitchener-Waterloo",
+	"Advertisement from a professor or class",
+	"Advertisements from another Discord server",
+	"Google",
+	"Other",
 ] as const;

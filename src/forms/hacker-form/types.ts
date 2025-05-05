@@ -17,25 +17,37 @@ export interface ApplicationData {
 	city: string;
 	discord: string;
 
+	// Interests
+	interests: string[];
+	hackathonExperience: string;
+	programmingLanguages: string[];
+
+	// Motivation
+	reasonToBeInSpurHacks: string;
+	revolutionizingTechnology: string;
+
+	// Demographics
 	gender: string;
 	pronouns: string[];
 	sexuality: string;
 	race: string;
 	diets: string[];
 	allergies: string[];
-	interests: string[];
-	hackathonExperience: string;
-	programmingLanguages: string[];
-	participatingAs: "Hacker";
-	applicantId: string;
+
+	// Final Checks
+	participateInHawkHacks: boolean;
+	agreedToSpurHacksCoc: boolean;
 	agreedToMLHCoC: boolean;
 	agreedToMLHToCAndPrivacyPolicy: boolean;
 	agreedToReceiveEmailsFromMLH: boolean;
+	agreedToReceiveEmailsFromKonferOrSpur: boolean;
 	referralSources: string[];
 	describeSalt: string;
 	generalResumeRef: string;
-	reasonToBeInHawkHacks: string;
-	revolutionizingTechnology: string;
+
+	// Extra metadata
+	participatingAs: "Hacker";
+	applicantId: string;
 	timestamp?: Timestamp;
 	hackathonYear?: string;
 	rsvp?: boolean;

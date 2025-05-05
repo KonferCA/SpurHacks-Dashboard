@@ -38,7 +38,6 @@ export const TextArea: React.FC<TextAreaProps> = ({
 			<Textarea
 				bg="#333145"
 				borderColor="transparent"
-				borderRadius="full"
 				_placeholder={{ color: "#666484" }}
 				size="lg"
 				{...props}

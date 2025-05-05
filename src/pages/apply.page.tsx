@@ -6,7 +6,6 @@ import type {
 	ApplicationDataKey,
 } from "@/forms/hacker-form/types";
 import { validations } from "@/forms/hacker-form/validations";
-import type { Step } from "@/components/types";
 import { toaster } from "@/components/ui/toaster";
 import {
 	ages,
@@ -50,9 +49,21 @@ import { type FormEvent, useCallback, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 
+enum StepsEnum {
+	BasicInformation,
+	Interests,
+	Motivation,
+	Demographics,
+	FinalChecks,
+}
+
+function isStep(current: number, expected: StepsEnum) {
+	return current === expected;
+}
+
 // Define fields to validate for each step
 const stepFields: ApplicationDataKey[][] = [
-	// Step 0: Basic profile
+	// Step 0: Basic Information
 	[
 		"firstName",
 		"lastName",
@@ -68,42 +79,42 @@ const stepFields: ApplicationDataKey[][] = [
 		"discord",
 	],
 
-	// Step 1: Hacker questions
-	["reasonToBeInHawkHacks", "revolutionizingTechnology"],
+	// Step: Interests
+	["interests", "hackathonExperience", "programmingLanguages"],
 
-	// Step 2: Application
+	// Step: Motivation
+	["reasonToBeInSpurHacks", "revolutionizingTechnology"],
+
+	// Step: Demographics
+	["diets", "allergies", "gender", "pronouns", "sexuality", "race"],
+
+	// Step: Final checks
 	[
-		"gender",
-		"pronouns",
-		"sexuality",
-		"race",
-		"diets",
-		"allergies",
-		"interests",
-		"hackathonExperience",
-		"programmingLanguages",
+		"referralSources",
+		"describeSalt",
+		"agreedToMLHCoC",
+		"agreedToMLHToCAndPrivacyPolicy",
+		"agreedToSpurHacksCoc",
 	],
-
-	// Step 3: Final checks
-	["referralSources", "describeSalt"],
 ];
 
 type FormErrors = { _hasErrors: boolean } & Partial<
 	Record<ApplicationDataKey, string>
 >;
 
+const steps = [
+	{ position: StepsEnum.BasicInformation, name: "Basic Information" },
+	{ position: StepsEnum.Interests, name: "Interests" },
+	{ position: StepsEnum.Motivation, name: "Motivation" },
+	{ position: StepsEnum.Demographics, name: "Demographics" },
+	{ position: StepsEnum.FinalChecks, name: "Final Checks" },
+];
+
 export const ApplyPage = () => {
-	const [steps, setSteps] = useState<Step[]>([
-		{ position: 0, name: "Basic profile", status: "current" },
-		{ position: 1, name: "Hacker questions", status: "upcoming" },
-		{ position: 2, name: "Application", status: "upcoming" },
-		{ position: 3, name: "Final checks", status: "upcoming" },
-	]);
-	const [activeStep, setActiveStep] = useState(0); // index
+	const [activeStep, setActiveStep] = useState(StepsEnum.BasicInformation); // index
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [generalResumeFile, setGeneralResumeFile] = useState<File | null>(null);
 	const {
 		applications,
 		isLoading: loadingApplications,
@@ -144,6 +155,16 @@ export const ApplyPage = () => {
 	const clearErrors = () => setErrors({ _hasErrors: false });
 
 	const validateField = <K extends ApplicationDataKey>(field: K) => {
+		if (field === "yearOfStudies") {
+			// Only validate yearOfStudies if the education level requires it
+			const requiresYearOfStudy =
+				yearOfStudies[application.educationLevels] !== undefined;
+			if (requiresYearOfStudy && validations[field]) {
+				return validations[field](application[field]);
+			}
+			return null;
+		}
+
 		if (validations[field]) {
 			return validations[field](application[field]);
 		}
@@ -176,12 +197,6 @@ export const ApplyPage = () => {
 		if (activeStep < steps.length) {
 			// Validate current step before proceeding
 			if (!validateCurrentStep()) return;
-
-			setSteps((s) => {
-				s[activeStep].status = "complete";
-				s[activeStep + 1].status = "current";
-				return s;
-			});
 			setActiveStep((s) => s + 1);
 		}
 	};
@@ -223,34 +238,9 @@ export const ApplyPage = () => {
 		// On the final step, validate the current step first
 		if (!validateCurrentStep()) return;
 
-		const allRequiredChecked =
-			// don't have the CoC for HH yet so we don't have to make it required for now
-			// application.agreedToHawkHacksCoC &&
-			application.agreedToMLHCoC && application.agreedToMLHToCAndPrivacyPolicy;
-
-		if (!allRequiredChecked) {
-			setErrors({ _hasErrors: true });
-			return;
-		}
-
 		setIsSubmitting(true);
 
-		try {
-			if (generalResumeFile) {
-				application.generalResumeRef = await uploadGeneralResume(
-					generalResumeFile,
-					currentUser.uid,
-				);
-			}
-		} catch (e) {
-			console.error(e);
-			toaster.error({
-				title: "Error uploading sponsor resume",
-				description: "Please try again later.",
-			});
-			setIsSubmitting(false);
-			return;
-		}
+		// Resume is already uploaded when the file is selected, no need to upload again
 
 		try {
 			application.email = currentUser.email as string;
@@ -293,7 +283,7 @@ export const ApplyPage = () => {
 				<Box as="nav" aria-label="Application progress" marginBottom="2rem">
 					<Steps.Root
 						step={activeStep}
-						defaultStep={0}
+						defaultStep={StepsEnum.BasicInformation}
 						count={steps.length}
 						onStepChange={(e) => jumpTo(e.step)}
 					>
@@ -314,8 +304,8 @@ export const ApplyPage = () => {
 					All fields with an asterisk{"(*)"} are required.
 				</Heading>
 				<form className="mt-12">
-					{/* basic profile */}
-					{activeStep === 0 && (
+					{/* basic information */}
+					{isStep(activeStep, StepsEnum.BasicInformation) && (
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
 								<TextInput
@@ -473,181 +463,168 @@ export const ApplyPage = () => {
 							</GridItem>
 						</SimpleGrid>
 					)}
-					{/* end of basic profile */}
+					{/* end of basic information */}
 
-					{/* hacker specific questions */}
-					{activeStep === 1 && (
-						<SimpleGrid
-							marginX="auto"
-							columns={6}
-							display={activeStep !== 1 ? "hidden" : "grid"}
-							gapX="1.5rem"
-							gapY="2rem"
-						>
-							<GridItem colSpan={6}>
-								<TextArea
-									id="hacker-specific-q1"
-									label="Why do you want to participate at HawkHacks?"
-									rows={4}
-									required
-									onChange={(e) =>
-										handleChange("reasonToBeInHawkHacks", e.target.value)
-									}
-									value={
-										application.reasonToBeInHawkHacks
-											? application.reasonToBeInHawkHacks
-											: ""
-									}
-									error={errors["reasonToBeInHawkHacks"]}
-								/>
-							</GridItem>
-							<GridItem colSpan={6}>
-								<TextArea
-									id="hacker-specific-q2"
-									label="In a few sentences, what up-and-coming or revolutionizing technology are you most excited about?"
-									rows={4}
-									required
-									onChange={(e) =>
-										handleChange("revolutionizingTechnology", e.target.value)
-									}
-									value={
-										application.revolutionizingTechnology
-											? application.revolutionizingTechnology
-											: ""
-									}
-									error={errors["revolutionizingTechnology"]}
-								/>
-							</GridItem>
-						</SimpleGrid>
-					)}
-					{/* end of hacker specific questions */}
-
-					{/* general questions */}
-					{activeStep === 2 && (
-						<SimpleGrid
-							marginX="auto"
-							columns={6}
-							display={activeStep !== 2 ? "hidden" : "grid"}
-							gapX="1.5rem"
-							gapY="2rem"
-						>
+					{/* interests */}
+					{isStep(activeStep, StepsEnum.Interests) && (
+						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
-									label="What gender do you identify as?"
-									options={genders}
-									allowCustomValue={true}
-									required={true}
-									onChange={(opt) => handleChange("gender", opt[0] ?? "")}
-									error={errors["gender"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									label="What are your pronouns?"
-									options={pronouns}
-									allowCustomValue={true}
-									required={true}
-									onChange={(opts) => handleChange("pronouns", opts)}
-									error={errors["pronouns"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									label="Please select any of the following that resonates with you:"
-									options={sexualityList}
-									allowCustomValue={true}
-									required={true}
-									onChange={(opt) => handleChange("sexuality", opt[0] ?? "")}
-									error={errors["sexuality"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									label="Which of the following best describes your racial or ethnic background?"
-									options={races}
-									allowCustomValue={false}
-									required={true}
-									onChange={(opt) => handleChange("race", opt[0] ?? "")}
-									error={errors["race"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									multiple
-									label="Do you have any dietary restrictions?"
-									options={diets}
-									allowCustomValue={true}
-									required={true}
-									onChange={(opts) => handleChange("diets", opts)}
-									error={errors["diets"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									multiple
-									label="Are there any allergens you have that we should be aware of?"
-									options={allergies}
-									allowCustomValue={true}
-									required={true}
-									onChange={(opts) => handleChange("allergies", opts)}
-									error={errors["allergies"]}
-								/>
-							</GridItem>
-
-							<GridItem colSpan={6}>
-								<Select
-									multiple
 									label="Which of the following fields interests you?"
+									placeholder="Select interests"
 									options={interests}
-									allowCustomValue={true}
-									required={true}
 									onChange={(opts) => handleChange("interests", opts)}
-									error={errors["interests"]}
+									error={errors.interests}
+									allowCustomValue
+									required
+									multiple
 								/>
 							</GridItem>
 
 							<GridItem colSpan={6}>
 								<Select
 									label="How many Hackathons have you attended as a participant in the past?"
+									placeholder="Select experience"
 									options={hackathonExps}
-									required={true}
 									onChange={(opt) =>
 										handleChange("hackathonExperience", opt[0] ?? "")
 									}
-									error={errors["hackathonExperience"]}
+									error={errors.hackathonExperience}
+									required
 								/>
 							</GridItem>
 
 							<GridItem colSpan={6}>
 								<Select
-									multiple
 									label="What programming languages are you the most comfortable with or passionate about?"
+									placeholder="Select programming languages"
 									options={programmingLanguages}
 									allowCustomValue={true}
 									onChange={(opts) =>
 										handleChange("programmingLanguages", opts)
 									}
-									error={errors["programmingLanguages"]}
+									error={errors.programmingLanguages}
+									multiple
+									required
 								/>
 							</GridItem>
 						</SimpleGrid>
 					)}
-					{/* end of general questions */}
+					{/* end of interests */}
+
+					{/* motivation */}
+					{isStep(activeStep, StepsEnum.Motivation) && (
+						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
+							<GridItem colSpan={6}>
+								<TextArea
+									label="Why do you want to participate at SpurHacks?"
+									placeholder="Write your answer here..."
+									rows={4}
+									onChange={(e) =>
+										handleChange("reasonToBeInSpurHacks", e.target.value)
+									}
+									value={application.reasonToBeInSpurHacks}
+									error={errors.reasonToBeInSpurHacks}
+									required
+								/>
+							</GridItem>
+							<GridItem colSpan={6}>
+								<TextArea
+									label="In a few sentences, what up-and-coming or revolutionizing technology are you most excited about?"
+									placeholder="Write your answer here..."
+									rows={4}
+									onChange={(e) =>
+										handleChange("revolutionizingTechnology", e.target.value)
+									}
+									value={application.revolutionizingTechnology}
+									error={errors.revolutionizingTechnology}
+									required
+								/>
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of motivation */}
+
+					{/* demographics */}
+					{isStep(activeStep, StepsEnum.Demographics) && (
+						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
+							<GridItem colSpan={6}>
+								<Select
+									label="Do you have any dietary restrictions?"
+									placeholder="Select dietary restrictions"
+									description="Can't find your dietary preference? Add it to ensure we can accommodate you."
+									options={diets}
+									onChange={(opts) => handleChange("diets", opts)}
+									error={errors.diets}
+									allowCustomValue
+									required
+									multiple
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									label="Are there any allergens you have that we should be aware of?"
+									placeholder="Select allergens"
+									description="Don't see your allergen listed? Please specify it so we can accommodate you."
+									options={allergies}
+									onChange={(opts) => handleChange("allergies", opts)}
+									error={errors.allergies}
+									multiple
+									required
+									allowCustomValue
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									label="Which gender do you identify as?"
+									placeholder="Select gender"
+									options={genders}
+									onChange={(opt) => handleChange("gender", opt[0] ?? "")}
+									error={errors.gender}
+									allowCustomValue
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									label="What are your pronouns?"
+									placeholder="Select pronouns"
+									options={pronouns}
+									onChange={(opts) => handleChange("pronouns", opts)}
+									error={errors.pronouns}
+									allowCustomValue
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									label="Please select any of the following that resonates with you:"
+									placeholder="Select answer"
+									options={sexualityList}
+									onChange={(opt) => handleChange("sexuality", opt[0] ?? "")}
+									error={errors.sexuality}
+									allowCustomValue
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									label="Which of the following best describes your racial or ethnic background?"
+									placeholder="Select ethnic background"
+									options={races}
+									onChange={(opt) => handleChange("race", opt[0] ?? "")}
+									error={errors.race}
+								/>
+							</GridItem>
+						</SimpleGrid>
+					)}
+					{/* end of demographics */}
 
 					{/* final steps - agreements */}
-					{activeStep === 3 && (
-						<SimpleGrid
-							marginX="auto"
-							columns={6}
-							display={activeStep !== 3 ? "hidden" : "grid"}
-							gapX="1.5rem"
-							gapY="2rem"
-						>
+					{isStep(activeStep, StepsEnum.FinalChecks) && (
+						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Text fontWeight="medium" color="gray.400">
 									If you would like to share your resume with our sponsors,
@@ -660,7 +637,7 @@ export const ApplyPage = () => {
 								</Text>
 								<FileBrowser
 									label="Resume"
-									inputId="sponsors-resume-file-input"
+									maxFiles={1}
 									accept={[
 										"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
 										"application/pdf", //pdf
@@ -672,44 +649,120 @@ export const ApplyPage = () => {
 										"text/plain", //txt, text, conf, def, list, log, in, ini
 										"application/vnd.oasis.opendocument.text", //odt
 									]}
-									onChange={(file) => {
-										file && setGeneralResumeFile(file[0] ?? null);
+									onChange={async (file) => {
+										if (file && file[0]) {
+											try {
+												// Upload the file immediately when selected
+												const resumeLink = await uploadGeneralResume(
+													file[0],
+													currentUser.uid,
+												);
+												// Set the resume link in the application data
+												handleChange("generalResumeRef", resumeLink);
+												toaster.success({
+													title: "Resume uploaded",
+													description:
+														"Your resume has been uploaded successfully.",
+												});
+											} catch (err) {
+												console.error(err);
+												toaster.error({
+													title: "Error uploading resume",
+													description: "Please try again later.",
+												});
+												setErrors({
+													_hasErrors: true,
+													generalResumeRef: "Error uploading resume.",
+												});
+											}
+										}
 									}}
 									error={errors["generalResumeRef"]}
 								/>
 							</GridItem>
 							<GridItem colSpan={6}>
 								<Select
-									multiple
 									label="How did you hear about us?"
+									placeholder="Select platform"
 									options={referralSources}
 									onChange={(opts) => handleChange("referralSources", opts)}
 									allowCustomValue
-									error={errors["referralSources"]}
+									error={errors.referralSources}
+									multiple
 									required
 								/>
 							</GridItem>
 							<GridItem colSpan={6}>
 								<TextInput
 									label="How would you describe the taste of salt to someone who hasn't tasted it, and can't ever taste it?"
-									id="funsie-1"
+									placeholder="Be creative!"
 									onChange={(e) => handleChange("describeSalt", e.target.value)}
-									required
 									value={application.describeSalt}
-									error={errors["describeSalt"]}
+									error={errors.describeSalt}
+									required
 								/>
 							</GridItem>
 							<GridItem colSpan={6} spaceY="1rem">
 								<Fieldset.Root
 									invalid={
 										!!errors["agreedToMLHCoC"] ||
-										!!errors["agreedToMLHToCAndPrivacyPolicy"]
+										!!errors["agreedToMLHToCAndPrivacyPolicy"] ||
+										!!errors.agreedToSpurHacksCoc
 									}
 								>
 									<Fieldset.ErrorText>
 										Please check all required fields (marked with *) before
 										continuing.
 									</Fieldset.ErrorText>
+									<Checkbox.Root
+										checked={application.participateInHawkHacks}
+										onCheckedChange={(e) =>
+											handleChange(
+												"participateInHawkHacks",
+												typeof e.checked === "boolean" && e.checked,
+											)
+										}
+									>
+										<Checkbox.HiddenInput />
+										<Checkbox.Control />
+										<Checkbox.Label>
+											Would you like to attend{" "}
+											<ChakraLink
+												color="skyblue"
+												textDecor="underline"
+												href="https://hawkhacks.ca"
+											>
+												HawkHacks 2025
+											</ChakraLink>
+											, hosted in Waterloo from June 25th - 27th?
+										</Checkbox.Label>
+									</Checkbox.Root>
+									<Field.Root required>
+										<Checkbox.Root
+											checked={application.agreedToSpurHacksCoc}
+											onCheckedChange={(e) =>
+												handleChange(
+													"agreedToSpurHacksCoc",
+													typeof e.checked === "boolean" && e.checked,
+												)
+											}
+										>
+											<Checkbox.HiddenInput />
+											<Checkbox.Control />
+											<Checkbox.Label>
+												I have read and agree to the{" "}
+												<ChakraLink
+													color="skyblue"
+													textDecor="underline"
+													href=""
+												>
+													SpurHacks Code of Conduct
+												</ChakraLink>
+												.
+												<Field.RequiredIndicator />
+											</Checkbox.Label>
+										</Checkbox.Root>
+									</Field.Root>
 									<Field.Root required>
 										<Checkbox.Root
 											checked={application.agreedToMLHCoC}
@@ -804,6 +857,29 @@ export const ApplyPage = () => {
 											</Checkbox.Label>
 										</Checkbox.Root>
 									</Field.Root>
+									<Field.Root>
+										<Checkbox.Root
+											checked={
+												application.agreedToReceiveEmailsFromKonferOrSpur
+											}
+											onCheckedChange={(e) =>
+												handleChange(
+													"agreedToReceiveEmailsFromKonferOrSpur",
+													typeof e.checked === "boolean" && e.checked,
+												)
+											}
+										>
+											<Checkbox.HiddenInput />
+											<Checkbox.Control />
+											<Checkbox.Label>
+												<Text>
+													I authorize Konfer and SPUR to send me occasional
+													emails about relevant events, career opportunities,
+													and community announcements.
+												</Text>
+											</Checkbox.Label>
+										</Checkbox.Root>
+									</Field.Root>
 								</Fieldset.Root>
 							</GridItem>
 						</SimpleGrid>
@@ -815,14 +891,6 @@ export const ApplyPage = () => {
 
 					{/* just a separator line */}
 					<Box height="0.125rem" marginY="1.5rem" bg="#1F1E2E" />
-
-					<div>
-						{errors._hasErrors && (
-							<Text textAlign="center" color="red">
-								Oh no! It appears that the are errors in the form.
-							</Text>
-						)}
-					</div>
 
 					<Flex
 						alignItems="center"
