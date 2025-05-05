@@ -116,12 +116,8 @@ export const ApplyPage = () => {
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const {
-		applications,
-		isLoading: loadingApplications,
-		refreshApplications,
-	} = useApplications();
-	const userApp = applications[0] || null;
+	const { isLoading: loadingApplications, refreshApplications } =
+		useApplications();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -205,21 +201,6 @@ export const ApplyPage = () => {
 	const prevStep = () => {
 		if (activeStep > 0) {
 			setActiveStep((s) => s - 1);
-		}
-	};
-
-	const jumpTo = (step: number) => {
-		if (step > -1 && step < steps.length) {
-			if (step <= activeStep) {
-				setActiveStep(step);
-			} else {
-				// Validate all steps up to the target step
-				for (let i = activeStep; i < step; i++) {
-					setActiveStep(i);
-					if (!validateCurrentStep()) return;
-				}
-				setActiveStep(step);
-			}
 		}
 	};
 
@@ -334,7 +315,6 @@ export const ApplyPage = () => {
 						step={activeStep}
 						defaultStep={StepsEnum.BasicInformation}
 						count={steps.length}
-						onStepChange={(e) => jumpTo(e.step)}
 					>
 						<Steps.List>
 							{steps.map((step, index) => (
@@ -422,7 +402,8 @@ export const ApplyPage = () => {
 								<PhoneInput
 									required
 									onChange={handlePhoneChange}
-									error={errors["phone"]}
+									initialValue={application.phone}
+									error={errors.phone}
 								/>
 							</GridItem>
 
@@ -1001,9 +982,7 @@ export const ApplyPage = () => {
 							{isSubmitting
 								? "Submitting..."
 								: activeStep === steps.length - 1
-									? userApp
-										? "Re-submit"
-										: "Submit"
+									? "Submit"
 									: "Next"}
 						</Button>
 					</Flex>

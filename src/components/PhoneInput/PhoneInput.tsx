@@ -9,6 +9,7 @@ export interface PhoneInputProps {
 	required?: boolean;
 	error?: string;
 	description?: string;
+	initialValue?: string;
 }
 
 export const PhoneInput: FC<PhoneInputProps> = ({
@@ -16,12 +17,43 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 	required,
 	error,
 	description,
+	initialValue,
 }) => {
-	const [country, setCountry] = useState("Canada (+1)");
-	const [phone, setPhone] = useState("");
+	const [country, setCountry] = useState(() => {
+		if (initialValue) {
+			// Value format should be like "(+1) 123-456-7890"
+			const match = initialValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
+			if (match) {
+				const countryCode = match[1];
+				// Find the country by code
+				const foundCountry = countryCodes.find((c) =>
+					c.includes(`(+${countryCode})`),
+				);
+				if (foundCountry) {
+					return foundCountry;
+				}
+			}
+		}
+		return "Canada (+1)";
+	});
+
+	const [phone, setPhone] = useState(() => {
+		if (initialValue) {
+			// Value format should be like "(+1) 123-456-7890"
+			const match = initialValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
+			if (match) {
+				const phone = match[2];
+				if (phone) {
+					return phone;
+				}
+			}
+		}
+		return "";
+	});
 
 	const handleChange = (code: boolean, value: string) => {
 		if (code) {
+			//@ts-ignore
 			setCountry(value);
 		} else {
 			setPhone((old) => {
