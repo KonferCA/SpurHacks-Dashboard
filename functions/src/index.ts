@@ -20,6 +20,8 @@ import { Resend } from "resend";
 
 initializeApp();
 
+const FE_URL = process.env.FE_URL;
+
 export const fetchOrGenerateTicket = onCall(async (_, res) => {
 	const context = res as Context;
 	if (!context || !context.auth) {
@@ -551,118 +553,125 @@ export const applicationCreated = onDocumentCreated(
 		const resend = new Resend(resendKey);
 
 		const applicationEmail = `<!DOCTYPE html>
-									<html lang="en">
-									<head>
-									<meta charset="UTF-8" />
-									<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-									<title>SpurHacks Application Received</title>
-									<style>
-										body {
-										margin: 0;
-										padding: 0;
-										font-family: 'Segoe UI', sans-serif;
-										color: #DEEBFF;
-										background: url('../src/assets/applicationBackground.svg') no-repeat center center/cover;
-										min-height: 100vh;
-										display: flex;
-										justify-content: center;
-										align-items: center;
-										text-align: left;
-										}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
+  <title>SpurHacks Application Received</title>
+  <style>
+    body {
+      font-family: 'Geist', sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #DEEBFF;
+      background: url('${FE_URL}/applicationBackground.svg') no-repeat center center/cover;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: start;
+      text-align: left;
+      position: relative;
+    }
 
-										.container {
-										padding: 2rem;
-										border-radius: 1rem;
-										max-width: 400px;
-										width: 90%;
-										}
+    .container {
+      padding: 4rem;
+      border-radius: 1rem;
+      max-width: 400px;
+      width: 90%;
+    }
 
-										.logo {
-										max-width: 200px;
-										margin: 0 auto;
-										}
+    .logo {
+      max-width: 180px;
+      margin: 0 auto;
+    }
 
-										h1 {
-										font-size: 2rem;
-										margin-bottom: 3rem;
-										}
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 3rem;
+      letter-spacing: -1.5px;
+    }
 
-										h1 span {
-										display: block;
-										}
+    h1 span {
+      display: block;
+    }
 
-										.message {
-										font-size: 0.95rem;
-										line-height: 1.5;
-										margin-bottom: 1.5rem;
-										}
+    .message {
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
 
-										.social {
-										margin-top: 1rem;
-										font-weight: 500;
-										}
+    .social {
+      margin-top: 3rem;
+    }
 
-										.social-icon {
-										margin-top: 1rem;
-										display: flex;
-										gap: 10px;
-										}
+    .social-icon {
+      margin-top: 1rem;
+      display: flex;
+      gap: 10px;
+    }
 
-										.social-icon a {
-										text-decoration: none;
-										}
+    .social-icon a {
+      text-decoration: none;
+    }
 
-										.social-icon img {
-										width: 30px;
-										height: 30px;
-										}
+    .social-icon img {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
 
-										.footer {
-										margin-top: 2rem;
-										font-size: 0.75rem;
-										opacity: 0.7;
-										}
-									</style>
-									</head>
-									<body>
-									<div class="container">
-										<!-- Replace with your logo -->
-										<img src="../src/assets/spurhacks-full-logo-white.svg" alt="SpurHacks Logo" class="logo" />
+    .footer {
+      position: absolute;
+      bottom: 1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      opacity: 0.7;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
 
-										<h1>
-										<span>We’ve received</span>
-										<span>your application!</span>
-										</h1>
+      <img src="${FE_URL}/spurhacks-full-logo-white.svg" alt="SpurHacks Logo" class="logo" />
+  
+      <h1>
+        <span>We’ve received</span>
+        <span>your application! 💌</span>
+      </h1>
+  
+      <div class="message">
+        <strong>Thanks for applying to SpurHacks 2025!</strong><br /><br />
+        This email is a confirmation that your application submission was successful. Sit tight—you can expect a status update <strong>early June.</strong><br /><br />
+        If you highlighted travel accommodations or reimbursements in your application, we’ll be sure to contact you with further details.
+      </div>
+  
+      <div class="social">
+        In the meantime, stay updated with the latest news on our socials:
+        <div class="social-icon">
+          <a href="https://www.instagram.com/spurhacks">
+              <img src="${FE_URL}/socialIcons/instagram.svg" alt="Instagram" />
+          </a>
+          <a href="https://www.linkedin.com/company/spurhacks">
+            <img src="${FE_URL}/socialIcons/linkedin.svg" alt="LinkedIn" />
+          </a>
+          <a href="https://discord.spurhacks.com">
+              <img src="${FE_URL}/socialIcons/discord.svg" alt="Discord" />
+          </a>
+          <a href="https://www.tiktok.com/@spur_hacks">
+              <img src="${FE_URL}/socialIcons/tiktok.svg" alt="TikTok" />
+          </a>
+        </div>
+      </div>
 
-										<div class="message">
-										<strong>Thanks for applying to SpurHacks 2025! 🎉</strong><br /><br />
-										We’ve received your hacker application. We’ll review your submission and get back to you in early–June.<br /><br />
-										If you highlighted that you needed any travel accommodations or reimbursements, we’ll be sure to contact you earlier!
-										</div>
-
-										<div class="social">
-										Be sure to follow our socials to stay updated on when acceptances go out and other important news!
-										<div class="social-icon">
-											<a href="https://discord.spurhacks.com">
-												<img src="../src/assets/socialIcons/discord.svg" alt="Social icon" />
-											</a>
-											<a href="https://www.linkedin.com/company/spurhacks">
-												<img src="../src/assets/socialIcons/linkedin.svg" alt="Social icon" />
-											</a>
-											<a href="https://www.instagram.com/spurhacks">
-												<img src="../src/assets/socialIcons/instagram.svg" alt="Social icon" />
-											</a>
-											<a href="https://www.x.com/spurhacks">
-												<img src="../src/assets/socialIcons/x.svg" alt="Social icon" />
-											</a>
-										</div>
-										</div>
-
-										<div class="footer">© 2025 SPUR Innovation. All rights reserved</div>
-									</div>
-									</body>
-									</html>
-									`;
+    <div class="footer">© 2025 SPUR Innovation. All rights reserved</div>
+  </div>
+</body>
+</html>`;
 		try {
 			const sent = await resend.emails.send({
 				from: noreply,
