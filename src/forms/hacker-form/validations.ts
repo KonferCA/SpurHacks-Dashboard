@@ -81,16 +81,36 @@ export const validations: {
 		formatResult(
 			z
 				.string()
+				.optional()
 				.transform((val) => val ?? "Prefer not to answer")
 				.safeParse(v),
 		),
-	pronouns: (v) => formatResult(z.string().array().default([]).safeParse(v)),
+	pronouns: (v) =>
+		formatResult(z.string().array().optional().default([]).safeParse(v)),
 	sexuality: (v) =>
-		formatResult(z.string().default("Prefer not to answer").safeParse(v)),
+		formatResult(
+			z.string().optional().default("Prefer not to answer").safeParse(v),
+		),
 	race: (v) =>
-		formatResult(z.string().default("Prefer not to answer").safeParse(v)),
-	diets: (v) => formatResult(z.string().array().default([]).safeParse(v)),
-	allergies: (v) => formatResult(z.string().array().default([]).safeParse(v)),
+		formatResult(
+			z.string().optional().default("Prefer not to answer").safeParse(v),
+		),
+	diets: (v) =>
+		formatResult(
+			z
+				.string()
+				.array()
+				.nonempty("Please select at least one dietry restriction or 'None'.")
+				.safeParse(v),
+		),
+	allergies: (v) =>
+		formatResult(
+			z
+				.string()
+				.array()
+				.nonempty("Please select at least one allergen or 'None'.")
+				.safeParse(v),
+		),
 	interests: (v) =>
 		formatResult(
 			z
@@ -116,10 +136,34 @@ export const validations: {
 				.safeParse(v),
 		),
 	applicantId: (v) => formatResult(z.string().safeParse(v)),
-	agreedToMLHCoC: (v) => formatResult(z.boolean().safeParse(v)),
-	agreedToMLHToCAndPrivacyPolicy: (v) => formatResult(z.boolean().safeParse(v)),
+	agreedToMLHCoC: (v) =>
+		formatResult(
+			z
+				.literal(true, {
+					message: "You must agree to the MLH Code of Conduct to participate.",
+				})
+				.safeParse(v),
+		),
+	agreedToMLHToCAndPrivacyPolicy: (v) =>
+		formatResult(
+			z
+				.literal(true, {
+					message:
+						"You must agree to the MLH Terms and Conditions and Privacy Policy to participate.",
+				})
+				.safeParse(v),
+		),
 	agreedToReceiveEmailsFromMLH: (v) => formatResult(z.boolean().safeParse(v)),
-	reasonToBeInHawkHacks: (v) =>
+	agreedToSpurHacksCoc: (v) =>
+		formatResult(
+			z
+				.literal(true, {
+					message:
+						"You must agree to the SpurHacks Code of Conduct to participate.",
+				})
+				.safeParse(v),
+		),
+	reasonToBeInSpurHacks: (v) =>
 		formatResult(
 			z
 				.string()
@@ -154,4 +198,6 @@ export const validations: {
 	// Optionals or auto filled
 	email: () => null,
 	generalResumeRef: () => null,
+	participateInHawkHacks: () => null,
+	agreedToReceiveEmailsFromKonferOrSpur: () => null,
 } as const;

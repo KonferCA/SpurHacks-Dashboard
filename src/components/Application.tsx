@@ -76,7 +76,7 @@ export const Application: FC<ApplicationProps> = ({ app }) => {
 				<div className="py-2 space-y-2 max-w-lg">
 					<Field
 						label="Why do you want to participate at HawkHacks?"
-						value={app.reasonToBeInHawkHacks}
+						value={app.reasonToBeInSpurHacks}
 					/>
 					<Field
 						label="In a few sentences, what up-and-coming or revolutionizing technology are you most excited about?"
