@@ -13,7 +13,7 @@ interface OptionType {
 export interface SelectProps {
 	label: string;
 	options: string[] | readonly string[];
-	allowOther?: boolean; // allow creating new options
+	allowCustomValue?: boolean;
 	disabled?: boolean;
 	required?: boolean;
 	description?: string;
@@ -21,7 +21,7 @@ export interface SelectProps {
 	placeholder?: string;
 	error?: string;
 	onChange?: (selected: string[]) => void;
-	// width prop is handled by the wrapping Field.Root now?? 
+	// width prop is handled by the wrapping Field.Root now??
 }
 
 // helper to convert string array to OptionType array
@@ -38,7 +38,7 @@ export const Select: FC<SelectProps> = ({
 	placeholder,
 	error,
 	onChange,
-	allowOther = false,
+	allowCustomValue = false,
 }) => {
 	// memoize the options transformation
 	const mappedOptions = useMemo(
@@ -198,11 +198,11 @@ export const Select: FC<SelectProps> = ({
 				placeholder={placeholder}
 				styles={customStyles}
 				// creatable props
-				formatCreateLabel={allowOther ? formatCreateLabel : undefined}
+				formatCreateLabel={allowCustomValue ? formatCreateLabel : undefined}
 				// message when no options match search
 				noOptionsMessage={({ inputValue }) =>
-					allowOther && inputValue
-						? formatCreateLabel(inputValue) // show create prompt if allowed
+					allowCustomValue && inputValue
+						? formatCreateLabel(inputValue)
 						: "No options found"
 				}
 				// control props
