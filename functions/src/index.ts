@@ -550,12 +550,125 @@ export const applicationCreated = onDocumentCreated(
 		}
 		const resend = new Resend(resendKey);
 
+		const applicationEmail = `<!DOCTYPE html>
+									<html lang="en">
+									<head>
+									<meta charset="UTF-8" />
+									<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+									<title>SpurHacks Application Received</title>
+									<style>
+										body {
+										margin: 0;
+										padding: 0;
+										font-family: 'Segoe UI', sans-serif;
+										color: #DEEBFF;
+										background: url('../src/assets/applicationBackground.svg') no-repeat center center/cover;
+										min-height: 100vh;
+										display: flex;
+										justify-content: center;
+										align-items: center;
+										text-align: left;
+										}
+
+										.container {
+										padding: 2rem;
+										border-radius: 1rem;
+										max-width: 400px;
+										width: 90%;
+										}
+
+										.logo {
+										max-width: 200px;
+										margin: 0 auto;
+										}
+
+										h1 {
+										font-size: 2rem;
+										margin-bottom: 3rem;
+										}
+
+										h1 span {
+										display: block;
+										}
+
+										.message {
+										font-size: 0.95rem;
+										line-height: 1.5;
+										margin-bottom: 1.5rem;
+										}
+
+										.social {
+										margin-top: 1rem;
+										font-weight: 500;
+										}
+
+										.social-icon {
+										margin-top: 1rem;
+										display: flex;
+										gap: 10px;
+										}
+
+										.social-icon a {
+										text-decoration: none;
+										}
+
+										.social-icon img {
+										width: 30px;
+										height: 30px;
+										}
+
+										.footer {
+										margin-top: 2rem;
+										font-size: 0.75rem;
+										opacity: 0.7;
+										}
+									</style>
+									</head>
+									<body>
+									<div class="container">
+										<!-- Replace with your logo -->
+										<img src="../src/assets/spurhacks-full-logo-white.svg" alt="SpurHacks Logo" class="logo" />
+
+										<h1>
+										<span>We’ve received</span>
+										<span>your application!</span>
+										</h1>
+
+										<div class="message">
+										<strong>Thanks for applying to SpurHacks 2025! 🎉</strong><br /><br />
+										We’ve received your hacker application. We’ll review your submission and get back to you in early–June.<br /><br />
+										If you highlighted that you needed any travel accommodations or reimbursements, we’ll be sure to contact you earlier!
+										</div>
+
+										<div class="social">
+										Be sure to follow our socials to stay updated on when acceptances go out and other important news!
+										<div class="social-icon">
+											<a href="https://discord.spurhacks.com">
+												<img src="../src/assets/socialIcons/discord.svg" alt="Social icon" />
+											</a>
+											<a href="https://www.linkedin.com/company/spurhacks">
+												<img src="../src/assets/socialIcons/linkedin.svg" alt="Social icon" />
+											</a>
+											<a href="https://www.instagram.com/spurhacks">
+												<img src="../src/assets/socialIcons/instagram.svg" alt="Social icon" />
+											</a>
+											<a href="https://www.x.com/spurhacks">
+												<img src="../src/assets/socialIcons/x.svg" alt="Social icon" />
+											</a>
+										</div>
+										</div>
+
+										<div class="footer">© 2025 SPUR Innovation. All rights reserved</div>
+									</div>
+									</body>
+									</html>
+									`;
 		try {
 			const sent = await resend.emails.send({
 				from: noreply,
 				to: [email],
 				subject: "Thanks for apply to SpurHacks 2025!",
-				html: "<p>Thanks fo applying</p>",
+				html: applicationEmail,
 			});
 			log({
 				message: "Post submission email sent",
