@@ -238,7 +238,26 @@ export const Select: FC<SelectProps> = ({
 	);
 
 	// common props for both select components
-	const commonSelectProps = {
+	type CommonSelectProps = {
+		options: typeof mappedOptions;
+		onChange: typeof handleChange;
+		value: typeof value;
+		isMulti: typeof multiple;
+		isDisabled: typeof disabled;
+		placeholder: typeof placeholder;
+		styles: typeof customStyles;
+		components: {
+			MenuList: typeof MenuList;
+			Option: typeof VirtualizedOption;
+		};
+		isClearable: boolean;
+		"aria-label": typeof label;
+		inputId: typeof label;
+		maxMenuHeight: typeof MENU_MAX_HEIGHT;
+		closeMenuOnSelect: boolean;
+	};
+
+	const commonSelectProps: CommonSelectProps = {
 		options: mappedOptions,
 		onChange: handleChange,
 		value: value,
