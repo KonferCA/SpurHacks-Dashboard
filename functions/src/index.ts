@@ -9,12 +9,14 @@ import {
 } from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { Octokit } from "octokit";
 import * as QRCode from "qrcode";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import type { Context } from "./types";
 import { HttpStatus, response } from "./utils";
+import { Resend } from "resend";
 
 initializeApp();
 
@@ -523,6 +525,51 @@ export const redeemItem = onCall(async (data: any, res) => {
 
 	return response(HttpStatus.OK, { data: events });
 });
+
+export const applicationCreated = onDocumentCreated(
+	"applications/{docId}",
+	async (evt) => {
+		const resendKey = process.env.RESEND_KEY;
+		const noreply = process.env.EMAIL_NOREPLY as string;
+		if (!resendKey || !noreply) {
+			logError({
+				message:
+					"Post submission not sent as not all required environment variables are set.",
+				RESEND_KEY: !!resendKey,
+				EMAIL_NOREPLY: !!noreply,
+			});
+			return;
+		}
+
+		// const email = evt.data?.get("email");
+		const email = "delivered@resend.dev";
+		if (!email) {
+			logError({
+				message: `Post submission email not sent: Applicaiton with ID "${evt.params.docId}" had no email value in it.`,
+			});
+			return;
+		}
+		const resend = new Resend(resendKey);
+
+		try {
+			const sent = await resend.emails.send({
+				from: noreply,
+				to: [email],
+				subject: "Thanks for apply to SpurHacks 2025!",
+				html: "<p>Thanks fo applying</p>",
+			});
+			log({
+				message: "Post submission email sent",
+				sent,
+			});
+		} catch (error) {
+			logError({
+				message: "Failed to send post submission email.",
+				error,
+			});
+		}
+	},
+);
 
 export {
 	isTeamNameAvailable,
