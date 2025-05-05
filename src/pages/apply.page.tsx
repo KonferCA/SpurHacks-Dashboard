@@ -29,7 +29,10 @@ import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { submitApplication } from "@/services/firebase/application";
-import { uploadGeneralResume } from "@/services/firebase/files";
+import {
+	deleteGeneralResume,
+	uploadGeneralResume,
+} from "@/services/firebase/files";
 import {
 	Box,
 	Button,
@@ -451,7 +454,6 @@ export const ApplyPage = () => {
 							)}
 
 							<GridItem colSpan={6}>
-								{/* TODO: allow other */}
 								<Select
 									value={mapOption(application.school)}
 									label="Which school are you currently attending?"
@@ -466,7 +468,6 @@ export const ApplyPage = () => {
 							</GridItem>
 
 							<GridItem colSpan={6}>
-								{/* TODO: allow other */}
 								<Select
 									value={mapOption(application.major)}
 									label="What is your major/field of study?"
@@ -738,6 +739,29 @@ export const ApplyPage = () => {
 												setErrors({
 													_hasErrors: true,
 													generalResumeRef: "Error uploading resume.",
+												});
+											}
+										} else {
+											try {
+												if (!application.generalResumeRef) return;
+												// Delete from bucket
+												await deleteGeneralResume(application.generalResumeRef);
+												// Reset ref
+												handleChange("generalResumeRef", "");
+												toaster.success({
+													title: "Resume deleted from database",
+													description:
+														"Your resume has been removed successfully.",
+												});
+											} catch (err) {
+												console.error(err);
+												toaster.error({
+													title: "Error removing resume",
+													description: "Please try again later.",
+												});
+												setErrors({
+													_hasErrors: true,
+													generalResumeRef: "Error removing resume.",
 												});
 											}
 										}

@@ -27,8 +27,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 				required={required}
 				maxFiles={maxFiles}
 				accept={accept}
-				onFileAccept={(details) => {
-					if (onChange) onChange(details.files);
+				onFileChange={(details) => {
+					if (onChange) onChange(details.acceptedFiles);
 				}}
 			>
 				<Field.Label>
