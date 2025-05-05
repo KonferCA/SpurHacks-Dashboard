@@ -846,7 +846,7 @@ export const ApplyPage = () => {
 												<ChakraLink
 													color="skyblue"
 													textDecor="underline"
-													href=""
+													href="#"
 													target="_blank"
 													rel="noopener noreferrer"
 												>
