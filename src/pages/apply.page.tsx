@@ -53,6 +53,7 @@ import { type FormEvent, useCallback, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 import { travelOptions } from "@/data/travel";
+import { businessTechs } from "@/data/businessTechs";
 
 enum StepsEnum {
 	BasicInformation,
@@ -97,7 +98,7 @@ const stepFields: ApplicationDataKey[][] = [
 	],
 
 	// Step: Interests
-	["interests", "hackathonExperience", "programmingLanguages"],
+	["interests", "hackathonExperience", "programmingLanguages", "businessTech"],
 
 	// Step: Motivation
 	["reasonToBeInSpurHacks", "revolutionizingTechnology"],
@@ -132,6 +133,7 @@ export const ApplyPage = () => {
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isLoadingResume, setIsLoadingResume] = useState(false);
 	const { isLoading: loadingApplications, refreshApplications } =
 		useApplications();
 	const navigate = useNavigate();
@@ -281,6 +283,8 @@ export const ApplyPage = () => {
 			city: "Waterloo",
 			travel: "No, I live in Kitchener-Waterloo",
 			discord: "@mydiscord",
+			businessTech:
+				"Interested in case and pitch competitions (business-oriented student)",
 			interests: [
 				"Web3, Crypto, and Blockchain",
 				"Quantum Computing",
@@ -542,6 +546,20 @@ export const ApplyPage = () => {
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.businessTech)}
+									label="What part of the business-tech side do you align with more?"
+									placeholder="Select business-tech"
+									options={businessTechs}
+									onChange={(opts) =>
+										handleChange("businessTech", opts[0] ?? "")
+									}
+									error={errors.businessTech}
+									required
+								/>
+							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
 									value={mapOption(application.interests)}
 									label="Which of the following fields interests you?"
 									placeholder="Select interests"
@@ -731,6 +749,7 @@ export const ApplyPage = () => {
 										"application/vnd.oasis.opendocument.text", //odt
 									]}
 									onChange={async (file) => {
+										setIsLoadingResume(true);
 										if (file && file[0]) {
 											try {
 												// Upload the file immediately when selected
@@ -780,6 +799,7 @@ export const ApplyPage = () => {
 												});
 											}
 										}
+										setIsLoadingResume(false);
 									}}
 									error={errors["generalResumeRef"]}
 								/>
@@ -1039,7 +1059,7 @@ export const ApplyPage = () => {
 							color="black"
 							onClick={submitApp}
 							type="button"
-							disabled={isSubmitting}
+							disabled={isSubmitting || isLoadingResume}
 							// I mean.... why not? for funsies
 							className={isSubmitting ? "animate-spin" : ""}
 						>

@@ -38,6 +38,8 @@ export const defaultApplication: ApplicationData = {
 	reasonToBeInSpurHacks: "",
 	revolutionizingTechnology: "",
 
+	businessTech: "",
+
 	email: "",
 
 	hackathonYear: "2025", // maybe there is a better way to define this

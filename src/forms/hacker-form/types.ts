@@ -20,6 +20,7 @@ export interface ApplicationData {
 
 	// Interests
 	interests: string[];
+	businessTech: string;
 	hackathonExperience: string;
 	programmingLanguages: string[];
 

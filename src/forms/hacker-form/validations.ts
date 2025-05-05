@@ -201,6 +201,10 @@ export const validations: {
 				.nonempty("Please tell us how you would describe the taste of salt.")
 				.safeParse(v),
 		),
+	businessTech: (v) =>
+		formatResult(
+			z.string().nonempty("Please select a business-tech.").safeParse(v),
+		),
 
 	// Optionals or auto filled
 	email: () => null,
