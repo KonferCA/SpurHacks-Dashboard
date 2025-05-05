@@ -5,6 +5,7 @@ export const defaultApplication: ApplicationData = {
 	lastName: "",
 	phone: "",
 	school: "",
+	//@ts-ignore
 	educationLevels: "",
 	age: "",
 	discord: "",
@@ -23,6 +24,7 @@ export const defaultApplication: ApplicationData = {
 	programmingLanguages: [],
 	participatingAs: "Hacker",
 	applicantId: "",
+	agreedToSpurHacksCoc: false,
 	agreedToMLHCoC: false,
 	agreedToMLHToCAndPrivacyPolicy: false,
 	agreedToReceiveEmailsFromMLH: false,
@@ -30,8 +32,10 @@ export const defaultApplication: ApplicationData = {
 	describeSalt: "",
 	generalResumeRef: "",
 
-	// hacker only
-	reasonToBeInHawkHacks: "",
+	participateInHawkHacks: false,
+	agreedToReceiveEmailsFromKonferOrSpur: false,
+
+	reasonToBeInSpurHacks: "",
 	revolutionizingTechnology: "",
 
 	email: "",
