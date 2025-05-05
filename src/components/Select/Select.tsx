@@ -1,8 +1,11 @@
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import CreatableSelect from "react-select/creatable";
+import { components } from "react-select"; // import components from base react-select
+import type { MenuListProps, OptionProps, GroupBase } from "react-select"; // use MenuListProps
+import { FixedSizeList } from "react-window";
 import { Field } from "@chakra-ui/react"; // keep field for layout/errors
-import type { GroupBase, StylesConfig } from "react-select";
+import type { OptionsOrGroups, StylesConfig } from "react-select"; // remove GroupBase from here
 
 // define the shape react-select expects for options
 interface OptionType {
@@ -27,6 +30,61 @@ export interface SelectProps {
 // helper to convert string array to OptionType array
 const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
 	options.map((opt) => ({ value: opt, label: opt }));
+
+const OPTION_HEIGHT = 40; // height of each option in px
+const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
+
+// custom component for rendering individual options within the virtualized list
+const VirtualizedOption = ({ children, ...props }: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
+	// strip mousemove/mouseover handlers from props to avoid unwanted effects
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { onMouseMove, onMouseOver, ...rest } = props.innerProps;
+	const newProps = { ...props, innerProps: rest };
+	return (
+		// use react-select's built-in Option component for consistent styling/behavior
+		<components.Option {...newProps}>
+			{children}
+		</components.Option>
+	);
+};
+
+// custom component for the virtualized menu list container
+const MenuList = (props: MenuListProps<OptionType, boolean, GroupBase<OptionType>>) => {
+	const { options, children, maxHeight, getValue } = props;
+	const [value] = getValue();
+	const initialOffset =
+		options.indexOf(value) !== -1
+			? options.indexOf(value) * OPTION_HEIGHT
+			: 0;
+
+	// ensure children is always an array for FixedSizeList
+	const childrenArray = Array.isArray(children) ? children : [children];
+
+	// calculate the list height based on options, capping at max height
+	const listHeight = Math.min(maxHeight, childrenArray.length * OPTION_HEIGHT);
+
+	// only return FixedSizeList if there are options
+	if (!childrenArray.length) {
+		return null; // or return the default no options message if needed
+	}
+
+	return (
+		<FixedSizeList
+			height={listHeight}
+			itemCount={childrenArray.length}
+			itemSize={OPTION_HEIGHT}
+			initialScrollOffset={initialOffset}
+			width="100%"
+		>
+			{({ index, style }) => (
+				// clone the option element and apply the style from react-window
+				<div style={style}>
+					{childrenArray[index]}
+				</div>
+			)}
+		</FixedSizeList>
+	);
+};
 
 export const Select: FC<SelectProps> = ({
 	label,
@@ -137,9 +195,7 @@ export const Select: FC<SelectProps> = ({
 						? "#1F1E2E" // hover color
 						: "transparent",
 				color: state.isSelected ? "#1A202C" : "white",
-				borderRadius: "0.75rem", // xl
-				margin: "0 4px",
-				width: "calc(100% - 8px)",
+				padding: '8px 12px',
 				cursor: "pointer",
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
@@ -197,6 +253,10 @@ export const Select: FC<SelectProps> = ({
 				isDisabled={disabled}
 				placeholder={placeholder}
 				styles={customStyles}
+				components={{
+					MenuList, // use the virtualized menu list
+					Option: VirtualizedOption, // use the custom option wrapper
+				}}
 				// creatable props
 				formatCreateLabel={allowCustomValue ? formatCreateLabel : undefined}
 				// message when no options match search
@@ -209,6 +269,7 @@ export const Select: FC<SelectProps> = ({
 				isClearable // allow clearing selection
 				aria-label={label} // accessibility
 				inputId={label} // link label to input for accessibility
+				maxMenuHeight={MENU_MAX_HEIGHT} // pass max height to component
 			/>
 			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
