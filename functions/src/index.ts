@@ -541,8 +541,7 @@ export const applicationCreated = onDocumentCreated(
 			return;
 		}
 
-		// const email = evt.data?.get("email");
-		const email = "delivered@resend.dev";
+		const email = evt.data?.get("email");
 		if (!email) {
 			logError({
 				message: `Post submission email not sent: Applicaiton with ID "${evt.params.docId}" had no email value in it.`,
