@@ -12,7 +12,7 @@ import "./index.css";
 // for funsies
 console.log("If you found this, you are a curious one! 😄");
 console.log("BUT we are not hiring at the moment ^_^");
-console.log(`App version: ${APP_VERSION}`);
+console.log(`App version: ${import.meta.env.VITE_APP_VERSION}`);
 console.log(`App env: ${import.meta.env.MODE}`);
 
 const queryClient = new QueryClient();
