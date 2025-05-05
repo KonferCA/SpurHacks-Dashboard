@@ -5,7 +5,7 @@ export const defaultApplication: ApplicationData = {
 	lastName: "",
 	phone: "",
 	school: "",
-	educationLevels: "",
+	educationLevels: "Prefer not to answer",
 	age: "",
 	discord: "",
 	countryOfResidence: "",

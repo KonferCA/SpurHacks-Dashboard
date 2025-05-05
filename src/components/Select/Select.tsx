@@ -1,11 +1,11 @@
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import CreatableSelect from "react-select/creatable";
-import { components } from "react-select"; // import components from base react-select
-import type { MenuListProps, OptionProps, GroupBase } from "react-select"; // use MenuListProps
+import { components } from "react-select";
+import type { MenuListProps, OptionProps, GroupBase } from "react-select";
 import { FixedSizeList } from "react-window";
-import { Field } from "@chakra-ui/react"; // keep field for layout/errors
-import type { OptionsOrGroups, StylesConfig } from "react-select"; // remove GroupBase from here
+import { Field } from "@chakra-ui/react";
+import type { StylesConfig } from "react-select";
 
 // define the shape react-select expects for options
 interface OptionType {
@@ -36,7 +36,6 @@ const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
 
 // custom component for rendering individual options within the virtualized list
 const VirtualizedOption = ({ children, ...props }: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
-	// strip mousemove/mouseover handlers from props to avoid unwanted effects
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { onMouseMove, onMouseOver, ...rest } = props.innerProps;
 	const newProps = { ...props, innerProps: rest };
