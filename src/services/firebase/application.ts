@@ -22,6 +22,7 @@ export async function submitApplication(data: ApplicationData, uid: string) {
 		timestamp: Timestamp.now(),
 		hackathonYear: "2025",
 		applicationStatus: "pending",
+		rsvp: false,
 	} satisfies ApplicationData;
 
 	try {
