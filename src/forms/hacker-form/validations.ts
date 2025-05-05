@@ -2,6 +2,7 @@ import { SafeParseReturnType, z } from "zod";
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import { ages, countryNames, hackathonExps } from "@/data";
 import { educationLevels } from "@/data/educationLevels";
+import { travelOptions } from "@/data/travel";
 
 function formatResult<T, R>({ success, error }: SafeParseReturnType<T, R>) {
 	let errStr = "";
@@ -38,8 +39,9 @@ export const validations: {
 	travel: (v) =>
 		formatResult(
 			z
-				.string()
-				.nonempty("Please tell us where you're travelling from.")
+				.enum(travelOptions, {
+					message: "Please tell us where you're travelling from.",
+				})
 				.safeParse(v),
 		),
 	phone: (v) =>
