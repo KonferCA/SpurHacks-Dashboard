@@ -43,6 +43,7 @@ import {
 	Link as ChakraLink,
 	Field,
 	Fieldset,
+	Card,
 } from "@chakra-ui/react";
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import { type FormEvent, useCallback, useState } from "react";
@@ -270,6 +271,54 @@ export const ApplyPage = () => {
 		[handleChange],
 	);
 
+	const fillWithSampleData = useCallback(() => {
+		setApplication((currentApplication) => ({
+			...currentApplication,
+			firstName: "Jon",
+			lastName: "Snow",
+			age: "18",
+			phone: "(+1) 123-333-4444",
+			educationLevels: "Undergraduate-level University (3 to 5-year program)",
+			yearOfStudies: "Year 1",
+			school: "Wilfird Laurier Univeristy",
+			major: ["Computer Science", "Data Science"],
+			countryOfResidence: "Canada",
+			city: "Waterloo",
+			discord: "@mydiscord",
+			interests: [
+				"Web3, Crypto, and Blockchain",
+				"Quantum Computing",
+				"Artificial Intelligence (AI)",
+				"Robotics",
+			],
+			hackathonExperience: "I've only been to a single hackathon before this.",
+			programmingLanguages: ["C", "Go", "C++"],
+			reasonToBeInSpurHacks: "Cuz its dope",
+			revolutionizingTechnology: "Pipeline",
+			diets: ["None"],
+			allergies: ["Hellipcoters"], // this is for testing custom entries
+			gender: "KKKKKKK",
+			pronouns: [], // test optional entry
+			sexuality: "",
+			race: "Asian",
+			referralSources: [
+				"Sponsor's or partner's social media accounts",
+				"Word of mouth",
+				"Physical poster or advertisement in Toronto",
+				"Physical poster or advertisement in Kitchener-Waterloo",
+				"Advertisement from a professor or class",
+				"Advertisements from another Discord server",
+			],
+			describeSalt: "Salty",
+			agreedToMLHCoC: true,
+			agreedToMLHToCAndPrivacyPolicy: true,
+			agreedToReceiveEmailsFromKonferOrSpur: true,
+			agreedToReceiveEmailsFromMLH: true,
+			agreedToSpurHacksCoc: true,
+			participateInHawkHacks: false,
+		}));
+	}, []);
+
 	if (loadingApplications)
 		return (
 			<PageWrapper>
@@ -303,6 +352,18 @@ export const ApplyPage = () => {
 				<Heading size="md" textAlign="center" marginY="2rem">
 					All fields with an asterisk{"(*)"} are required.
 				</Heading>
+				{(import.meta.env.DEV || import.meta.env.MODE === "staging") && (
+					<Card.Root my="1rem">
+						<Card.Body spaceY="1rem">
+							<Text>
+								This button is only visible during development or staging.
+							</Text>
+							<Button onClick={fillWithSampleData}>
+								Fill with sample data
+							</Button>
+						</Card.Body>
+					</Card.Root>
+				)}
 				<form className="mt-12">
 					{/* basic information */}
 					{isStep(activeStep, StepsEnum.BasicInformation) && (
@@ -730,6 +791,8 @@ export const ApplyPage = () => {
 												color="skyblue"
 												textDecor="underline"
 												href="https://hawkhacks.ca"
+												target="_blank"
+												rel="noopener noreferrer"
 											>
 												HawkHacks 2025
 											</ChakraLink>
@@ -754,6 +817,8 @@ export const ApplyPage = () => {
 													color="skyblue"
 													textDecor="underline"
 													href=""
+													target="_blank"
+													rel="noopener noreferrer"
 												>
 													SpurHacks Code of Conduct
 												</ChakraLink>
@@ -780,6 +845,8 @@ export const ApplyPage = () => {
 													color="skyblue"
 													textDecor="underline"
 													href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
+													target="_blank"
+													rel="noopener noreferrer"
 												>
 													MLH Code of Conduct
 												</ChakraLink>
@@ -810,6 +877,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Privacy Policy
 													</ChakraLink>
@@ -818,6 +887,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Contest Terms and Conditions{" "}
 													</ChakraLink>{" "}
@@ -826,6 +897,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Privacy Policy
 													</ChakraLink>
