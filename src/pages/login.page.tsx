@@ -1,7 +1,7 @@
 import { useAuth, useRouteDefinitions } from "@/providers";
 import type { ProviderName } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { AppleLogo, GithubLogo, GoogleLogo } from "@assets";
+import { GithubLogo, GoogleLogo } from "@assets";
 import SpurhacksLogo from "@/assets/spurhacks-full-logo-white.svg";
 import knotsSvg from "@/assets/knots.svg";
 import {
@@ -33,7 +33,6 @@ const emailParser = z.string().email();
 const authProviders: { name: ProviderName; logo: string }[] = [
 	{ name: "github", logo: GithubLogo },
 	{ name: "google", logo: GoogleLogo },
-	{ name: "apple", logo: AppleLogo },
 ];
 
 export const LoginPage = () => {
