@@ -5,8 +5,7 @@ export const defaultApplication: ApplicationData = {
 	lastName: "",
 	phone: "",
 	school: "",
-	//@ts-ignore
-	educationLevels: "",
+	educationLevels: "Prefer not to answer",
 	age: "",
 	discord: "",
 	countryOfResidence: "",

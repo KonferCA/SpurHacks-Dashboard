@@ -27,7 +27,7 @@ import { PerksPage } from "@/pages/perks.page";
 import { SchedulePage } from "@/pages/schedule.page";
 
 // Admin pages
-import { AdminPage } from "@/pages/admin/admin.page";
+import { AdminPage } from "@/pages/admin/Admin.page";
 import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
 import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 
