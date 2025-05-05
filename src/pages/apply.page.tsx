@@ -54,6 +54,10 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 import { travelOptions } from "@/data/travel";
 import { businessTechs } from "@/data/businessTechs";
+import {
+	experienceResonatesOptions,
+	interestedOppOptions,
+} from "@/data/experienceResonatesOptions";
 
 enum StepsEnum {
 	BasicInformation,
@@ -77,6 +81,11 @@ function mapOption(value?: string | string[]) {
 		label: value,
 	};
 }
+const condOptions = [
+	experienceResonatesOptions[2],
+	experienceResonatesOptions[3],
+	experienceResonatesOptions[4],
+];
 
 // Define fields to validate for each step
 const stepFields: ApplicationDataKey[][] = [
@@ -98,7 +107,14 @@ const stepFields: ApplicationDataKey[][] = [
 	],
 
 	// Step: Interests
-	["interests", "hackathonExperience", "programmingLanguages", "businessTech"],
+	[
+		"interests",
+		"hackathonExperience",
+		"programmingLanguages",
+		"businessTech",
+		"experienceResonates",
+		"interestedOpportunities",
+	],
 
 	// Step: Motivation
 	["reasonToBeInSpurHacks", "revolutionizingTechnology"],
@@ -175,6 +191,18 @@ export const ApplyPage = () => {
 			const requiresYearOfStudy =
 				yearOfStudies[application.educationLevels] !== undefined;
 			if (requiresYearOfStudy && validations[field]) {
+				return validations[field](application[field]);
+			}
+			return null;
+		}
+
+		if (field === "interestedOpportunities") {
+			let requires = false;
+			for (const opt of condOptions) {
+				requires = application.experienceResonates.includes(opt);
+				if (requires) break;
+			}
+			if (requires && validations[field]) {
 				return validations[field](application[field]);
 			}
 			return null;
@@ -285,6 +313,10 @@ export const ApplyPage = () => {
 			discord: "@mydiscord",
 			businessTech:
 				"Interested in case and pitch competitions (business-oriented student)",
+			experienceResonates: [
+				"I want the classic hackathon experience: build something from scratch and compete for prizes.",
+			],
+			interestedOpportunities: [],
 			interests: [
 				"Web3, Crypto, and Blockchain",
 				"Quantum Computing",
@@ -557,6 +589,38 @@ export const ApplyPage = () => {
 									required
 								/>
 							</GridItem>
+
+							<GridItem colSpan={6}>
+								<Select
+									value={mapOption(application.experienceResonates)}
+									label="Which of these experiences resonates with you? (Select all that apply)"
+									placeholder="Select experiences"
+									options={experienceResonatesOptions}
+									onChange={(opts) => handleChange("experienceResonates", opts)}
+									error={errors.experienceResonates}
+									multiple
+									required
+								/>
+							</GridItem>
+
+							{condOptions.some((opt) =>
+								application.experienceResonates.includes(opt),
+							) && (
+								<GridItem colSpan={6}>
+									<Select
+										value={mapOption(application.interestedOpportunities)}
+										label="What opportunities would you be interested in?"
+										placeholder="Select opportunities"
+										options={interestedOppOptions}
+										onChange={(opts) =>
+											handleChange("interestedOpportunities", opts)
+										}
+										error={errors.interestedOpportunities}
+										multiple
+										required
+									/>
+								</GridItem>
+							)}
 
 							<GridItem colSpan={6}>
 								<Select

@@ -21,6 +21,10 @@ export interface ApplicationData {
 	// Interests
 	interests: string[];
 	businessTech: string;
+	// Q: Which of these experiences resonates with you? (Select all that apply)
+	experienceResonates: string[];
+	// Q: What opportunities would you be interested in?
+	interestedOpportunities: string[];
 	hackathonExperience: string;
 	programmingLanguages: string[];
 

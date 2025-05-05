@@ -205,6 +205,22 @@ export const validations: {
 		formatResult(
 			z.string().nonempty("Please select a business-tech.").safeParse(v),
 		),
+	experienceResonates: (v) =>
+		formatResult(
+			z
+				.string()
+				.array()
+				.nonempty("Please select at least one experience.")
+				.safeParse(v),
+		),
+	interestedOpportunities: (v) =>
+		formatResult(
+			z
+				.string()
+				.array()
+				.nonempty("Please select at least one opportuniy.")
+				.safeParse(v),
+		),
 
 	// Optionals or auto filled
 	email: () => null,

@@ -39,6 +39,8 @@ export const defaultApplication: ApplicationData = {
 	revolutionizingTechnology: "",
 
 	businessTech: "",
+	experienceResonates: [],
+	interestedOpportunities: [],
 
 	email: "",
 
