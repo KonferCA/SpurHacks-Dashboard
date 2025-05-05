@@ -32,10 +32,15 @@ initializeAppCheck(app, {
 
 // connect to emulators if not in prod
 if (!import.meta.env.PROD && import.meta.env.VITE_APP_ENV === "development") {
-	connectFirestoreEmulator(firestore, "127.0.0.1", 8080);
-	connectAuthEmulator(auth, "http://127.0.0.1:9099", {
+	const firestoreEmuPort = parseInt(import.meta.env.VITE_FIRESTORE_EMU_PORT);
+	const authEmuPort = parseInt(import.meta.env.VITE_AUTH_EMU_PORT);
+	const fnEmuPort = parseInt(import.meta.env.VITE_FUNCTIONS_EMU_PORT);
+	const storageEmuPort = parseInt(import.meta.env.VITE_STORAGE_EMU_PORT);
+
+	connectFirestoreEmulator(firestore, "127.0.0.1", firestoreEmuPort);
+	connectAuthEmulator(auth, `http://127.0.0.1:${authEmuPort}`, {
 		disableWarnings: true,
 	});
-	connectStorageEmulator(storage, "127.0.0.1", 9199);
-	connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+	connectStorageEmulator(storage, "127.0.0.1", storageEmuPort);
+	connectFunctionsEmulator(functions, "127.0.0.1", fnEmuPort);
 }
