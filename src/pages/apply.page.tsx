@@ -259,7 +259,7 @@ export const ApplyPage = () => {
 			console.error(e);
 		} finally {
 			// navigate to post submission page
-			navigate(paths.submitted);
+			navigate(paths.home);
 		}
 	};
 
@@ -366,7 +366,6 @@ export const ApplyPage = () => {
 							</GridItem>
 
 							<GridItem colSpan={6}>
-								{/* TODO: allow other */}
 								<Select
 									label="What is your current education level?"
 									placeholder="Select education level"
