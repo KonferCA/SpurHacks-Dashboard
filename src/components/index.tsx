@@ -80,3 +80,10 @@ export { ProductCard } from "./ProductCard/ProductCard";
  *
  */
 export { Modal } from "./Modal";
+
+/*
+ *
+ * @component RouterChakraLink
+ *
+ */
+export { RouterChakraLink } from "./RouterChakraLink";

@@ -29,6 +29,7 @@ import { RiDiscordLine } from "react-icons/ri";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { RouterChakraLink } from "./RouterChakraLink";
 
 const navItems = {
 	[paths.home]: {
@@ -197,10 +198,11 @@ const NavbarContent = ({
 						const { label, Icon } = navItems[path];
 						const isActive = location.pathname === path;
 						return (
-							<ChakraLink
+							// <Link to={path as string} className="w-full">
+							<RouterChakraLink
 								key={label}
 								as={Link}
-								href={path as string}
+								to={path as string}
 								w="full"
 								textDecoration="none"
 								color="#666484"
@@ -224,7 +226,8 @@ const NavbarContent = ({
 									</Box>
 									<Text color={isActive ? "#DEEBFF" : "#666484"}>{label}</Text>
 								</Flex>
-							</ChakraLink>
+							</RouterChakraLink>
+							// </Link>
 						);
 					})}
 				<ChakraLink
