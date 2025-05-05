@@ -62,6 +62,17 @@ function isStep(current: number, expected: StepsEnum) {
 	return current === expected;
 }
 
+function mapOption(value?: string | string[]) {
+	if (!value) return undefined;
+	if (Array.isArray(value)) {
+		return value.map((val) => ({ value: val, label: val }));
+	}
+	return {
+		value: value,
+		label: value,
+	};
+}
+
 // Define fields to validate for each step
 const stepFields: ApplicationDataKey[][] = [
 	// Step 0: Basic Information
@@ -222,8 +233,6 @@ export const ApplyPage = () => {
 
 		setIsSubmitting(true);
 
-		// Resume is already uploaded when the file is selected, no need to upload again
-
 		try {
 			application.email = currentUser.email as string;
 			await submitApplication(application, currentUser.uid);
@@ -378,6 +387,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={{ base: 6, sm: 2 }}>
 								<Select
+									value={mapOption(application.age)}
 									label="How old are you?"
 									placeholder="Select age"
 									options={ages}
@@ -409,6 +419,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.educationLevels)}
 									label="What is your current education level?"
 									placeholder="Select education level"
 									options={educationLevels}
@@ -424,6 +435,7 @@ export const ApplyPage = () => {
 							{yearOfStudies[application.educationLevels] && (
 								<GridItem colSpan={6}>
 									<Select
+										value={mapOption(application.yearOfStudies)}
 										label={`What is the year of ${application.educationLevels} are you in?`}
 										placeholder="Select year"
 										options={
@@ -441,6 +453,7 @@ export const ApplyPage = () => {
 							<GridItem colSpan={6}>
 								{/* TODO: allow other */}
 								<Select
+									value={mapOption(application.school)}
 									label="Which school are you currently attending?"
 									placeholder="Select school"
 									options={schools}
@@ -455,6 +468,7 @@ export const ApplyPage = () => {
 							<GridItem colSpan={6}>
 								{/* TODO: allow other */}
 								<Select
+									value={mapOption(application.major)}
 									label="What is your major/field of study?"
 									placeholder="Select major/field of study"
 									options={majorsList}
@@ -468,6 +482,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
 								<Select
+									value={mapOption(application.countryOfResidence)}
 									label="Which country do you currently reside in?"
 									placeholder="Select country"
 									options={countryNames}
@@ -511,6 +526,7 @@ export const ApplyPage = () => {
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.interests)}
 									label="Which of the following fields interests you?"
 									placeholder="Select interests"
 									options={interests}
@@ -524,6 +540,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.hackathonExperience)}
 									label="How many Hackathons have you attended as a participant in the past?"
 									placeholder="Select experience"
 									options={hackathonExps}
@@ -537,6 +554,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.programmingLanguages)}
 									label="What programming languages are you the most comfortable with or passionate about?"
 									placeholder="Select programming languages"
 									options={programmingLanguages}
@@ -591,6 +609,7 @@ export const ApplyPage = () => {
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.diets)}
 									label="Do you have any dietary restrictions?"
 									placeholder="Select dietary restrictions"
 									description="Can't find your dietary preference? Add it to ensure we can accommodate you."
@@ -605,6 +624,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.allergies)}
 									label="Are there any allergens you have that we should be aware of?"
 									placeholder="Select allergens"
 									description="Don't see your allergen listed? Please specify it so we can accommodate you."
@@ -619,6 +639,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.gender)}
 									label="Which gender do you identify as?"
 									placeholder="Select gender"
 									options={genders}
@@ -630,6 +651,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.pronouns)}
 									label="What are your pronouns?"
 									placeholder="Select pronouns"
 									options={pronouns}
@@ -641,6 +663,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.sexuality)}
 									label="Please select any of the following that resonates with you:"
 									placeholder="Select answer"
 									options={sexualityList}
@@ -652,6 +675,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.race)}
 									label="Which of the following best describes your racial or ethnic background?"
 									placeholder="Select ethnic background"
 									options={races}
@@ -723,6 +747,7 @@ export const ApplyPage = () => {
 							</GridItem>
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.referralSources)}
 									label="How did you hear about us?"
 									placeholder="Select platform"
 									options={referralSources}

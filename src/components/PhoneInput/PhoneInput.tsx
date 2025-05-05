@@ -83,6 +83,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 			<SimpleGrid columns={12} gap={4}>
 				<GridItem colSpan={3}>
 					<Select
+						value={country ? { value: country, label: country } : undefined}
 						label="Country Code"
 						placeholder="Select country code"
 						required={required}
