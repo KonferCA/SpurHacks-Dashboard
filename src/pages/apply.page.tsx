@@ -29,7 +29,10 @@ import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { submitApplication } from "@/services/firebase/application";
-import { uploadGeneralResume } from "@/services/firebase/files";
+import {
+	deleteGeneralResume,
+	uploadGeneralResume,
+} from "@/services/firebase/files";
 import {
 	Box,
 	Button,
@@ -43,6 +46,7 @@ import {
 	Link as ChakraLink,
 	Field,
 	Fieldset,
+	Card,
 } from "@chakra-ui/react";
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import { type FormEvent, useCallback, useState } from "react";
@@ -59,6 +63,17 @@ enum StepsEnum {
 
 function isStep(current: number, expected: StepsEnum) {
 	return current === expected;
+}
+
+function mapOption(value?: string | string[]) {
+	if (!value) return undefined;
+	if (Array.isArray(value)) {
+		return value.map((val) => ({ value: val, label: val }));
+	}
+	return {
+		value: value,
+		label: value,
+	};
 }
 
 // Define fields to validate for each step
@@ -115,12 +130,8 @@ export const ApplyPage = () => {
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const {
-		applications,
-		isLoading: loadingApplications,
-		refreshApplications,
-	} = useApplications();
-	const userApp = applications[0] || null;
+	const { isLoading: loadingApplications, refreshApplications } =
+		useApplications();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -207,21 +218,6 @@ export const ApplyPage = () => {
 		}
 	};
 
-	const jumpTo = (step: number) => {
-		if (step > -1 && step < steps.length) {
-			if (step <= activeStep) {
-				setActiveStep(step);
-			} else {
-				// Validate all steps up to the target step
-				for (let i = activeStep; i < step; i++) {
-					setActiveStep(i);
-					if (!validateCurrentStep()) return;
-				}
-				setActiveStep(step);
-			}
-		}
-	};
-
 	const submitApp = async (e?: FormEvent) => {
 		if (e) {
 			e.preventDefault();
@@ -239,8 +235,6 @@ export const ApplyPage = () => {
 		if (!validateCurrentStep()) return;
 
 		setIsSubmitting(true);
-
-		// Resume is already uploaded when the file is selected, no need to upload again
 
 		try {
 			application.email = currentUser.email as string;
@@ -270,6 +264,54 @@ export const ApplyPage = () => {
 		[handleChange],
 	);
 
+	const fillWithSampleData = useCallback(() => {
+		setApplication((currentApplication) => ({
+			...currentApplication,
+			firstName: "Jon",
+			lastName: "Snow",
+			age: "18",
+			phone: "(+1) 123-333-4444",
+			educationLevels: "Undergraduate-level University (3 to 5-year program)",
+			yearOfStudies: "Year 1",
+			school: "Wilfird Laurier Univeristy",
+			major: ["Computer Science", "Data Science"],
+			countryOfResidence: "Canada",
+			city: "Waterloo",
+			discord: "@mydiscord",
+			interests: [
+				"Web3, Crypto, and Blockchain",
+				"Quantum Computing",
+				"Artificial Intelligence (AI)",
+				"Robotics",
+			],
+			hackathonExperience: "I've only been to a single hackathon before this.",
+			programmingLanguages: ["C", "Go", "C++"],
+			reasonToBeInSpurHacks: "Cuz its dope",
+			revolutionizingTechnology: "Pipeline",
+			diets: ["None"],
+			allergies: ["Hellipcoters"], // this is for testing custom entries
+			gender: "KKKKKKK",
+			pronouns: [], // test optional entry
+			sexuality: "",
+			race: "Asian",
+			referralSources: [
+				"Sponsor's or partner's social media accounts",
+				"Word of mouth",
+				"Physical poster or advertisement in Toronto",
+				"Physical poster or advertisement in Kitchener-Waterloo",
+				"Advertisement from a professor or class",
+				"Advertisements from another Discord server",
+			],
+			describeSalt: "Salty",
+			agreedToMLHCoC: true,
+			agreedToMLHToCAndPrivacyPolicy: true,
+			agreedToReceiveEmailsFromKonferOrSpur: true,
+			agreedToReceiveEmailsFromMLH: true,
+			agreedToSpurHacksCoc: true,
+			participateInHawkHacks: false,
+		}));
+	}, []);
+
 	if (loadingApplications)
 		return (
 			<PageWrapper>
@@ -285,7 +327,6 @@ export const ApplyPage = () => {
 						step={activeStep}
 						defaultStep={StepsEnum.BasicInformation}
 						count={steps.length}
-						onStepChange={(e) => jumpTo(e.step)}
 					>
 						<Steps.List>
 							{steps.map((step, index) => (
@@ -303,6 +344,18 @@ export const ApplyPage = () => {
 				<Heading size="md" textAlign="center" marginY="2rem">
 					All fields with an asterisk{"(*)"} are required.
 				</Heading>
+				{(import.meta.env.DEV || import.meta.env.MODE === "staging") && (
+					<Card.Root my="1rem">
+						<Card.Body spaceY="1rem">
+							<Text>
+								This button is only visible during development or staging.
+							</Text>
+							<Button onClick={fillWithSampleData}>
+								Fill with sample data
+							</Button>
+						</Card.Body>
+					</Card.Root>
+				)}
 				<form className="mt-12">
 					{/* basic information */}
 					{isStep(activeStep, StepsEnum.BasicInformation) && (
@@ -337,6 +390,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={{ base: 6, sm: 2 }}>
 								<Select
+									value={mapOption(application.age)}
 									label="How old are you?"
 									placeholder="Select age"
 									options={ages}
@@ -361,12 +415,14 @@ export const ApplyPage = () => {
 								<PhoneInput
 									required
 									onChange={handlePhoneChange}
-									error={errors["phone"]}
+									initialValue={application.phone}
+									error={errors.phone}
 								/>
 							</GridItem>
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.educationLevels)}
 									label="What is your current education level?"
 									placeholder="Select education level"
 									options={educationLevels}
@@ -382,6 +438,7 @@ export const ApplyPage = () => {
 							{yearOfStudies[application.educationLevels] && (
 								<GridItem colSpan={6}>
 									<Select
+										value={mapOption(application.yearOfStudies)}
 										label={`What is the year of ${application.educationLevels} are you in?`}
 										placeholder="Select year"
 										options={
@@ -397,8 +454,8 @@ export const ApplyPage = () => {
 							)}
 
 							<GridItem colSpan={6}>
-								{/* TODO: allow other */}
 								<Select
+									value={mapOption(application.school)}
 									label="Which school are you currently attending?"
 									placeholder="Select school"
 									options={schools}
@@ -411,8 +468,8 @@ export const ApplyPage = () => {
 							</GridItem>
 
 							<GridItem colSpan={6}>
-								{/* TODO: allow other */}
 								<Select
+									value={mapOption(application.major)}
 									label="What is your major/field of study?"
 									placeholder="Select major/field of study"
 									options={majorsList}
@@ -426,6 +483,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={{ base: 6, sm: 3 }}>
 								<Select
+									value={mapOption(application.countryOfResidence)}
 									label="Which country do you currently reside in?"
 									placeholder="Select country"
 									options={countryNames}
@@ -469,6 +527,7 @@ export const ApplyPage = () => {
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.interests)}
 									label="Which of the following fields interests you?"
 									placeholder="Select interests"
 									options={interests}
@@ -482,6 +541,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.hackathonExperience)}
 									label="How many Hackathons have you attended as a participant in the past?"
 									placeholder="Select experience"
 									options={hackathonExps}
@@ -495,6 +555,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.programmingLanguages)}
 									label="What programming languages are you the most comfortable with or passionate about?"
 									placeholder="Select programming languages"
 									options={programmingLanguages}
@@ -549,6 +610,7 @@ export const ApplyPage = () => {
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.diets)}
 									label="Do you have any dietary restrictions?"
 									placeholder="Select dietary restrictions"
 									description="Can't find your dietary preference? Add it to ensure we can accommodate you."
@@ -563,6 +625,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.allergies)}
 									label="Are there any allergens you have that we should be aware of?"
 									placeholder="Select allergens"
 									description="Don't see your allergen listed? Please specify it so we can accommodate you."
@@ -577,6 +640,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.gender)}
 									label="Which gender do you identify as?"
 									placeholder="Select gender"
 									options={genders}
@@ -588,6 +652,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.pronouns)}
 									label="What are your pronouns?"
 									placeholder="Select pronouns"
 									options={pronouns}
@@ -599,6 +664,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.sexuality)}
 									label="Please select any of the following that resonates with you:"
 									placeholder="Select answer"
 									options={sexualityList}
@@ -610,6 +676,7 @@ export const ApplyPage = () => {
 
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.race)}
 									label="Which of the following best describes your racial or ethnic background?"
 									placeholder="Select ethnic background"
 									options={races}
@@ -674,6 +741,29 @@ export const ApplyPage = () => {
 													generalResumeRef: "Error uploading resume.",
 												});
 											}
+										} else {
+											try {
+												if (!application.generalResumeRef) return;
+												// Delete from bucket
+												await deleteGeneralResume(application.generalResumeRef);
+												// Reset ref
+												handleChange("generalResumeRef", "");
+												toaster.success({
+													title: "Resume deleted from database",
+													description:
+														"Your resume has been removed successfully.",
+												});
+											} catch (err) {
+												console.error(err);
+												toaster.error({
+													title: "Error removing resume",
+													description: "Please try again later.",
+												});
+												setErrors({
+													_hasErrors: true,
+													generalResumeRef: "Error removing resume.",
+												});
+											}
 										}
 									}}
 									error={errors["generalResumeRef"]}
@@ -681,6 +771,7 @@ export const ApplyPage = () => {
 							</GridItem>
 							<GridItem colSpan={6}>
 								<Select
+									value={mapOption(application.referralSources)}
 									label="How did you hear about us?"
 									placeholder="Select platform"
 									options={referralSources}
@@ -730,6 +821,8 @@ export const ApplyPage = () => {
 												color="skyblue"
 												textDecor="underline"
 												href="https://hawkhacks.ca"
+												target="_blank"
+												rel="noopener noreferrer"
 											>
 												HawkHacks 2025
 											</ChakraLink>
@@ -754,6 +847,8 @@ export const ApplyPage = () => {
 													color="skyblue"
 													textDecor="underline"
 													href=""
+													target="_blank"
+													rel="noopener noreferrer"
 												>
 													SpurHacks Code of Conduct
 												</ChakraLink>
@@ -780,6 +875,8 @@ export const ApplyPage = () => {
 													color="skyblue"
 													textDecor="underline"
 													href="https://static.mlh.io/docs/mlh-code-of-conduct.pdf"
+													target="_blank"
+													rel="noopener noreferrer"
 												>
 													MLH Code of Conduct
 												</ChakraLink>
@@ -810,6 +907,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Privacy Policy
 													</ChakraLink>
@@ -818,6 +917,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/contest-terms.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Contest Terms and Conditions{" "}
 													</ChakraLink>{" "}
@@ -826,6 +927,8 @@ export const ApplyPage = () => {
 														color="skyblue"
 														textDecor="underline"
 														href="https://github.com/MLH/mlh-policies/blob/main/privacy-policy.md"
+														target="_blank"
+														rel="noopener noreferrer"
 													>
 														MLH Privacy Policy
 													</ChakraLink>
@@ -928,9 +1031,7 @@ export const ApplyPage = () => {
 							{isSubmitting
 								? "Submitting..."
 								: activeStep === steps.length - 1
-									? userApp
-										? "Re-submit"
-										: "Submit"
+									? "Submit"
 									: "Next"}
 						</Button>
 					</Flex>

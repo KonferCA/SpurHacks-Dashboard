@@ -23,6 +23,7 @@ export interface SelectProps {
 	multiple?: boolean;
 	placeholder?: string;
 	error?: string;
+	value?: OptionType | OptionType[];
 	onChange?: (selected: string[]) => void;
 	// width prop is handled by the wrapping Field.Root now??
 }
@@ -90,6 +91,7 @@ export const Select: FC<SelectProps> = ({
 	required,
 	disabled,
 	description,
+	value,
 	multiple = false,
 	placeholder,
 	error,
@@ -250,6 +252,7 @@ export const Select: FC<SelectProps> = ({
 				// core props
 				options={mappedOptions}
 				onChange={handleChange}
+				value={value}
 				isMulti={multiple}
 				isDisabled={disabled}
 				placeholder={placeholder}

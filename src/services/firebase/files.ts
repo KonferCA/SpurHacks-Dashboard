@@ -1,4 +1,10 @@
-import { getBlob, getMetadata, ref, uploadBytes } from "firebase/storage";
+import {
+	getBlob,
+	getMetadata,
+	ref,
+	uploadBytes,
+	deleteObject,
+} from "firebase/storage";
 
 import { storage } from "@/services/firebase";
 import { logEvent } from "@/services/firebase/log";
@@ -41,6 +47,31 @@ export async function uploadGeneralResume(file: File, uid: string) {
 	} catch (e) {
 		logEvent("error", {
 			event: "upload_general_resume_error",
+			message: (e as Error).message,
+			name: (e as Error).name,
+			stack: (e as Error).stack,
+		});
+		throw e;
+	}
+}
+
+export async function deleteGeneralResume(gsUrl: string) {
+	try {
+		// Extract the file path from the gs:// URL
+		// The format is: gs://bucket-name/path/to/file
+		const bucketName = gsUrl.split("/")[2];
+		const filePath = gsUrl.substring(
+			gsUrl.indexOf(bucketName) + bucketName.length + 1,
+		);
+
+		// Create a reference to the file
+		const fileRef = ref(storage, filePath);
+
+		// Delete the file
+		await deleteObject(fileRef);
+	} catch (e) {
+		logEvent("error", {
+			event: "delete_general_resume_error",
 			message: (e as Error).message,
 			name: (e as Error).name,
 			stack: (e as Error).stack,
