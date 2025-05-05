@@ -1,25 +1,50 @@
 import { Logo } from "@assets";
+import { Flex, Image, Text } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 
 interface LoadingAnimationProps {
 	text?: string;
 }
 
+const bounce = keyframes`
+  0%, 100% {
+    transform: translateY(-25%);
+    animation-timing-function: cubic-bezier(0.8, 0, 1, 1);
+  }
+  50% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+`;
+
 export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ text }) => {
+	const bounceAnimation = `${bounce} 1s infinite`;
+
 	return (
-		<div className="flex h-screen items-center justify-center flex-col">
-			<img
-				className="w-12 h-12 md:w-16 md:h-16 motion-safe:animate-bounce"
+		<Flex
+			h="100vh"
+			alignItems="center"
+			justifyContent="center"
+			flexDirection="column"
+			textAlign="center"
+			px={4}
+		>
+			<Image
 				src={Logo}
 				alt="Loading Animation"
+				boxSize={{ base: "12", md: "16" }}
+				animation={bounceAnimation}
+				mb={4}
 			/>
 
-			<p className="text-lg md:text-2xl">
+			<Text fontSize={{ base: "lg", md: "2xl" }} fontWeight="bold" mb={2}>
 				{text || "Loading super awesome portal..."}
-			</p>
+			</Text>
 
-			<p className="text-md md:text-lg text-gray-500">
-				Please be patient, <u> don't refresh! </u>
-			</p>
-		</div>
+			<Text fontSize={{ base: "md", md: "lg" }} color="gray.500">
+				Please be patient,{" "}
+				<Text as="u">don't refresh!</Text>
+			</Text>
+		</Flex>
 	);
 };
