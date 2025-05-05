@@ -567,7 +567,7 @@ export const applicationCreated = onDocumentCreated(
       margin: 0;
       padding: 0;
       color: #DEEBFF;
-      background: url('${FE_URL}/applicationBackground.svg') no-repeat center center/cover;
+      background: url('${FE_URL}/applicationBackground.png') no-repeat center center/cover;
       min-height: 100vh;
       display: flex;
       justify-content: center;
