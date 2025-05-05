@@ -244,9 +244,7 @@ export const Select: FC<SelectProps> = ({
 		>
 			<Field.Label>
 				{label}
-				{required && (
-					<span style={{ color: "#ee7981", marginLeft: "0.25rem" }}>*</span>
-				)}
+				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 			<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
 				// core props
