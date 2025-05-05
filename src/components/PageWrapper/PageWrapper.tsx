@@ -42,7 +42,7 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 					<Text className="text-gray-800 mt-2">
 						Having trouble? Get help in our{" "}
 						<ChakraLink
-							href="https://discord.com/invite/GxwvFEn9TB"
+							href="https://discord.spurhacks.com"
 							target="_blank"
 							rel="noopener noreferrer"
 							color="skyblue"
