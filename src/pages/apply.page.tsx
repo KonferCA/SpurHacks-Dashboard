@@ -130,6 +130,7 @@ export const ApplyPage = () => {
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isLoadingResume, setIsLoadingResume] = useState(false);
 	const { isLoading: loadingApplications, refreshApplications } =
 		useApplications();
 	const navigate = useNavigate();
@@ -716,6 +717,7 @@ export const ApplyPage = () => {
 										"application/vnd.oasis.opendocument.text", //odt
 									]}
 									onChange={async (file) => {
+										setIsLoadingResume(true);
 										if (file && file[0]) {
 											try {
 												// Upload the file immediately when selected
@@ -765,6 +767,7 @@ export const ApplyPage = () => {
 												});
 											}
 										}
+										setIsLoadingResume(false);
 									}}
 									error={errors["generalResumeRef"]}
 								/>
@@ -1024,7 +1027,7 @@ export const ApplyPage = () => {
 							color="black"
 							onClick={submitApp}
 							type="button"
-							disabled={isSubmitting}
+							disabled={isSubmitting || isLoadingResume}
 							// I mean.... why not? for funsies
 							className={isSubmitting ? "animate-spin" : ""}
 						>
