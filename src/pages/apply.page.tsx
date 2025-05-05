@@ -52,6 +52,7 @@ import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import { type FormEvent, useCallback, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
+import { businessTechs } from "@/data/businessTechs";
 
 enum StepsEnum {
 	BasicInformation,
@@ -95,7 +96,7 @@ const stepFields: ApplicationDataKey[][] = [
 	],
 
 	// Step: Interests
-	["interests", "hackathonExperience", "programmingLanguages"],
+	["interests", "hackathonExperience", "programmingLanguages", "businessTech"],
 
 	// Step: Motivation
 	["reasonToBeInSpurHacks", "revolutionizingTechnology"],
@@ -279,6 +280,8 @@ export const ApplyPage = () => {
 			countryOfResidence: "Canada",
 			city: "Waterloo",
 			discord: "@mydiscord",
+			businessTech:
+				"Interested in case and pitch competitions (business-oriented student)",
 			interests: [
 				"Web3, Crypto, and Blockchain",
 				"Quantum Computing",
@@ -526,6 +529,20 @@ export const ApplyPage = () => {
 					{/* interests */}
 					{isStep(activeStep, StepsEnum.Interests) && (
 						<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
+							<GridItem colSpan={6}>
+								<Select
+									value={mapOption(application.businessTech)}
+									label="What part of the business-tech side do you align with more?"
+									placeholder="Select business-tech"
+									options={businessTechs}
+									onChange={(opts) =>
+										handleChange("businessTech", opts[0] ?? "")
+									}
+									error={errors.businessTech}
+									required
+								/>
+							</GridItem>
+
 							<GridItem colSpan={6}>
 								<Select
 									value={mapOption(application.interests)}
