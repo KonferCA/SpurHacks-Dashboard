@@ -1,18 +1,23 @@
+import Knots from "./404-knots.svg";
 import AppleWalletBadge from "./add-to-apple-wallet-logo.png";
 import AirBalloon from "./air-balloon.svg";
 import AppleLogo from "./apple-logo.svg";
 import CloudLL from "./cloudLL.svg";
 import CloudRR from "./cloudRR.svg";
+import DiscordLogo from "./discord.svg";
 import GithubLogo from "./github-mark.svg";
 import GoldenHawk from "./goldenHawk.svg";
 import GoogleWalletBadge from "./googe-wallet-badge.svg";
 import GoogleLogo from "./google-logo.svg";
+import InstagramLogo from "./instagram.svg";
+import IpadKidHawks from "./ipadKidHawks.svg";
+import LinkedinLogo from "./linkedin.svg";
+import LoadingDots from "./loading.svg";
 import Logo from "./spur-logo-white.svg";
 import OffwhiteLogo from "./spur-logo-offwhite.svg";
 import FullLogo from "./spurhacks-full-logo-white.svg";
-import IpadKidHawks from "./ipadKidHawks.svg";
-import LoadingDots from "./loading.svg";
-import Knots from "./404-knots.svg";
+import TiktokLogo from "./tiktok.svg";
+import XLogo from "./x.svg";
 
 export {
 	FullLogo,
@@ -30,6 +35,11 @@ export {
 	AppleWalletBadge,
 	LoadingDots,
 	Knots,
+	DiscordLogo,
+	InstagramLogo,
+	XLogo,
+	LinkedinLogo,
+	TiktokLogo,
 };
 
 /**
