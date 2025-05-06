@@ -1,15 +1,15 @@
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
-import CreatableSelect from "react-select/creatable";
 import SelectComponent from "react-select";
 import { components } from "react-select";
 import type { MenuListProps, OptionProps, GroupBase } from "react-select";
 import { FixedSizeList } from "react-window";
 import { Field } from "@chakra-ui/react";
 import type { StylesConfig } from "react-select";
+import { MultiSelect } from "../MultiSelect";
 
 // define the shape react-select expects for options
-interface OptionType {
+export interface OptionType {
 	value: string;
 	label: string;
 }
@@ -132,7 +132,7 @@ export const Select: FC<SelectProps> = ({
 			}),
 			control: (provided, state) => ({
 				...provided,
-				backgroundColor: "#333147",
+				backgroundColor: "#1f1e2e",
 				borderColor: state.isFocused ? "orange.400" : "transparent",
 				borderRadius: "9999px", // full
 				minHeight: "48px", // lg size
@@ -231,12 +231,6 @@ export const Select: FC<SelectProps> = ({
 		[],
 	);
 
-	// function to display the create option prompt
-	const formatCreateLabel = useCallback(
-		(inputValue: string) => `Create "${inputValue}"`,
-		[],
-	);
-
 	// common props for both select components
 	type CommonSelectProps = {
 		options: typeof mappedOptions;
@@ -289,18 +283,18 @@ export const Select: FC<SelectProps> = ({
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 
-			{allowCustomValue ? (
-				<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
-					{...commonSelectProps}
-					// creatable props
-					formatCreateLabel={formatCreateLabel}
-					// message when no options match search
-					noOptionsMessage={({ inputValue }) =>
-						inputValue ? formatCreateLabel(inputValue) : "No options found"
-					}
+			{multiple && (
+				<MultiSelect
+					value={Array.isArray(value) ? value : []}
+					options={initialOptions}
+					disabled={disabled}
+					allowCustomValue={allowCustomValue}
+					onChange={onChange}
 				/>
-			) : (
-				<SelectComponent<OptionType, typeof multiple, GroupBase<OptionType>>
+			)}
+
+			{!multiple && (
+				<SelectComponent<OptionType, boolean, GroupBase<OptionType>>
 					{...commonSelectProps}
 					// message when no options match search
 					noOptionsMessage={() => "No options found"}
