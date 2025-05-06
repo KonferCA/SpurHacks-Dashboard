@@ -63,7 +63,15 @@ export const MultiSelect: FC<MultiSelectProps> = ({
 	const handleChange = useCallback(
 		(opts: string[]) => {
 			setQuery("");
-			if (onChange) onChange(opts);
+			if (onChange) {
+				// If the current value only includes None, but user selected any other value, "None" should be taken out
+				if (value[0]?.value === "None" && opts.some((opt) => opt !== "None")) {
+					onChange(opts.filter((opt) => opt !== "None"));
+					return;
+				}
+				if (opts.includes("None")) onChange(["None"]);
+				else onChange(opts);
+			}
 		},
 		[onChange, query],
 	);
