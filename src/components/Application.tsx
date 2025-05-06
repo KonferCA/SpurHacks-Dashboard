@@ -45,7 +45,7 @@ export const Application: FC<ApplicationProps> = ({ app }) => {
 				<Field label="Age:" value={app.age} />
 				<Field label="Country:" value={app.countryOfResidence} />
 				<Field label="City:" value={app.city} />
-				<Field label="Phone:" value={app.phone} />
+				{/* <Field label="Phone:" value={app.phone} /> */}
 				<Field label="Role:" value={app.participatingAs} />
 				<Field label="Discord:" value={app.discord} />
 			</div>
