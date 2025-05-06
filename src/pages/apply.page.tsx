@@ -286,12 +286,18 @@ export const ApplyPage = () => {
 			// Validate current step before proceeding
 			if (!validateCurrentStep()) return;
 			setActiveStep((s) => s + 1);
+			setTimeout(() => {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}, 100);
 		}
 	};
 
 	const prevStep = () => {
 		if (activeStep > 0) {
 			setActiveStep((s) => s - 1);
+			setTimeout(() => {
+				window.scrollTo({ top: 0, behavior: 'smooth' });
+			}, 100);
 		}
 	};
 
