@@ -31,11 +31,12 @@ export const TextArea: React.FC<TextAreaProps> = ({
 }) => {
 	return (
 		<Field.Root required={required} invalid={!!error}>
-			<Field.Label>
+			<Field.Label color="offwhite.primary">
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 			<Textarea
+				color="offwhite.primary"
 				focusRing="none"
 				bg="#1f1e2e"
 				borderColor="transparent"
@@ -47,7 +48,9 @@ export const TextArea: React.FC<TextAreaProps> = ({
 				rounded="1.5rem"
 				{...props}
 			/>
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

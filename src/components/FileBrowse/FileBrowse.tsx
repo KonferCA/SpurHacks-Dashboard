@@ -40,13 +40,24 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					if (onChange) onChange(details.acceptedFiles);
 				}}
 			>
-				<Field.Label>
+				<Field.Label color="offwhite.primary">
 					{label}
 					{required && <Field.RequiredIndicator />}
 				</Field.Label>
 				<FileUpload.HiddenInput />
 				<FileUpload.Trigger asChild>
-					<Button variant="outline" size="sm" width="full">
+					<Button
+						variant="outline"
+						size="xl"
+						width="full"
+						color="offwhite.primary"
+						border="none"
+						background="#1f1e2e"
+						rounded="full"
+						_hover={{
+							background: "#333147",
+						}}
+					>
 						Select File(s)
 					</Button>
 				</FileUpload.Trigger>
@@ -54,9 +65,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					<FileUpload.Context>
 						{({ acceptedFiles }) =>
 							acceptedFiles.map((file) => (
-								<FileUpload.Item key={file.name} file={file}>
+								<FileUpload.Item
+									key={file.name}
+									file={file}
+									background="#333147"
+									rounded="full"
+								>
 									<FileUpload.ItemPreview />
-									<FileUpload.ItemName />
+									<FileUpload.ItemName color="offwhite.primary" />
 									<FileUpload.ItemSizeText />
 									{!disabled && !loading && <FileUpload.ItemDeleteTrigger />}
 									{loading && <Spinner />}
@@ -66,7 +82,9 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					</FileUpload.Context>
 				</FileUpload.ItemGroup>
 			</FileUpload.Root>
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

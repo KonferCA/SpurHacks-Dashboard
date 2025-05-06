@@ -137,6 +137,7 @@ export const Select: FC<SelectProps> = ({
 			}),
 			control: (provided, state) => ({
 				...provided,
+				color: "#DEEBFF",
 				backgroundColor: "#1f1e2e",
 				borderColor: "transparent",
 				borderRadius: "9999px", // full
@@ -152,17 +153,17 @@ export const Select: FC<SelectProps> = ({
 			}),
 			placeholder: (provided) => ({
 				...provided,
-				color: "#666484", // gray.500 equivalent
+				color: "#666484",
 			}),
 			input: (provided) => ({
 				...provided,
-				color: "white",
+				color: "#DEEBFF",
 				margin: 0,
 				padding: 0,
 			}),
 			singleValue: (provided) => ({
 				...provided,
-				color: "white",
+				color: "#DEEBFF",
 			}),
 			multiValue: (provided) => ({
 				...provided,
@@ -201,7 +202,7 @@ export const Select: FC<SelectProps> = ({
 					: state.isFocused
 						? "#1F1E2E" // hover color
 						: "transparent",
-				color: state.isSelected ? "#666484" : "##DEEBFF",
+				color: state.isSelected ? "#666484" : "#DEEBFF",
 				padding: "8px 12px",
 				cursor: "pointer",
 				"&:active": {
@@ -285,7 +286,7 @@ export const Select: FC<SelectProps> = ({
 			disabled={disabled}
 			width="100%"
 		>
-			<Field.Label>
+			<Field.Label color="offwhite.primary">
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
@@ -318,7 +319,9 @@ export const Select: FC<SelectProps> = ({
 				/>
 			)}
 
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

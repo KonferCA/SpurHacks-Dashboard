@@ -34,11 +34,12 @@ export const TextInput: React.FC<TextInputProps> = ({
 }) => {
 	return (
 		<Field.Root required={required} invalid={!!error}>
-			<Field.Label>
+			<Field.Label color="offwhite.primary">
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 			<Input
+				color="offwhite.primary"
 				focusRing="none"
 				bg="#1f1e2e"
 				borderColor="transparent"
@@ -50,7 +51,9 @@ export const TextInput: React.FC<TextInputProps> = ({
 				size="xl"
 				{...props}
 			/>
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

@@ -850,11 +850,15 @@ export const ApplyPage = () => {
 						{isStep(activeStep, StepsEnum.FinalTouches) && (
 							<SimpleGrid marginX="auto" columns={6} gapX="1.5rem" gapY="2rem">
 								<GridItem colSpan={6}>
-									<Text fontWeight="medium" color="gray.400">
+									<Text fontWeight="medium" color="offwhite.primary">
 										If you would like to share your resume with our sponsors,
 										please do so now.
 									</Text>
-									<Text fontSize="sm" fontStyle="italic">
+									<Text
+										fontSize="sm"
+										fontStyle="italic"
+										color="offwhite.primary"
+									>
 										Sponsors will be conducting coffee chats/interviews during
 										the hackathon, or might reach out via email for career or
 										job opportunities.
