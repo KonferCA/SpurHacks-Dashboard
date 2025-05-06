@@ -287,7 +287,7 @@ export const ApplyPage = () => {
 			if (!validateCurrentStep()) return;
 			setActiveStep((s) => s + 1);
 			setTimeout(() => {
-				window.scrollTo({ top: 0, behavior: 'smooth' });
+				window.scrollTo({ top: 0, behavior: "smooth" });
 			}, 100);
 		}
 	};
@@ -296,7 +296,7 @@ export const ApplyPage = () => {
 		if (activeStep > 0) {
 			setActiveStep((s) => s - 1);
 			setTimeout(() => {
-				window.scrollTo({ top: 0, behavior: 'smooth' });
+				window.scrollTo({ top: 0, behavior: "smooth" });
 			}, 100);
 		}
 	};
@@ -326,6 +326,7 @@ export const ApplyPage = () => {
 				title: "Application Submitted!",
 				description:
 					"Thank you for applying! You'll hear from us via email within one week after applications close on June 6th.",
+				duration: 5000,
 			});
 			await refreshApplications();
 		} catch (e) {
@@ -872,6 +873,8 @@ export const ApplyPage = () => {
 											"text/plain", //txt, text, conf, def, list, log, in, ini
 											"application/vnd.oasis.opendocument.text", //odt
 										]}
+										disabled={isLoadingResume}
+										loading={isLoadingResume}
 										onChange={async (file) => {
 											setIsLoadingResume(true);
 											if (file && file[0]) {
@@ -908,10 +911,8 @@ export const ApplyPage = () => {
 													);
 													// Reset ref
 													handleChange("generalResumeRef", "");
-													toaster.success({
+													toaster.create({
 														title: "Resume deleted from database",
-														description:
-															"Your resume has been removed successfully.",
 													});
 												} catch (err) {
 													console.error(err);
