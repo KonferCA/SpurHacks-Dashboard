@@ -35,8 +35,6 @@ import { type FormEventHandler, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import { z } from "zod";
 
-type SearchTeamNameFn = (name: string) => Promise<void>;
-
 // const teamEditCloseDate = "2024-05-17T00:00:00";
 
 export const MyTeamPage = () => {
@@ -61,7 +59,8 @@ export const MyTeamPage = () => {
 		[],
 	);
 	const { currentUser } = useAuth();
-	const debounce = useDebounce<SearchTeamNameFn, string>(
+	const debounce = useDebounce(
+		//@ts-ignore
 		async (name: string) => {
 			if (!name) return;
 			// search if team name is available
