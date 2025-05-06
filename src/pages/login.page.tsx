@@ -1,13 +1,8 @@
 import { useAuth, useRouteDefinitions } from "@/providers";
 import type { ProviderName } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import {
-	GithubLogo,
-	GoogleLogo,
-	OffwhiteLogo,
-	VisibleIcon,
-	InvisibleIcon,
-} from "@assets";
+import { Eye, EyeClosed } from "@phosphor-icons/react";
+import { GithubLogo, GoogleLogo, OffwhiteLogo } from "@assets";
 import knotsSvg from "@/assets/knots.svg";
 import {
 	Box,
@@ -302,18 +297,24 @@ export const LoginPage = () => {
 										size="lg"
 										visibilityIcon={{
 											on: (
-												<Image
-													src={VisibleIcon}
-													alt="Show password"
-													boxSize={5}
-												/>
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<Eye />
+												</Icon>
 											),
 											off: (
-												<Image
-													src={InvisibleIcon}
-													alt="Hide password"
-													boxSize={5}
-												/>
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<EyeClosed />
+												</Icon>
 											),
 										}}
 									/>
@@ -357,18 +358,24 @@ export const LoginPage = () => {
 										size="lg"
 										visibilityIcon={{
 											on: (
-												<Image
-													src={VisibleIcon}
-													alt="Show confirm password"
-													boxSize={5}
-												/>
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<Eye />
+												</Icon>
 											),
 											off: (
-												<Image
-													src={InvisibleIcon}
-													alt="Hide confirm password"
-													boxSize={5}
-												/>
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<EyeClosed />
+												</Icon>
 											),
 										}}
 									/>

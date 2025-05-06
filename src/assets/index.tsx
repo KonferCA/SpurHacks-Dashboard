@@ -13,8 +13,6 @@ import FullLogo from "./spurhacks-full-logo-white.svg";
 import IpadKidHawks from "./ipadKidHawks.svg";
 import LoadingDots from "./loading.svg";
 import Knots from "./404-knots.svg";
-import VisibleIcon from "./visible.svg";
-import InvisibleIcon from "./invisible.svg";
 
 export {
 	FullLogo,
@@ -32,8 +30,6 @@ export {
 	AppleWalletBadge,
 	LoadingDots,
 	Knots,
-	VisibleIcon,
-	InvisibleIcon,
 };
 
 /**
