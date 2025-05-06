@@ -63,18 +63,7 @@ export const validations: {
 			z.enum(ages, { message: "Please provide your age." }).safeParse(v),
 		),
 	discord: (v) =>
-		formatResult(
-			z
-				.string()
-				.nonempty("Discord username is empty")
-				.refine((val) => {
-					if (!val.startsWith("@") && !/\#\d{4}$/.test(val)) {
-						return false;
-					}
-					return true;
-				}, "Invalid Discord username. Expected @username or username#1234.")
-				.safeParse(v),
-		),
+		formatResult(z.string().nonempty("Discord username is empty").safeParse(v)),
 	major: (v) =>
 		formatResult(
 			z
