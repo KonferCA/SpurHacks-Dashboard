@@ -28,15 +28,31 @@ import {
 
 export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 	const [currentUser, setCurrentUser] = useState<UserWithClaims | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
+	const [isAuthReady, setIsAuthReady] = useState(false);
 
 	const completeLoginProcess = async (user: User) => {
-		// check if user has a profile in firestore
-		const userWithRole = await validateUser(user);
-		// make one ui update instead of two due to async function
-		flushSync(() => {
-			setCurrentUser(userWithRole);
-		});
+		setIsLoading(true);
+
+		try {
+			// check if user has a profile in firestore
+			const userWithRole = await validateUser(user);
+
+			// update user first with flushSync to ensure it completes
+			flushSync(() => {
+				setCurrentUser(userWithRole);
+			});
+
+			// small delay to ensure the user state update completes before setting loading to false - thx juan
+			setTimeout(() => {
+				setIsLoading(false);
+				setIsAuthReady(true);
+			}, 100);
+		} catch (error) {
+			console.error("Error in login process:", error);
+			setIsLoading(false);
+			setIsAuthReady(true);
+		}
 	};
 
 	const login = async (email: string, password: string) => {
@@ -175,19 +191,41 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 	};
 
 	useEffect(() => {
+		setIsLoading(true);
+
 		const unsub = auth.onAuthStateChanged(async (user) => {
 			if (user) {
 				await completeLoginProcess(user);
 			} else {
+				// if no user, make sure to update state in the correct order with delay
 				setCurrentUser(null);
+
+				// small delay to ensure state updates properly
+				setTimeout(() => {
+					setIsLoading(false);
+					setIsAuthReady(true);
+				}, 100);
 			}
 		});
 
-		// Handle redirect result
+		// handle redirect result
 		const handleRedirectResult = async () => {
-			const result = await getRedirectResult(auth);
-			if (result) {
-				await completeLoginProcess(result.user);
+			try {
+				const result = await getRedirectResult(auth);
+
+				if (result) {
+					await completeLoginProcess(result.user);
+				} else {
+					// make sure we complete the auth process even if no redirect result
+					setTimeout(() => {
+						setIsLoading(false);
+						setIsAuthReady(true);
+					}, 500);
+				}
+			} catch (error) {
+				console.error("Redirect error:", error);
+				setIsLoading(false);
+				setIsAuthReady(true);
 			}
 		};
 
@@ -195,8 +233,23 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 			handleRedirectResult();
 		}
 
-		return unsub;
+		const backupTimer = setTimeout(() => {
+			if (isLoading) {
+				console.log("Auth state taking too long, forcing ready state");
+				setIsLoading(false);
+				setIsAuthReady(true);
+			}
+		}, 2000);
+
+		return () => {
+			unsub();
+			clearTimeout(backupTimer);
+		};
 	}, []);
+
+	if (!isAuthReady) {
+		return <LoadingAnimation />;
+	}
 
 	return (
 		<AuthContext.Provider
