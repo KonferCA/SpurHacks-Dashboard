@@ -1,3 +1,7 @@
+import DiscordLogo from "@/assets/discord.svg";
+import InstagramLogo from "@/assets/instagram.svg";
+import LinkedinLogo from "@/assets/linkedin.svg";
+import TiktokLogo from "@/assets/tiktok.svg";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
@@ -7,18 +11,14 @@ import {
 	Flex,
 	Heading,
 	Icon,
+	Image,
 	Link,
 	Text,
-	Image,
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
+import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { WarningCircle, CheckCircle } from "@phosphor-icons/react";
-import InstagramLogo from "@/assets/instagram.svg";
-import LinkedinLogo from "@/assets/linkedin.svg";
-import TiktokLogo from "@/assets/tiktok.svg";
-import DiscordLogo from "@/assets/discord.svg";
 
 const HomePage = () => {
 	const { deadlines, applications } = useApplications();

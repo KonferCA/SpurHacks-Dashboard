@@ -6,13 +6,13 @@ import { useRouteDefinitions, useUser } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
 	Box,
-	Flex,
 	Link as ChakraLink,
-	Text,
-	Image,
-	Drawer,
-	Portal,
 	CloseButton,
+	Drawer,
+	Flex,
+	Image,
+	Portal,
+	Text,
 } from "@chakra-ui/react";
 import {
 	CalendarDaysIcon,
@@ -27,8 +27,8 @@ import { useEffect, useMemo, useState } from "react";
 import { FiLogOut, FiMapPin } from "react-icons/fi";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
-import { Button } from "./ui/button";
 import { RouterChakraLink } from "./RouterChakraLink";
+import { Button } from "./ui/button";
 
 const navItems = {
 	[paths.home]: {
