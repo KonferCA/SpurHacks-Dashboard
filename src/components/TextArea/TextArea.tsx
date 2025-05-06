@@ -40,7 +40,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
 				bg="#1f1e2e"
 				borderColor="transparent"
 				_placeholder={{ color: "#666484" }}
-				size="lg"
+				size="xl"
+				rounded="1.5rem"
 				{...props}
 			/>
 			<Field.HelperText>{description}</Field.HelperText>

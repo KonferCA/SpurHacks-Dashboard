@@ -44,7 +44,7 @@ export const TextInput: React.FC<TextInputProps> = ({
 				borderColor="transparent"
 				borderRadius="full"
 				_placeholder={{ color: "#666484" }}
-				size="lg"
+				size="xl"
 				{...props}
 			/>
 			<Field.HelperText>{description}</Field.HelperText>

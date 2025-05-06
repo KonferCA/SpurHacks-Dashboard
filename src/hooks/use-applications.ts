@@ -18,6 +18,7 @@ export type ApplicationsHookValue = {
 		inRange: boolean;
 	};
 	refreshApplications: () => Promise<void>;
+	refreshDrafts: () => Promise<void>;
 	isLoading: boolean;
 };
 
@@ -106,12 +107,20 @@ export const useApplications = () => {
 		return queryClient.invalidateQueries({ queryKey: ["applications"] });
 	}, [queryClient]);
 
+	/**
+	 * Invalidates and refreshes the applications query
+	 */
+	const refreshDrafts = useCallback(() => {
+		return queryClient.invalidateQueries({ queryKey: ["drafts"] });
+	}, [queryClient]);
+
 	const value = useMemo(() => {
 		return {
 			deadlines,
 			drafts,
 			applications,
 			refreshApplications,
+			refreshDrafts,
 			isLoading: loadingApplications || loadingDeadlines || loadingDrafts,
 		} satisfies ApplicationsHookValue;
 	}, [

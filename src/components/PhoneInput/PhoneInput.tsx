@@ -1,15 +1,58 @@
 import { countryCodes } from "@/data/countryPhoneCodes";
-import { type FC, useEffect, useState } from "react";
+import { type FC } from "react";
 import { Select } from "@/components/Select/Select";
 import { TextInput } from "@/components/TextInput/TextInput";
 import { Fieldset, GridItem, SimpleGrid } from "@chakra-ui/react";
+
+// Function to format phone number to 123-444-5555 format
+const formatPhoneNumber = (value: string) => {
+	// Remove all non-digit characters
+	const digits = value.replace(/\D/g, "");
+
+	// Apply the format based on the number of digits
+	if (digits.length <= 3) {
+		return digits;
+	} else if (digits.length <= 6) {
+		return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+	} else {
+		return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+	}
+};
+
+// Parse initial value or controlled value
+const parsePhoneValue = (phoneValue?: string) => {
+	if (!phoneValue) return { country: "Canada (+1)", phone: "" };
+
+	const match = phoneValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
+	if (match) {
+		const countryCode = match[1];
+		const phone = match[2];
+		// Find the country by code
+		const foundCountry = countryCodes.find((c) =>
+			c.includes(`(+${countryCode})`),
+		);
+		return {
+			country: foundCountry || "Canada (+1)",
+			phone: phone || "",
+		};
+	}
+	return { country: "Canada (+1)", phone: "" };
+};
+
+// Construct the full phone value
+const constructFullValue = (country: string, phone: string) => {
+	if (!phone) return "";
+	const match = country.match(/\(\+(\d+[-\d]*)\)/);
+	const code = match ? match[1] : "";
+	return `(+${code}) ${phone}`;
+};
 
 export interface PhoneInputProps {
 	onChange: (phone: string) => void; // concat the country code + phone number
 	required?: boolean;
 	error?: string;
 	description?: string;
-	initialValue?: string;
+	value: string; // Controlled component value
 }
 
 export const PhoneInput: FC<PhoneInputProps> = ({
@@ -17,87 +60,52 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 	required,
 	error,
 	description,
-	initialValue,
+	value,
 }) => {
-	const [country, setCountry] = useState(() => {
-		if (initialValue) {
-			// Value format should be like "(+1) 123-456-7890"
-			const match = initialValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
-			if (match) {
-				const countryCode = match[1];
-				// Find the country by code
-				const foundCountry = countryCodes.find((c) =>
-					c.includes(`(+${countryCode})`),
-				);
-				if (foundCountry) {
-					return foundCountry;
-				}
-			}
-		}
-		return "Canada (+1)";
-	});
+	// Determine whether to use controlled or uncontrolled mode
+	const isControlled = value !== undefined;
+	const { country, phone } = parsePhoneValue(isControlled ? value : "");
 
-	const [phone, setPhone] = useState(() => {
-		if (initialValue) {
-			// Value format should be like "(+1) 123-456-7890"
-			const match = initialValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
-			if (match) {
-				const phone = match[2];
-				if (phone) {
-					return phone;
-				}
-			}
-		}
-		return "";
-	});
-
-	const handleChange = (code: boolean, value: string) => {
-		if (code) {
-			//@ts-ignore
-			setCountry(value);
-		} else {
-			setPhone((old) => {
-				if (/^[0-9-]*$/.test(value)) {
-					return value;
-				}
-				return old;
-			});
-		}
+	const handleCountryChange = (value: string) => {
+		// For controlled mode, reconstruct the value and call onChange
+		const fullValue = constructFullValue(value, formatPhoneNumber(phone));
+		onChange(fullValue);
 	};
 
-	useEffect(() => {
-		if (onChange) {
-			// If the phone number is empty, update as empty string for proper validation
-			if (!phone) {
-				onChange("");
-				return;
-			}
-			const match = country.match(/\(\+(\d+[-\d]*)\)/);
-			const code = match ? match[1] : "";
-			onChange(`(+${code}) ${phone}`);
+	const handlePhoneChange = (value: string) => {
+		// Remove all non-digits first
+		const digitsOnly = value.replace(/\D/g, "");
+
+		// Limit to 10 digits
+		if (digitsOnly.length <= 10) {
+			// Format the input
+			const formatted = formatPhoneNumber(digitsOnly);
+			const fullValue = constructFullValue(country, formatted);
+			onChange(fullValue);
 		}
-	}, [country, phone, onChange]);
+	};
 
 	return (
 		<Fieldset.Root invalid={!!error}>
 			<SimpleGrid columns={12} gap={4}>
 				<GridItem colSpan={3}>
 					<Select
-						value={country ? { value: country, label: country } : undefined}
+						value={{ value: country, label: country }}
 						label="Country Code"
 						placeholder="Select country code"
 						required={required}
 						options={countryCodes}
-						onChange={(v) => handleChange(true, v[0] ?? countryCodes[0])}
+						onChange={(v) => handleCountryChange(v[0] ?? countryCodes[0])}
 					/>
 				</GridItem>
 				<GridItem colSpan={9}>
 					<TextInput
 						required={required}
 						value={phone}
-						onChange={(e) => handleChange(false, e.target.value)}
-						placeholder="999-999-9999"
+						onChange={(e) => handlePhoneChange(e.target.value)}
+						placeholder="123-456-7890"
 						label="Phone Number"
+						maxLength={12} // 10 digits + 2 hyphens
 					/>
 				</GridItem>
 			</SimpleGrid>
