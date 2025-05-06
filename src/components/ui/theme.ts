@@ -21,6 +21,10 @@ const config = defineConfig({
 				},
 			},
 		},
+		breakpoints: {
+			bipolarBigBoi: "1511px",
+			bipolarNotSoBigBoi: "1300px",
+		},
 	},
 	globalCss: {
 		html: {

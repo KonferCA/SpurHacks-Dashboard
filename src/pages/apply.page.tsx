@@ -43,7 +43,6 @@ import {
 	Flex,
 	GridItem,
 	SimpleGrid,
-	Steps,
 	Text,
 	Link as ChakraLink,
 	Field,
@@ -60,6 +59,7 @@ import {
 } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
+import { Steps } from "@/components/Steps";
 import { travelOptions } from "@/data/travel";
 import { businessTechs } from "@/data/businessTechs";
 import {
@@ -399,6 +399,11 @@ export const ApplyPage = () => {
 		});
 	}, [currentUser, draftId]);
 
+	const getStepTitle = useCallback(
+		(step: number) => steps[step]?.name ?? "",
+		[],
+	);
+
 	if (loadingApplications)
 		return (
 			<PageWrapper>
@@ -427,26 +432,11 @@ export const ApplyPage = () => {
 					marginBottom="2rem"
 					paddingX={{ base: "1rem", md: "1.5rem" }}
 				>
-					<Steps.Root
+					<Steps
 						step={activeStep}
-						defaultStep={StepsEnum.BasicInformation}
 						count={steps.length}
-						size={{ base: "md", md: "sm" }}
-						overflowX="scroll"
-						pb={4}
-					>
-						<Steps.List>
-							{steps.map((step, index) => (
-								<Steps.Item key={step.position} index={index} title={step.name}>
-									<Steps.Trigger>
-										<Steps.Indicator />
-										<Steps.Title>{step.name}</Steps.Title>
-									</Steps.Trigger>
-									<Steps.Separator />
-								</Steps.Item>
-							))}
-						</Steps.List>
-					</Steps.Root>
+						onGetStepTitle={getStepTitle}
+					/>
 				</Box>
 				<Box
 					maxWidth={{
