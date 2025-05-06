@@ -1,5 +1,6 @@
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
+import CreatableSelect from "react-select/creatable";
 import SelectComponent from "react-select";
 import { components } from "react-select";
 import type { MenuListProps, OptionProps, GroupBase } from "react-select";
@@ -120,6 +121,11 @@ export const Select: FC<SelectProps> = ({
 			}
 		},
 		[onChange, multiple],
+	);
+	// function to display the create option prompt
+	const formatCreateLabel = useCallback(
+		(inputValue: string) => `Create "${inputValue}"`,
+		[],
 	);
 
 	// style config to mimic chakra/previous look - sorry if you're maintaing this
@@ -284,7 +290,7 @@ export const Select: FC<SelectProps> = ({
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 
-			{multiple && (
+			{multiple ? (
 				<MultiSelect
 					value={Array.isArray(value) ? value : []}
 					options={initialOptions}
@@ -292,9 +298,19 @@ export const Select: FC<SelectProps> = ({
 					allowCustomValue={allowCustomValue}
 					onChange={onChange}
 				/>
-			)}
+			) : allowCustomValue ? (
+				<CreatableSelect<OptionType, boolean, GroupBase<OptionType>>
+					{...commonSelectProps}
+					// creatable props
 
-			{!multiple && (
+					formatCreateLabel={formatCreateLabel}
+					// message when no options match search
+
+					noOptionsMessage={({ inputValue }) =>
+						inputValue ? formatCreateLabel(inputValue) : "No options found"
+					}
+				/>
+			) : (
 				<SelectComponent<OptionType, boolean, GroupBase<OptionType>>
 					{...commonSelectProps}
 					// message when no options match search
