@@ -143,6 +143,13 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 			}
 		} catch (error: any) {
 			console.error(error);
+			if (
+				error.code === "auth/popup-closed-by-user" ||
+				error.code === "auth/cancelled-popup-request"
+			) {
+				// user closed the popup or cancelled the request, do nothing (don't show an error)
+				return;
+			}
 			if (error.code === "auth/account-exists-with-different-credential") {
 				toaster.error({
 					title: "Oops! Something went wrong.",

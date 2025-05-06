@@ -74,7 +74,11 @@ export const VerifyEmailPage = () => {
 						</Box>
 					</Box>
 
-					<Stack direction={{ base: "column", sm: "row" }} gap={4} justify="center">
+					<Stack
+						direction={{ base: "column", sm: "row" }}
+						gap={4}
+						justify="center"
+					>
 						<Button
 							onClick={() => {
 								if (resendSeconds <= 0 && auth.currentUser) {

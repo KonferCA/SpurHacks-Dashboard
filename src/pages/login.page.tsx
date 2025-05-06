@@ -1,8 +1,8 @@
 import { useAuth, useRouteDefinitions } from "@/providers";
 import type { ProviderName } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { GithubLogo, GoogleLogo } from "@assets";
-import SpurhacksLogo from "@/assets/spurhacks-full-logo-white.svg";
+import { Eye, EyeClosed } from "@phosphor-icons/react";
+import { GithubLogo, GoogleLogo, OffwhiteLogo } from "@assets";
 import knotsSvg from "@/assets/knots.svg";
 import {
 	Box,
@@ -14,7 +14,6 @@ import {
 	Icon,
 	Image,
 	Input,
-	InputGroup,
 	Link,
 	Stack,
 	Text,
@@ -25,6 +24,7 @@ import { FcGoogle } from "react-icons/fc";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
 import { Field } from "@/components/ui/field";
+import { PasswordInput } from "@/components/ui/password-input";
 
 // email validation with zod, double guard just in case someone changes the input type in html
 const emailParser = z.string().email();
@@ -47,9 +47,6 @@ export const LoginPage = () => {
 
 	// control for password reset form
 	const [showResetPasswordForm, setShowResetPasswordForm] = useState(false);
-	// state for password visibility toggle
-	const [showPassword] = useState(false);
-	const [showConfirmPassword] = useState(false);
 
 	// custom password err msg, can also be done for email but it shouldn't really need any msgs.
 	const [passwordErrMsg, setPasswordErrMsg] = useState("");
@@ -208,7 +205,7 @@ export const LoginPage = () => {
                     #C5B8D6 120%
                 )`,
 			}}
-			color="white"
+			color="offwhite.primary"
 		>
 			<GridItem
 				w="full"
@@ -217,20 +214,22 @@ export const LoginPage = () => {
 				justifyContent="center"
 				py={{ base: 12, md: 16 }}
 				px={{ base: 4, sm: 6, md: 8 }}
+				colSpan={isLogin ? 2 : 1}
 			>
-				<Box maxW="md" w="full">
+				<Box maxW="lg" w="full" textAlign={isLogin ? "center" : "left"}>
 					<Image
-						src={SpurhacksLogo}
+						src={OffwhiteLogo}
 						alt="SpurHacks Logo"
-						h={10}
+						h={8}
 						mb={8}
 						maxW="100%"
 						w="auto"
 						style={{ minWidth: 0 }}
+						mx={isLogin ? "auto" : "0"}
 					/>
 
 					{/* heading */}
-					<Heading as="h1" size="xl" fontWeight="bold" mb={2}>
+					<Heading as="h1" size="3xl" fontWeight="bold" mb={6}>
 						{showResetPasswordForm
 							? "Reset Password"
 							: isLogin
@@ -239,7 +238,7 @@ export const LoginPage = () => {
 					</Heading>
 
 					{!showResetPasswordForm && (
-						<Text color="gray.400" mb={8}>
+						<Text color="offwhite.primary" fontSize="md" mb={8}>
 							Join thousands of hackers across Canada in a 36 hour period of
 							exploration, creativity, and learning!
 						</Text>
@@ -250,7 +249,6 @@ export const LoginPage = () => {
 							<Field
 								label="Email"
 								invalid={isInvalidEmail}
-								required
 								errorText={
 									isInvalidEmail ? "Invalid email address." : undefined
 								}
@@ -261,11 +259,17 @@ export const LoginPage = () => {
 									placeholder="example@email.com"
 									value={email}
 									onChange={({ target: { value } }) => setEmail(value)}
-									bg="whiteAlpha.200"
+									bg="#333147"
 									borderColor="transparent"
 									borderRadius="full"
-									_placeholder={{ color: "gray.500" }}
+									_placeholder={{ color: "#666381" }}
+									_autofill={{
+										boxShadow: "0 0 0px 1000px #333147 inset",
+										WebkitTextFillColor:
+											"var(--chakra-colors-offwhite-primary)",
+									}}
 									size="lg"
+									pl={6}
 								/>
 							</Field>
 
@@ -273,24 +277,60 @@ export const LoginPage = () => {
 								<Field
 									label="Password"
 									invalid={isInvalidPassword}
-									required
 									errorText={isInvalidPassword ? passwordErrMsg : undefined}
 								>
-									<InputGroup>
-										<Input
-											id="password"
-											type={showPassword ? "text" : "password"}
-											placeholder="iloveinstantnoodles123"
-											minLength={isLogin ? undefined : 8}
-											value={password}
-											onChange={({ target: { value } }) => setPassword(value)}
-											bg="whiteAlpha.200"
-											borderColor="transparent"
-											borderRadius="full"
-											_placeholder={{ color: "gray.500" }}
-											size="lg"
-										/>
-									</InputGroup>
+									<PasswordInput
+										id="password"
+										placeholder="••••••••••••••"
+										minLength={isLogin ? undefined : 8}
+										value={password}
+										onChange={({ target: { value } }) => setPassword(value)}
+										bg="#333147"
+										borderColor="transparent"
+										borderRadius="full"
+										_placeholder={{ color: "#666381" }}
+										_autofill={{
+											boxShadow: "0 0 0px 1000px #333147 inset",
+											WebkitTextFillColor:
+												"var(--chakra-colors-offwhite-primary)",
+										}}
+										size="lg"
+										visibilityIcon={{
+											on: (
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<Eye />
+												</Icon>
+											),
+											off: (
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<EyeClosed />
+												</Icon>
+											),
+										}}
+									/>
+									{isLogin && !showResetPasswordForm && (
+										<Flex justify="flex-end" w="full">
+											<Link
+												onClick={toggleResetPassword}
+												fontSize="sm"
+												color="offwhite.primary"
+												_hover={{ color: "white", textDecoration: "underline" }}
+												fontWeight="bold"
+											>
+												Forgot Password?
+											</Link>
+										</Flex>
+									)}
 								</Field>
 							)}
 
@@ -298,59 +338,69 @@ export const LoginPage = () => {
 								<Field
 									label="Confirm Password"
 									invalid={isInvalidPassword}
-									required
 									errorText={isInvalidPassword ? passwordErrMsg : undefined}
 								>
-									<InputGroup>
-										<Input
-											id="confirmPassword"
-											type={showConfirmPassword ? "text" : "password"}
-											placeholder="re-enter your password"
-											minLength={8}
-											value={confirmPass}
-											onChange={({ target: { value } }) =>
-												setConfirmPass(value)
-											}
-											bg="whiteAlpha.200"
-											borderColor="transparent"
-											borderRadius="full"
-											_placeholder={{ color: "gray.500" }}
-											size="lg"
-										/>
-									</InputGroup>
+									<PasswordInput
+										id="confirmPassword"
+										placeholder="••••••••••••••"
+										minLength={8}
+										value={confirmPass}
+										onChange={({ target: { value } }) => setConfirmPass(value)}
+										bg="#333147"
+										borderColor="transparent"
+										borderRadius="full"
+										_placeholder={{ color: "#666381" }}
+										_autofill={{
+											boxShadow: "0 0 0px 1000px #333147 inset",
+											WebkitTextFillColor:
+												"var(--chakra-colors-offwhite-primary)",
+										}}
+										size="lg"
+										visibilityIcon={{
+											on: (
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<Eye />
+												</Icon>
+											),
+											off: (
+												<Icon
+													size="md"
+													color="#666484"
+													transition="colors"
+													_hover={{ color: "offwhite.primary" }}
+												>
+													<EyeClosed />
+												</Icon>
+											),
+										}}
+									/>
 								</Field>
-							)}
-
-							{isLogin && !showResetPasswordForm && (
-								<Flex justify="flex-end">
-									<Link
-										onClick={toggleResetPassword}
-										fontSize="sm"
-										color="gray.400"
-										_hover={{ color: "white", textDecoration: "underline" }}
-									>
-										Forgot Password?
-									</Link>
-								</Flex>
 							)}
 
 							<Button
 								type="submit"
-								bg="orange.400"
+								bg="#FFA75F"
 								color="gray.900"
-								_hover={{ bg: "orange.500" }}
-								_active={{ bg: "orange.600" }}
+								_hover={{ bg: "#EAA85C" }}
+								_active={{ bg: "#D59953" }}
 								size="lg"
 								fontSize="md"
 								fontWeight="bold"
 								borderRadius="full"
 								w="full"
+								boxShadow="0px 4px 30px 1px #42402E"
+								mt={4}
 							>
 								{showResetPasswordForm
 									? "Send Reset Link"
 									: isLogin
-										? "Log In"
-										: "Sign Up"}
+										? "LOG IN"
+										: "SIGN UP"}
 							</Button>
 						</Stack>
 					</form>
@@ -358,7 +408,12 @@ export const LoginPage = () => {
 					{!showResetPasswordForm && (
 						<Flex align="center" my={6}>
 							<Box h="1px" bg="gray.600" flexGrow={1} />
-							<Text px={4} flexShrink={0} color="gray.400" fontSize="sm">
+							<Text
+								px={4}
+								flexShrink={0}
+								color="offwhite.primary"
+								fontSize="sm"
+							>
 								OR
 							</Text>
 							<Box h="1px" bg="gray.600" flexGrow={1} />
@@ -379,8 +434,9 @@ export const LoginPage = () => {
 									}}
 									variant="outline"
 									colorScheme="gray"
-									borderColor="whiteAlpha.400"
-									color="white"
+									border="2px solid"
+									borderColor="offwhite.primary"
+									color="offwhite.primary"
 									_hover={{ bg: "whiteAlpha.100" }}
 									_active={{ bg: "whiteAlpha.200" }}
 									size="lg"
@@ -388,6 +444,7 @@ export const LoginPage = () => {
 									fontWeight="medium"
 									borderRadius="full"
 									w="full"
+									boxShadow="0px 0px 16px 0px #6E90B740"
 								>
 									<Flex align="center" justify="center" gap={2}>
 										{provider.name === "google" ? (
@@ -397,10 +454,15 @@ export const LoginPage = () => {
 												src={provider.logo}
 												alt={`${provider.name} logo`}
 												boxSize={5}
+												filter={
+													provider.name === "github"
+														? "brightness(0) invert(1)"
+														: "none"
+												} // invert github logo for dark mode... saves an svg?
 											/>
 										)}
-										<Text as="span">
-											{`Log In with ${provider.name.charAt(0).toUpperCase() + provider.name.slice(1)}`}
+										<Text as="span" textTransform="uppercase">
+											{`log in with ${provider.name}`}
 										</Text>
 									</Flex>
 								</Button>
@@ -408,12 +470,17 @@ export const LoginPage = () => {
 						</Stack>
 					)}
 
-					<Text mt={8} textAlign="center" fontSize="sm" color="gray.400">
+					<Text
+						mt={8}
+						textAlign="center"
+						fontSize="sm"
+						color="offwhite.primary"
+					>
 						{showResetPasswordForm ? (
 							<Link
 								onClick={toggleResetPassword}
 								fontWeight="medium"
-								color="white"
+								color="offwhite.primary"
 								_hover={{ textDecoration: "underline" }}
 							>
 								Back to Log In
@@ -423,8 +490,8 @@ export const LoginPage = () => {
 								Don't have an account?{" "}
 								<Link
 									onClick={toggleForm}
-									fontWeight="medium"
-									color="white"
+									fontWeight="bold"
+									color="offwhite.primary"
 									_hover={{ textDecoration: "underline" }}
 								>
 									Sign up
@@ -435,8 +502,8 @@ export const LoginPage = () => {
 								Already have an account?{" "}
 								<Link
 									onClick={toggleForm}
-									fontWeight="medium"
-									color="white"
+									fontWeight="bold"
+									color="offwhite.primary"
 									_hover={{ textDecoration: "underline" }}
 								>
 									Log In
@@ -447,24 +514,26 @@ export const LoginPage = () => {
 				</Box>
 			</GridItem>
 
-			<GridItem
-				display={{ base: "none", md: "flex" }}
-				alignItems="stretch"
-				position="relative"
-				overflow="hidden"
-				h="full"
-			>
-				<Image
-					src={knotsSvg}
-					alt="Abstract decorative knots graphic"
+			{!isLogin && (
+				<GridItem
+					display={{ base: "none", md: "flex" }}
+					alignItems="stretch"
+					position="relative"
+					overflow="hidden"
 					h="full"
-					w="auto"
-					maxW="none"
-					maxH="100vh"
-					objectFit="contain"
-					ml="auto"
-				/>
-			</GridItem>
+				>
+					<Image
+						src={knotsSvg}
+						alt="Abstract decorative knots graphic"
+						h="full"
+						w="auto"
+						maxW="none"
+						maxH="100vh"
+						objectFit="contain"
+						ml="auto"
+					/>
+				</GridItem>
+			)}
 		</Grid>
 	);
 };
