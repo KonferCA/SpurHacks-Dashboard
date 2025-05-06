@@ -352,7 +352,7 @@ export const ApplyPage = () => {
 				countryOfResidence: "Canada",
 				city: "Waterloo",
 				travel: "No, I live in Kitchener-Waterloo",
-				discord: "@mydiscord",
+				discord: "mydiscord",
 				businessTech:
 					"Interested in case and pitch competitions (business-oriented student)",
 				experienceResonates: [
