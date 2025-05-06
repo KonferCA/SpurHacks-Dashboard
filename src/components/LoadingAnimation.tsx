@@ -42,8 +42,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ text }) => {
 			</Text>
 
 			<Text fontSize={{ base: "md", md: "lg" }} color="gray.500">
-				Please be patient,{" "}
-				<Text as="u">don't refresh!</Text>
+				Please be patient, <Text as="u">don't refresh!</Text>
 			</Text>
 		</Flex>
 	);

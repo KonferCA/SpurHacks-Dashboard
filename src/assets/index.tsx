@@ -8,14 +8,18 @@ import GoldenHawk from "./goldenHawk.svg";
 import GoogleWalletBadge from "./googe-wallet-badge.svg";
 import GoogleLogo from "./google-logo.svg";
 import Logo from "./spur-logo-white.svg";
+import OffwhiteLogo from "./spur-logo-offwhite.svg";
 import FullLogo from "./spurhacks-full-logo-white.svg";
 import IpadKidHawks from "./ipadKidHawks.svg";
 import LoadingDots from "./loading.svg";
 import Knots from "./404-knots.svg";
+import VisibleIcon from "./visible.svg";
+import InvisibleIcon from "./invisible.svg";
 
 export {
 	FullLogo,
 	Logo,
+	OffwhiteLogo,
 	GithubLogo,
 	GoogleLogo,
 	AppleLogo,
@@ -28,6 +32,8 @@ export {
 	AppleWalletBadge,
 	LoadingDots,
 	Knots,
+	VisibleIcon,
+	InvisibleIcon,
 };
 
 /**
