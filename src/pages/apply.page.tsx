@@ -348,7 +348,7 @@ export const ApplyPage = () => {
 				countryOfResidence: "Canada",
 				city: "Waterloo",
 				travel: "No, I live in Kitchener-Waterloo",
-				discord: "@mydiscord",
+				discord: "mydiscord",
 				businessTech:
 					"Interested in case and pitch competitions (business-oriented student)",
 				experienceResonates: [
@@ -607,6 +607,7 @@ export const ApplyPage = () => {
 										placeholder="e.g., Kitchener/Waterloo, or outside of the city"
 										options={travelOptions}
 										onChange={(opt) => handleChange("travel", opt[0] ?? "")}
+										description="We’ll have shuttle buses running from within the City of Waterloo (The University of Waterloo and Wilfrid Laurier University) and from Toronto (Union Station)."
 										error={errors.travel}
 										required
 									/>
