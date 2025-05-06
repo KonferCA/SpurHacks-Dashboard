@@ -421,13 +421,15 @@ export const ApplyPage = () => {
 					as="nav"
 					aria-label="Application progress"
 					marginBottom="2rem"
-					paddingX="1.5rem"
+					paddingX={{ base: "1rem", md: "1.5rem" }}
 				>
 					<Steps.Root
 						step={activeStep}
 						defaultStep={StepsEnum.BasicInformation}
 						count={steps.length}
 						size={{ base: "md", md: "sm" }}
+						overflowX="scroll"
+						pb={4}
 					>
 						<Steps.List>
 							{steps.map((step, index) => (
