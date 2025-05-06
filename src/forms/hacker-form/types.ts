@@ -54,10 +54,10 @@ export interface ApplicationData {
 	// Extra metadata
 	participatingAs: "Hacker";
 	applicantId: string;
-	timestamp?: Timestamp;
-	hackathonYear?: string;
-	rsvp?: boolean;
-	applicationStatus?: "draft" | "pending" | "rejected" | "accepted";
+	timestamp: Timestamp;
+	hackathonYear: string;
+	rsvp: boolean;
+	applicationStatus: "draft" | "pending" | "rejected" | "accepted";
 }
 
 export type ApplicationDataKey = keyof ApplicationData;

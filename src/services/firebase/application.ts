@@ -96,14 +96,17 @@ export async function saveApplicationDraft(
 	uid: string,
 	draftId?: string,
 ) {
-	const payload = {
-		...data,
-		applicantId: uid,
-		timestamp: Timestamp.now(),
-		hackathonYear: "2025",
-		applicationStatus: "draft",
-		rsvp: false,
-	} satisfies ApplicationData;
+	// Remove undefined entries
+	const payload = Object.fromEntries(
+		Object.entries({
+			...data,
+			applicantId: uid,
+			timestamp: Timestamp.now(),
+			hackathonYear: "2025",
+			applicationStatus: "draft",
+			rsvp: false,
+		}).filter(([_, value]) => value !== undefined),
+	);
 
 	if (!draftId) {
 		const drafts = await getApplicationsDraft(uid);

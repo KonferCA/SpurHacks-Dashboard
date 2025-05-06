@@ -230,4 +230,16 @@ export const validations: {
 	generalResumeRef: () => null,
 	participateInHawkHacks: () => null,
 	agreedToReceiveEmailsFromKonferOrSpur: () => null,
+	timestamp: () => null,
+	applicationStatus: (v) =>
+		formatResult(
+			z
+				.enum(["draft", "pending", "accepted", "rejected"], {
+					message:
+						"Application status must be one of 'draft', 'pending', 'accepted', 'rejected'.",
+				})
+				.safeParse(v),
+		),
+	hackathonYear: (v) => formatResult(z.literal("2025").safeParse(v)),
+	rsvp: (v) => formatResult(z.literal(false).safeParse(v)),
 } as const;
