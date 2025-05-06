@@ -68,11 +68,12 @@ export const validations: {
 				.string()
 				.nonempty("Discord username is empty")
 				.refine((val) => {
-					if (!val.startsWith("@") && !/\#\d{4}$/.test(val)) {
+					// expects user#1234 or usernmae (no spaces or invalid chars)
+					if (!/\#\d{4}$/.test(val) && !/^[a-zA-Z0-9_.]{2,32}$/.test(val)) {
 						return false;
 					}
 					return true;
-				}, "Invalid Discord username. Expected @username or username#1234.")
+				}, "Invalid Discord username. Expected username or username#1234.")
 				.safeParse(v),
 		),
 	major: (v) =>
