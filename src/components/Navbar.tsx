@@ -84,9 +84,9 @@ const MobileNav = ({
 				padding="1rem"
 			>
 				<Flex alignItems="center" justifyContent="start">
-					<Link to="/profile">
+					<Link to="/home">
 						<Image
-							width="2.5rem"
+							width="3rem"
 							height="2.5rem"
 							src={Logo}
 							alt="SpurHacks Logo"
@@ -110,7 +110,7 @@ const MobileNav = ({
 						<Drawer.Positioner>
 							<Drawer.Content bg="#181C2B">
 								<Drawer.Header>
-									<Drawer.Title></Drawer.Title>
+									<Drawer.Title />
 								</Drawer.Header>
 								<Drawer.Body>
 									<Flex
