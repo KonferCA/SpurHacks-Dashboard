@@ -68,6 +68,7 @@ import {
 } from "@/data/experienceResonatesOptions";
 import { useDebounce } from "@/hooks/use-debounce";
 import { ApplicationDataDoc } from "@/services/firebase/types";
+import { countryCodes } from "@/data/countryPhoneCodes";
 
 enum StepsEnum {
 	BasicInformation,
@@ -340,7 +341,10 @@ export const ApplyPage = () => {
 				firstName: "Jon",
 				lastName: "Snow",
 				age: "18",
-				phone: "(+1) 123-333-4444",
+				phone: {
+					country: countryCodes[0],
+					number: "111-222-3333",
+				},
 				educationLevels: "Undergraduate-level University (3 to 5-year program)",
 				yearOfStudies: "Year 1",
 				school: "Wilfird Laurier Univeristy",

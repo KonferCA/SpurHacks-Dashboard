@@ -21,7 +21,7 @@ const formatPhoneNumber = (value: string) => {
 
 // Parse initial value or controlled value
 const parsePhoneValue = (phoneValue?: string) => {
-	if (!phoneValue) return { country: "Canada (+1)", phone: "" };
+	if (!phoneValue) return { country: "Canada (+1)", number: "" };
 
 	const match = phoneValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
 	if (match) {
@@ -33,26 +33,23 @@ const parsePhoneValue = (phoneValue?: string) => {
 		);
 		return {
 			country: foundCountry || "Canada (+1)",
-			phone: phone || "",
+			number: phone || "",
 		};
 	}
-	return { country: "Canada (+1)", phone: "" };
-};
-
-// Construct the full phone value
-const constructFullValue = (country: string, phone: string) => {
-	if (!phone) return "";
-	const match = country.match(/\(\+(\d+[-\d]*)\)/);
-	const code = match ? match[1] : "";
-	return `(+${code}) ${phone}`;
+	return { country: "Canada (+1)", number: "" };
 };
 
 export interface PhoneInputProps {
-	onChange: (phone: string) => void; // concat the country code + phone number
+	onChange: (phone: { country: string; number: string }) => void; // concat the country code + phone number
 	required?: boolean;
 	error?: string;
 	description?: string;
-	value: string; // Controlled component value
+	value:
+		| {
+				country: string;
+				number: string;
+		  }
+		| string; // Controlled component value
 }
 
 export const PhoneInput: FC<PhoneInputProps> = ({
@@ -62,14 +59,11 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 	description,
 	value,
 }) => {
-	// Determine whether to use controlled or uncontrolled mode
-	const isControlled = value !== undefined;
-	const { country, phone } = parsePhoneValue(isControlled ? value : "");
+	const { country, number } =
+		typeof value === "string" ? parsePhoneValue(value) : value;
 
 	const handleCountryChange = (value: string) => {
-		// For controlled mode, reconstruct the value and call onChange
-		const fullValue = constructFullValue(value, formatPhoneNumber(phone));
-		onChange(fullValue);
+		onChange({ country: value, number: formatPhoneNumber(number) });
 	};
 
 	const handlePhoneChange = (value: string) => {
@@ -80,8 +74,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 		if (digitsOnly.length <= 10) {
 			// Format the input
 			const formatted = formatPhoneNumber(digitsOnly);
-			const fullValue = constructFullValue(country, formatted);
-			onChange(fullValue);
+			onChange({ country, number: formatted });
 		}
 	};
 
@@ -101,7 +94,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 				<GridItem colSpan={{ base: 12, md: 8 }}>
 					<TextInput
 						required={required}
-						value={phone}
+						value={number}
 						onChange={(e) => handlePhoneChange(e.target.value)}
 						placeholder="123-456-7890"
 						label="Phone Number"

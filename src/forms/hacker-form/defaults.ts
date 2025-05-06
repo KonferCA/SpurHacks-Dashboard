@@ -4,7 +4,10 @@ import { Timestamp } from "firebase/firestore";
 export const defaultApplication: ApplicationData = {
 	firstName: "",
 	lastName: "",
-	phone: "",
+	phone: {
+		country: "",
+		number: "",
+	},
 	school: "",
 	//@ts-ignore
 	educationLevels: "",

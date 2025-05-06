@@ -3,6 +3,7 @@ import type { ApplicationData } from "@/forms/hacker-form/types";
 import { ages, countryNames, hackathonExps } from "@/data";
 import { educationLevels } from "@/data/educationLevels";
 import { travelOptions } from "@/data/travel";
+import { countryCodes } from "@/data/countryPhoneCodes";
 
 function formatResult<T, R>({ success, error }: SafeParseReturnType<T, R>) {
 	let errStr = "";
@@ -45,7 +46,16 @@ export const validations: {
 				.safeParse(v),
 		),
 	phone: (v) =>
-		formatResult(z.string().nonempty("Phone number is empty").safeParse(v)),
+		formatResult(
+			z
+				.object({
+					country: z.enum(countryCodes, { message: "Invalid country code." }),
+					number: z.string().refine((v) => /^\d{3}-\d{3}-\d{4}$/.test(v), {
+						message: "Invalid phone number format. Expected 111-222-3333.",
+					}),
+				})
+				.safeParse(v),
+		),
 	school: (v) =>
 		formatResult(z.string().nonempty("School is empty").safeParse(v)),
 	educationLevels: (v) =>
