@@ -1146,6 +1146,7 @@ export const ApplyPage = () => {
 					>
 						<Box spaceX="1rem">
 							<Button
+								color="black"
 								disabled={activeStep === 0 || isSubmitting}
 								onClick={prevStep}
 								type="button"

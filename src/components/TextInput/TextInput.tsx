@@ -39,7 +39,8 @@ export const TextInput: React.FC<TextInputProps> = ({
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 			<Input
-				bg="#333147"
+				focusRing="none"
+				bg="#1f1e2e"
 				borderColor="transparent"
 				borderRadius="full"
 				_placeholder={{ color: "#666484" }}
