@@ -39,6 +39,9 @@ export const TextArea: React.FC<TextAreaProps> = ({
 				focusRing="none"
 				bg="#1f1e2e"
 				borderColor="transparent"
+				_selection={{
+					background: "#666484",
+				}}
 				_placeholder={{ color: "#666484" }}
 				size="xl"
 				rounded="1.5rem"

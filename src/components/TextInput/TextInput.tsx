@@ -43,6 +43,9 @@ export const TextInput: React.FC<TextInputProps> = ({
 				bg="#1f1e2e"
 				borderColor="transparent"
 				borderRadius="full"
+				_selection={{
+					background: "#666484",
+				}}
 				_placeholder={{ color: "#666484" }}
 				size="xl"
 				{...props}
