@@ -63,7 +63,25 @@ export const validations: {
 			z.enum(ages, { message: "Please provide your age." }).safeParse(v),
 		),
 	discord: (v) =>
-		formatResult(z.string().nonempty("Discord username is empty").safeParse(v)),
+		formatResult(
+			z
+				.string()
+				.nonempty("Discord username is empty")
+				.refine((val) => {
+					// old-style username (e.g., user#1234)
+					if (/\#\d{4}$/.test(val)) {
+						return true;
+					}
+
+					// plain username (e.g., username) - doesn't allow spaces and invalid chars
+					if (/^[a-zA-Z0-9_.]{2,32}$/.test(val)) {
+						return true;
+					}
+
+					return false;
+				}, "Invalid Discord username. Expected username or username#1234.")
+				.safeParse(v),
+		),
 	major: (v) =>
 		formatResult(
 			z
