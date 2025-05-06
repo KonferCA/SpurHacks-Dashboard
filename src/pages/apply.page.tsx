@@ -28,7 +28,10 @@ import { yearOfStudies } from "@/data/educationLevels";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { submitApplication } from "@/services/firebase/application";
+import {
+	saveApplicationDraft,
+	submitApplication,
+} from "@/services/firebase/application";
 import {
 	deleteGeneralResume,
 	uploadGeneralResume,
@@ -39,7 +42,6 @@ import {
 	Checkbox,
 	Flex,
 	GridItem,
-	Heading,
 	SimpleGrid,
 	Steps,
 	Text,
@@ -49,7 +51,13 @@ import {
 	Card,
 } from "@chakra-ui/react";
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
-import { type FormEvent, useCallback, useState } from "react";
+import {
+	type FormEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 import { travelOptions } from "@/data/travel";
@@ -58,6 +66,7 @@ import {
 	experienceResonatesOptions,
 	interestedOppOptions,
 } from "@/data/experienceResonatesOptions";
+import { useDebounce } from "@/hooks/use-debounce";
 
 enum StepsEnum {
 	BasicInformation,
@@ -150,8 +159,11 @@ export const ApplyPage = () => {
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoadingResume, setIsLoadingResume] = useState(false);
-	const { isLoading: loadingApplications, refreshApplications } =
-		useApplications();
+	const {
+		isLoading: loadingApplications,
+		drafts,
+		refreshApplications,
+	} = useApplications();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -165,6 +177,34 @@ export const ApplyPage = () => {
 		return app;
 	});
 
+	const draftId = useMemo(() => {
+		if (drafts.length) return drafts[0].__docId;
+		return undefined;
+	}, [drafts]);
+
+	useEffect(() => {
+		if (drafts.length) {
+			setApplication({ ...drafts[0] });
+		}
+	}, [drafts]);
+
+	const autosave = useDebounce(
+		//@ts-ignore
+		async (application: ApplicationData, uid: string) => {
+			try {
+				await saveApplicationDraft(application, uid);
+			} catch (error) {
+				console.error(error);
+				toaster.error({
+					title: "Oops, something went wrong when saving application draft.",
+					description: "",
+				});
+			}
+		},
+		500,
+		[],
+	);
+
 	const handleChange = useCallback(
 		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
 			setApplication((application) => {
@@ -174,6 +214,7 @@ export const ApplyPage = () => {
 					// reset this value if the education level changes
 					updatedApp.yearOfStudies = undefined;
 				}
+				autosave(updatedApp, currentUser.uid, draftId);
 				return updatedApp;
 			});
 
@@ -297,59 +338,66 @@ export const ApplyPage = () => {
 	);
 
 	const fillWithSampleData = useCallback(() => {
-		setApplication((currentApplication) => ({
-			...currentApplication,
-			firstName: "Jon",
-			lastName: "Snow",
-			age: "18",
-			phone: "(+1) 123-333-4444",
-			educationLevels: "Undergraduate-level University (3 to 5-year program)",
-			yearOfStudies: "Year 1",
-			school: "Wilfird Laurier Univeristy",
-			major: ["Computer Science", "Data Science"],
-			countryOfResidence: "Canada",
-			city: "Waterloo",
-			travel: "No, I live in Kitchener-Waterloo",
-			discord: "@mydiscord",
-			businessTech:
-				"Interested in case and pitch competitions (business-oriented student)",
-			experienceResonates: [
-				"I want the classic hackathon experience: build something from scratch and compete for prizes.",
-			],
-			interestedOpportunities: [],
-			interests: [
-				"Web3, Crypto, and Blockchain",
-				"Quantum Computing",
-				"Artificial Intelligence (AI)",
-				"Robotics",
-			],
-			hackathonExperience: "I've only been to a single hackathon before this.",
-			programmingLanguages: ["C", "Go", "C++"],
-			reasonToBeInSpurHacks: "Cuz its dope",
-			revolutionizingTechnology: "Pipeline",
-			diets: ["None"],
-			allergies: ["Hellipcoters"], // this is for testing custom entries
-			gender: "KKKKKKK",
-			pronouns: [], // test optional entry
-			sexuality: "",
-			race: "Asian",
-			referralSources: [
-				"Sponsor's or partner's social media accounts",
-				"Word of mouth",
-				"Physical poster or advertisement in Toronto",
-				"Physical poster or advertisement in Kitchener-Waterloo",
-				"Advertisement from a professor or class",
-				"Advertisements from another Discord server",
-			],
-			describeSalt: "Salty",
-			agreedToMLHCoC: true,
-			agreedToMLHToCAndPrivacyPolicy: true,
-			agreedToReceiveEmailsFromKonferOrSpur: true,
-			agreedToReceiveEmailsFromMLH: true,
-			agreedToSpurHacksCoc: true,
-			participateInHawkHacks: false,
-		}));
-	}, []);
+		setApplication((currentApplication) => {
+			const updated = {
+				...currentApplication,
+				firstName: "Jon",
+				lastName: "Snow",
+				age: "18",
+				phone: "(+1) 123-333-4444",
+				educationLevels: "Undergraduate-level University (3 to 5-year program)",
+				yearOfStudies: "Year 1",
+				school: "Wilfird Laurier Univeristy",
+				major: ["Computer Science", "Data Science"],
+				countryOfResidence: "Canada",
+				city: "Waterloo",
+				travel: "No, I live in Kitchener-Waterloo",
+				discord: "@mydiscord",
+				businessTech:
+					"Interested in case and pitch competitions (business-oriented student)",
+				experienceResonates: [
+					"I want the classic hackathon experience: build something from scratch and compete for prizes.",
+				],
+				interestedOpportunities: [],
+				interests: [
+					"Web3, Crypto, and Blockchain",
+					"Quantum Computing",
+					"Artificial Intelligence (AI)",
+					"Robotics",
+				],
+				hackathonExperience:
+					"I've only been to a single hackathon before this.",
+				programmingLanguages: ["C", "Go", "C++"],
+				reasonToBeInSpurHacks: "Cuz its dope",
+				revolutionizingTechnology: "Pipeline",
+				diets: ["None"],
+				allergies: ["Hellipcoters"], // this is for testing custom entries
+				gender: "KKKKKKK",
+				pronouns: [], // test optional entry
+				sexuality: "",
+				race: "Asian",
+				referralSources: [
+					"Sponsor's or partner's social media accounts",
+					"Word of mouth",
+					"Physical poster or advertisement in Toronto",
+					"Physical poster or advertisement in Kitchener-Waterloo",
+					"Advertisement from a professor or class",
+					"Advertisements from another Discord server",
+				],
+				describeSalt: "Salty",
+				agreedToMLHCoC: true,
+				agreedToMLHToCAndPrivacyPolicy: true,
+				agreedToReceiveEmailsFromKonferOrSpur: true,
+				agreedToReceiveEmailsFromMLH: true,
+				agreedToSpurHacksCoc: true,
+				participateInHawkHacks: false,
+			} satisfies ApplicationData;
+
+			autosave(updated, currentUser.uid, draftId);
+
+			return updated;
+		});
+	}, [currentUser, draftId]);
 
 	if (loadingApplications)
 		return (
@@ -380,9 +428,6 @@ export const ApplyPage = () => {
 						</Steps.List>
 					</Steps.Root>
 				</Box>
-				<Heading size="md" textAlign="center" marginY="2rem">
-					All fields with an asterisk{"(*)"} are required.
-				</Heading>
 				{(import.meta.env.DEV || import.meta.env.MODE === "staging") && (
 					<Card.Root my="1rem">
 						<Card.Body spaceY="1rem">

@@ -1,6 +1,9 @@
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import { useUser } from "@/providers";
-import { getUserApplications } from "@/services/firebase/application";
+import {
+	getApplicationsDraft,
+	getUserApplications,
+} from "@/services/firebase/application";
 import { getDeadlines } from "@/services/firebase/deadlines";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isAfter, isBefore, parseISO } from "date-fns";
@@ -8,6 +11,7 @@ import { useCallback, useMemo } from "react";
 
 export type ApplicationsHookValue = {
 	applications: ApplicationData[];
+	drafts: ApplicationData[];
 	deadlines: {
 		beforeStart: boolean;
 		afterClose: boolean;
@@ -29,6 +33,18 @@ export const useApplications = () => {
 		queryFn: async () => {
 			if (!user) return [];
 			return await getUserApplications(user.uid);
+		},
+		initialData: [],
+		enabled: !!user,
+		refetchOnWindowFocus: false,
+		refetchOnMount: false,
+	});
+
+	const { data: drafts = [], isLoading: loadingDrafts } = useQuery({
+		queryKey: ["drafts"],
+		queryFn: async () => {
+			if (!user) return [];
+			return await getApplicationsDraft(user.uid);
 		},
 		initialData: [],
 		enabled: !!user,
@@ -93,9 +109,10 @@ export const useApplications = () => {
 	const value = useMemo(() => {
 		return {
 			deadlines,
+			drafts,
 			applications,
 			refreshApplications,
-			isLoading: loadingApplications || loadingDeadlines,
+			isLoading: loadingApplications || loadingDeadlines || loadingDrafts,
 		} satisfies ApplicationsHookValue;
 	}, [
 		deadlines,

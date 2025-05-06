@@ -35,7 +35,7 @@ export const sexualityList = [
 ] as const;
 
 export const races = [
-	"Asian Indian",
+	"South Asian",
 	"Black or African",
 	"Chinese",
 	"Filipino",
@@ -58,6 +58,7 @@ export const diets = [
 	"Celiac Disease",
 	"Kosher",
 	"Halal",
+	"Nut",
 ] as const;
 
 export const allergies = [

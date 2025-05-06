@@ -1,3 +1,4 @@
+import type { ApplicationData } from "@/forms/hacker-form/types";
 import type { Timestamp } from "firebase/firestore";
 
 export interface UserTicketData {
@@ -85,3 +86,5 @@ export interface Deadlines {
 	appStartDate: string; // ISO string UTC
 	appCloseDate: string; // ISO string UTC
 }
+
+export type ApplicationDataDoc = ApplicationData & { __docId: string };

@@ -26,7 +26,7 @@ const HomePage = () => {
 
 	const hasApplied = useMemo(() => {
 		const app = applications.find((app) => app.hackathonYear === "2025");
-		return !!app;
+		return app && app.applicationStatus === "pending";
 	}, [applications]);
 
 	return (

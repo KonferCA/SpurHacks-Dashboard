@@ -1,16 +1,22 @@
 import { firestore } from "@/services/firebase";
-import { APPLICATIONS_COLLECTION } from "@/services/firebase/collections";
+import {
+	APPLICATION_DRAFTS_COLLECTION,
+	APPLICATIONS_COLLECTION,
+} from "@/services/firebase/collections";
 import { logEvent } from "@/services/firebase/log";
 import {
 	Timestamp,
 	addDoc,
 	collection,
+	doc,
 	getDocs,
 	query,
+	updateDoc,
 	where,
 } from "firebase/firestore";
 
 import type { ApplicationData } from "@/forms/hacker-form/types";
+import type { ApplicationDataDoc } from "./types";
 
 /**
  * Submits an application to firebase
@@ -40,25 +46,88 @@ export async function submitApplication(data: ApplicationData, uid: string) {
 	}
 }
 
-/**
- * Gets all the applications from a given user
- */
-export async function getUserApplications(uid: string) {
+async function getApplications(
+	uid: string,
+	col: string,
+	onErrorEventName: string,
+): Promise<ApplicationDataDoc[]> {
 	try {
-		const colRef = collection(firestore, APPLICATIONS_COLLECTION);
+		const colRef = collection(firestore, col);
 		const q = query(colRef, where("applicantId", "==", uid));
 		const snap = await getDocs(q);
-		const apps: ApplicationData[] = [];
-		snap.forEach((doc) => apps.push(doc.data() as ApplicationData));
+		const apps: ApplicationDataDoc[] = [];
+		snap.forEach((doc) => {
+			const data = doc.data() as ApplicationData;
+			apps.push({ ...data, __docId: doc.id });
+		});
 		return apps;
 	} catch (e) {
 		logEvent("error", {
-			event: "search_user_applications_error",
+			event: onErrorEventName,
 			message: (e as Error).message,
 			name: (e as Error).name,
 			stack: (e as Error).stack,
 		});
 	}
-
 	return [];
+}
+
+/**
+ * Gets all the applications from a given user
+ */
+export async function getUserApplications(uid: string) {
+	return await getApplications(
+		uid,
+		APPLICATIONS_COLLECTION,
+		"search_applications_error",
+	);
+}
+
+export async function getApplicationsDraft(uid: string) {
+	return await getApplications(
+		uid,
+		APPLICATION_DRAFTS_COLLECTION,
+		"search_application_drafts_error",
+	);
+}
+
+export async function saveApplicationDraft(
+	data: ApplicationData,
+	uid: string,
+	draftId?: string,
+) {
+	const payload = {
+		...data,
+		applicantId: uid,
+		timestamp: Timestamp.now(),
+		hackathonYear: "2025",
+		applicationStatus: "draft",
+		rsvp: false,
+	} satisfies ApplicationData;
+
+	if (!draftId) {
+		const drafts = await getApplicationsDraft(uid);
+		if (drafts.length) {
+			draftId = drafts[0].__docId;
+		}
+	}
+
+	try {
+		if (draftId) {
+			const ref = doc(firestore, APPLICATION_DRAFTS_COLLECTION, draftId);
+			await updateDoc(ref, payload);
+			return;
+		}
+		const appsRef = collection(firestore, APPLICATION_DRAFTS_COLLECTION);
+		await addDoc(appsRef, payload);
+	} catch (e) {
+		logEvent("error", {
+			event: "app_draft_save_error",
+			message: (e as Error).message,
+			name: (e as Error).name,
+			stack: (e as Error).stack,
+		});
+		// pass this along so that the application page handles the error
+		throw e;
+	}
 }
