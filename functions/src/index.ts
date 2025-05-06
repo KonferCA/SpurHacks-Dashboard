@@ -637,7 +637,7 @@ export const applicationCreated = onDocumentCreated(
 <body>
   <div class="container">
 
-      <img src="${FE_URL}/spurhacks-full-logo-white.svg" alt="SpurHacks Logo" class="logo" />
+      <img src="${FE_URL}/spurhacks-full-logo-white.png" alt="SpurHacks Logo" class="logo" />
   
       <h1>
         <span>We’ve received</span>
@@ -654,16 +654,16 @@ export const applicationCreated = onDocumentCreated(
         In the meantime, stay updated with the latest news on our socials:
         <div class="social-icon">
           <a href="https://www.instagram.com/spurhacks">
-              <img src="${FE_URL}/socialIcons/instagram.svg" alt="Instagram" />
+              <img src="${FE_URL}/socialIcons/instagram.png" alt="Instagram" />
           </a>
           <a href="https://www.linkedin.com/company/spurhacks">
-            <img src="${FE_URL}/socialIcons/linkedin.svg" alt="LinkedIn" />
+            <img src="${FE_URL}/socialIcons/linkedin.png" alt="LinkedIn" />
           </a>
           <a href="https://discord.spurhacks.com">
-              <img src="${FE_URL}/socialIcons/discord.svg" alt="Discord" />
+              <img src="${FE_URL}/socialIcons/discord.png" alt="Discord" />
           </a>
           <a href="https://www.tiktok.com/@spur_hacks">
-              <img src="${FE_URL}/socialIcons/tiktok.svg" alt="TikTok" />
+              <img src="${FE_URL}/socialIcons/tiktok.png" alt="TikTok" />
           </a>
         </div>
       </div>
