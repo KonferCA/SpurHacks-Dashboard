@@ -12,6 +12,11 @@ import FullLogo from "./spurhacks-full-logo-white.svg";
 import IpadKidHawks from "./ipadKidHawks.svg";
 import LoadingDots from "./loading.svg";
 import Knots from "./404-knots.svg";
+import DiscordLogo from "./discord.svg";
+import InstagramLogo from "./instagram.svg";
+import XLogo from "./x.svg";
+import LinkedinLogo from "./linkedin.svg";
+import TiktokLogo from "./tiktok.svg";
 
 export {
 	FullLogo,
@@ -28,6 +33,11 @@ export {
 	AppleWalletBadge,
 	LoadingDots,
 	Knots,
+	DiscordLogo,
+	InstagramLogo,
+	XLogo,
+	LinkedinLogo,
+	TiktokLogo,
 };
 
 /**

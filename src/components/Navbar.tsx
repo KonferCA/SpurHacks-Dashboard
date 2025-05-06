@@ -1,4 +1,4 @@
-import { FullLogo, Logo } from "@/assets";
+import { DiscordLogo, FullLogo, Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
 import type { AccessControlContext } from "@/navigation";
 import { RouteConfig, useAuth } from "@/providers";
@@ -25,7 +25,6 @@ import {
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
 import { FiLogOut, FiMapPin } from "react-icons/fi";
-import { RiDiscordLine } from "react-icons/ri";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -257,7 +256,12 @@ const NavbarContent = ({
 						gap="0.5rem"
 						cursor="pointer"
 					>
-						<RiDiscordLine size="1.5rem" />
+						<Image
+							src={DiscordLogo}
+							filter="brightness(0) saturate(100%) invert(44%) sepia(6%) saturate(1804%) hue-rotate(205deg) brightness(89%) contrast(93%)"
+							width="1.5rem"
+							height="1.5rem"
+						/>
 						Discord Support
 					</Flex>
 				</ChakraLink>

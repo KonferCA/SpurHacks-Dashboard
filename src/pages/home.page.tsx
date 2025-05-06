@@ -9,18 +9,16 @@ import {
 	Icon,
 	Link,
 	Text,
+	Image,
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-	WarningCircle,
-	DiscordLogo,
-	InstagramLogo,
-	LinkedinLogo,
-	TiktokLogo,
-	CheckCircle,
-} from "@phosphor-icons/react";
+import { WarningCircle, CheckCircle } from "@phosphor-icons/react";
+import InstagramLogo from "@/assets/instagram.svg";
+import LinkedinLogo from "@/assets/linkedin.svg";
+import TiktokLogo from "@/assets/tiktok.svg";
+import DiscordLogo from "@/assets/discord.svg";
 
 const HomePage = () => {
 	const { deadlines, applications } = useApplications();
@@ -105,36 +103,28 @@ const HomePage = () => {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								<Icon size="2xl">
-									<InstagramLogo />
-								</Icon>
+								<Image src={InstagramLogo} width="1.5rem" height="1.5rem" />
 							</Link>
 							<Link
 								href="https://www.linkedin.com/company/spurhacks"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								<Icon size="2xl">
-									<LinkedinLogo />
-								</Icon>
+								<Image src={LinkedinLogo} width="1.5rem" height="1.5rem" />
 							</Link>
 							<Link
 								href="https://www.tiktok.com/@spur_hacks"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								<Icon size="2xl">
-									<TiktokLogo />
-								</Icon>
+								<Image src={TiktokLogo} width="1.5rem" height="1.5rem" />
 							</Link>
 							<Link
 								href="https://discord.gg/NpnSUrZJQy"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								<Icon size="2xl">
-									<DiscordLogo />
-								</Icon>
+								<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
 							</Link>
 						</Flex>
 					</Card.Body>
