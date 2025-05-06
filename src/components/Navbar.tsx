@@ -160,7 +160,7 @@ const NavbarContent = ({
 			>
 				<ChakraLink
 					w="full"
-					href="https://maps.app.goo.gl/u8BRhzLz3Wz8z3NP8"
+					href="https://maps.app.goo.gl/NxPavuKXyiT6fhH87"
 					target="_blank"
 					rel="noopener noreferrer"
 					textDecoration="none"
