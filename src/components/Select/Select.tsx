@@ -34,7 +34,6 @@ const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
 	options.map((opt) => ({ value: opt, label: opt }));
 
 const OPTION_HEIGHT = 40; // height of each option in px
-const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
 
 // custom component for rendering individual options within the virtualized list
 const VirtualizedOption = ({
@@ -133,7 +132,7 @@ export const Select: FC<SelectProps> = ({
 			control: (provided, state) => ({
 				...provided,
 				backgroundColor: "#1f1e2e",
-				borderColor: state.isFocused ? "orange.400" : "transparent",
+				borderColor: "transparent",
 				borderRadius: "9999px", // full
 				minHeight: "48px", // lg size
 				boxShadow: state.isFocused ? "0 0 0 1px orange.400" : "none", // focus ring
@@ -179,9 +178,10 @@ export const Select: FC<SelectProps> = ({
 			}),
 			menu: (provided) => ({
 				...provided,
-				backgroundColor: "#333147",
-				borderRadius: "0.75rem", // xl
+				backgroundColor: "#1f1e2e",
+				borderRadius: "1.5rem", // xl
 				zIndex: 2, // ensure menu is above other elements
+				overflow: "hidden",
 			}),
 			menuList: (provided) => ({
 				...provided,
@@ -191,15 +191,18 @@ export const Select: FC<SelectProps> = ({
 			option: (provided, state) => ({
 				...provided,
 				backgroundColor: state.isSelected
-					? "orange.400"
+					? "transparent"
 					: state.isFocused
 						? "#1F1E2E" // hover color
 						: "transparent",
-				color: state.isSelected ? "#1A202C" : "white",
+				color: state.isSelected ? "#666484" : "##DEEBFF",
 				padding: "8px 12px",
 				cursor: "pointer",
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
+				},
+				"&:hover": {
+					backgroundColor: "#333147",
 				},
 			}),
 			indicatorSeparator: () => ({
@@ -247,7 +250,6 @@ export const Select: FC<SelectProps> = ({
 		isClearable: boolean;
 		"aria-label": typeof label;
 		inputId: typeof label;
-		maxMenuHeight: typeof MENU_MAX_HEIGHT;
 		closeMenuOnSelect: boolean;
 	};
 
@@ -266,7 +268,6 @@ export const Select: FC<SelectProps> = ({
 		isClearable: true, // allow clearing selection
 		"aria-label": label, // accessibility
 		inputId: label, // link label to input for accessibility
-		maxMenuHeight: MENU_MAX_HEIGHT, // pass max height to component
 		closeMenuOnSelect: !multiple, // keep menu open for multi-select
 	};
 

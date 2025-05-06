@@ -88,7 +88,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 	return (
 		<Fieldset.Root invalid={!!error}>
 			<SimpleGrid columns={12} gap={4}>
-				<GridItem colSpan={3}>
+				<GridItem colSpan={{ base: 12, md: 4 }}>
 					<Select
 						value={{ value: country, label: country }}
 						label="Country Code"
@@ -98,7 +98,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 						onChange={(v) => handleCountryChange(v[0] ?? countryCodes[0])}
 					/>
 				</GridItem>
-				<GridItem colSpan={9}>
+				<GridItem colSpan={{ base: 12, md: 8 }}>
 					<TextInput
 						required={required}
 						value={phone}
