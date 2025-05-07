@@ -2,11 +2,8 @@ import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import CreatableSelect from "react-select/creatable";
 import SelectComponent from "react-select";
-import { components } from "react-select";
-import type { MenuListProps, OptionProps, GroupBase } from "react-select";
-import { FixedSizeList } from "react-window";
+import type { GroupBase, StylesConfig } from "react-select";
 import { Field } from "@chakra-ui/react";
-import type { StylesConfig } from "react-select";
 import { MultiSelect } from "../MultiSelect";
 
 // define the shape react-select expects for options
@@ -34,57 +31,9 @@ export interface SelectProps {
 const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
 	options.map((opt) => ({ value: opt, label: opt }));
 
-const OPTION_HEIGHT = 40; // height of each option in px
+const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
 
-// custom component for rendering individual options within the virtualized list
-const VirtualizedOption = ({
-	children,
-	...props
-}: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { onMouseMove, onMouseOver, ...rest } = props.innerProps;
-	const newProps = { ...props, innerProps: rest };
-	return (
-		// use react-select's built-in Option component for consistent styling/behavior
-		<components.Option {...newProps}>{children}</components.Option>
-	);
-};
 
-// custom component for the virtualized menu list container
-const MenuList = (
-	props: MenuListProps<OptionType, boolean, GroupBase<OptionType>>,
-) => {
-	const { options, children, maxHeight, getValue } = props;
-	const [value] = getValue();
-	const initialOffset =
-		options.indexOf(value) !== -1 ? options.indexOf(value) * OPTION_HEIGHT : 0;
-
-	// ensure children is always an array for FixedSizeList
-	const childrenArray = Array.isArray(children) ? children : [children];
-
-	// calculate the list height based on options, capping at max height
-	const listHeight = Math.min(maxHeight, childrenArray.length * OPTION_HEIGHT);
-
-	// only return FixedSizeList if there are options
-	if (!childrenArray.length) {
-		return null; // or return the default no options message if needed
-	}
-
-	return (
-		<FixedSizeList
-			height={listHeight}
-			itemCount={childrenArray.length}
-			itemSize={OPTION_HEIGHT}
-			initialScrollOffset={initialOffset}
-			width="100%"
-		>
-			{({ index, style }) => (
-				// clone the option element and apply the style from react-window
-				<div style={style}>{childrenArray[index]}</div>
-			)}
-		</FixedSizeList>
-	);
-};
 
 export const Select: FC<SelectProps> = ({
 	label,
@@ -200,17 +149,17 @@ export const Select: FC<SelectProps> = ({
 				backgroundColor: state.isSelected
 					? "transparent"
 					: state.isFocused
-						? "#1F1E2E" // hover color
+						? "#1F1E2E"
 						: "transparent",
 				color: state.isSelected ? "#666484" : "#DEEBFF",
 				padding: "8px 12px",
 				cursor: "pointer",
+				whiteSpace: "normal",
+				wordBreak: "break-word",
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
 				},
-				"&:hover": {
-					backgroundColor: "#333147",
-				},
+			
 			}),
 			indicatorSeparator: () => ({
 				display: "none",
@@ -250,13 +199,10 @@ export const Select: FC<SelectProps> = ({
 		isDisabled: typeof disabled;
 		placeholder: typeof placeholder;
 		styles: typeof customStyles;
-		components: {
-			MenuList: typeof MenuList;
-			Option: typeof VirtualizedOption;
-		};
 		isClearable: boolean;
 		"aria-label": typeof label;
 		inputId: typeof label;
+		maxMenuHeight: number;
 		closeMenuOnSelect: boolean;
 	};
 
@@ -268,13 +214,10 @@ export const Select: FC<SelectProps> = ({
 		isDisabled: disabled,
 		placeholder: placeholder,
 		styles: customStyles,
-		components: {
-			MenuList,
-			Option: VirtualizedOption,
-		},
 		isClearable: true, // allow clearing selection
 		"aria-label": label, // accessibility
 		inputId: label, // link label to input for accessibility
+		maxMenuHeight: MENU_MAX_HEIGHT,
 		closeMenuOnSelect: !multiple, // keep menu open for multi-select
 	};
 
@@ -303,10 +246,8 @@ export const Select: FC<SelectProps> = ({
 				<CreatableSelect<OptionType, boolean, GroupBase<OptionType>>
 					{...commonSelectProps}
 					// creatable props
-
 					formatCreateLabel={formatCreateLabel}
 					// message when no options match search
-
 					noOptionsMessage={({ inputValue }) =>
 						inputValue ? formatCreateLabel(inputValue) : "No options found"
 					}
