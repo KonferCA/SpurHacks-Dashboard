@@ -202,7 +202,7 @@ export const Select: FC<SelectProps> = ({
 		isClearable: boolean;
 		"aria-label": typeof label;
 		inputId: typeof label;
-		maxMenuHeight: typeof MENU_MAX_HEIGHT;
+		maxMenuHeight: number;
 		closeMenuOnSelect: boolean;
 	};
 
