@@ -149,7 +149,7 @@ export const Select: FC<SelectProps> = ({
 				backgroundColor: state.isSelected
 					? "transparent"
 					: state.isFocused
-						? "#333147"
+						? "#1F1E2E"
 						: "transparent",
 				color: state.isSelected ? "#666484" : "#DEEBFF",
 				padding: "8px 12px",
