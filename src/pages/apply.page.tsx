@@ -610,7 +610,7 @@ export const ApplyPage = () => {
 										placeholder="e.g., Kitchener/Waterloo, or outside of the city"
 										options={travelOptions}
 										onChange={(opt) => handleChange("travel", opt[0] ?? "")}
-										description="We’ll have shuttle buses running from within the City of Waterloo (The University of Waterloo and Wilfrid Laurier University) and from Toronto (Union Station)."
+										description="For anyone coming from out of town, we’ll contact you with updates on how you can apply for a travel bursary. For people nearby, we’ll have shuttle buses running from within the City of Waterloo (The University of Waterloo and Wilfrid Laurier University) and from Toronto (Union Station)."
 										error={errors.travel}
 										required
 									/>
