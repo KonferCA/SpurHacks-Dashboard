@@ -112,7 +112,7 @@ export function Steps({ step, count, onGetStepTitle }: StepsProps) {
 		const steps: ReactNode[] = [];
 		for (let i = 0; i < step; i++) {
 			steps.push(
-				<GridItem>
+				<GridItem key={onGetStepTitle(i)}>
 					<Step step={i} title={onGetStepTitle(i)} status="completed" />
 				</GridItem>,
 			);
@@ -122,7 +122,7 @@ export function Steps({ step, count, onGetStepTitle }: StepsProps) {
 
 	const activeStep = useMemo(() => {
 		return (
-			<GridItem>
+			<GridItem key={onGetStepTitle(step)}>
 				<Step step={step} title={onGetStepTitle(step)} status="active" />
 			</GridItem>
 		);
@@ -132,7 +132,7 @@ export function Steps({ step, count, onGetStepTitle }: StepsProps) {
 		const steps: ReactNode[] = [];
 		for (let i = step + 1; i < count; i++) {
 			steps.push(
-				<GridItem>
+				<GridItem key={onGetStepTitle(i)}>
 					<Step step={i} title={onGetStepTitle(i)} status="inactive" />
 				</GridItem>,
 			);
