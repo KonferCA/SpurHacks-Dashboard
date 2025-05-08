@@ -3,7 +3,6 @@ import InstagramLogo from "@/assets/instagram.svg";
 import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
 import { useApplications } from "@/hooks/use-applications";
-import { useUser } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
 	Box,
@@ -14,7 +13,6 @@ import {
 	Icon,
 	Image,
 	Link,
-	Spinner,
 	Text,
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
@@ -23,8 +21,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-	const { deadlines, applications, isLoading } = useApplications();
-	const { isLoading: userLoading } = useUser();
+	const { deadlines, applications } = useApplications();
 	const navigate = useNavigate();
 
 	const hasApplied = useMemo(() => {
@@ -32,36 +29,13 @@ const HomePage = () => {
 		return app && app.applicationStatus === "pending";
 	}, [applications]);
 
-	// Calculate what status to display
-	const showApplicationStatus = useMemo(() => {
-		return !userLoading && !isLoading && deadlines.inRange;
-	}, [userLoading, isLoading, deadlines.inRange]);
-
-	const showBeforeStart = useMemo(() => {
-		return !userLoading && !isLoading && deadlines.beforeStart;
-	}, [userLoading, isLoading, deadlines.beforeStart]);
-
-	const showAfterClose = useMemo(() => {
-		return !userLoading && !isLoading && deadlines.afterClose;
-	}, [userLoading, isLoading, deadlines.afterClose]);
-
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
-				<Card.Root
-					bg="transparent"
-					borderRadius="32px"
-					borderColor={"#1F1E2E"}
-					maxWidth="400px"
-				>
+				<Card.Root maxWidth="400px">
 					<Card.Body>
 						<Heading mb="1rem">Hacker Status</Heading>
-						{(isLoading || userLoading) && (
-							<Flex justify="center" align="center" p={4}>
-								<Spinner color="brand.500" />
-							</Flex>
-						)}
-						{showApplicationStatus && (
+						{deadlines.inRange && (
 							<Box spaceY="1rem">
 								<Flex alignItems="center" gapX="1rem">
 									<Text color="#666484">
@@ -93,7 +67,7 @@ const HomePage = () => {
 								)}
 							</Box>
 						)}
-						{showBeforeStart && (
+						{deadlines.beforeStart && (
 							<Box>
 								<Text>
 									Applications for SpurHacks 2025 open on{" "}
@@ -101,19 +75,14 @@ const HomePage = () => {
 								</Text>
 							</Box>
 						)}
-						{showAfterClose && (
+						{deadlines.afterClose && (
 							<Box>
 								<Text>Applications have now closed for SpurHacks 2025.</Text>
 							</Box>
 						)}
 					</Card.Body>
 				</Card.Root>
-				<Card.Root
-					bg="transparent"
-					borderRadius="32px"
-					borderColor={"#1F1E2E"}
-					maxWidth="400px"
-				>
+				<Card.Root maxWidth="400px">
 					<Card.Header>
 						<Heading>Stay Connected</Heading>
 					</Card.Header>

@@ -6,6 +6,7 @@ const config = defineConfig({
 			colors: {
 				brand: {
 					primary: { value: "#FFB65F" },
+					contrast: { value: "{colors.black}" },
 					subtle: { value: "#666484" },
 					bg: { value: "#13151c" },
 				},
@@ -18,6 +19,18 @@ const config = defineConfig({
 			colors: {
 				brand: {
 					solid: { value: "{colors.brand.primary}" },
+				},
+				bg: {
+					DEFAULT: { value: "#13151c" },
+					panel: { value: "#13151c" },
+				},
+				fg: {
+					DEFAULT: { value: "{colors.offwhite.primary}" },
+					muted: { value: "#666484" },
+					error: { value: "{colors.red.400}" },
+				},
+				border: {
+					DEFAULT: { value: "#1F1E2E" },
 				},
 			},
 		},

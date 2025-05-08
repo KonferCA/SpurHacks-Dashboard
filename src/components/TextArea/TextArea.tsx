@@ -48,9 +48,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
 				rounded="1.5rem"
 				{...props}
 			/>
-			<Field.HelperText color="offwhite.primary">
-				{description}
-			</Field.HelperText>
+			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);
