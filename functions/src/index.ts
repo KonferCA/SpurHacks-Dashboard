@@ -8,15 +8,15 @@ import {
 	info as logInfo,
 } from "firebase-functions/logger";
 import * as functions from "firebase-functions/v1";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Octokit } from "octokit";
 import * as QRCode from "qrcode";
+import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import type { Context } from "./types";
 import { HttpStatus, response } from "./utils";
-import { Resend } from "resend";
 
 initializeApp();
 

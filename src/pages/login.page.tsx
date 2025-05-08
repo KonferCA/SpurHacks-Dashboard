@@ -1,9 +1,10 @@
+import knotsSvg from "@/assets/knots.svg";
+import { Field } from "@/components/ui/field";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth, useRouteDefinitions } from "@/providers";
 import type { ProviderName } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { GithubLogo, GoogleLogo, OffwhiteLogo } from "@assets";
-import knotsSvg from "@/assets/knots.svg";
 import {
 	Box,
 	Button,
@@ -18,13 +19,12 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
+import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { type FormEventHandler, useState } from "react";
 import { flushSync } from "react-dom";
 import { FcGoogle } from "react-icons/fc";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { z } from "zod";
-import { Field } from "@/components/ui/field";
-import { PasswordInput } from "@/components/ui/password-input";
 
 // email validation with zod, double guard just in case someone changes the input type in html
 const emailParser = z.string().email();

@@ -192,15 +192,29 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 
 	useEffect(() => {
 		setIsLoading(true);
+		let authStateResolved = false;
+
+		// Setup timeout to ensure we don't wait indefinitely
+		const backupTimer = setTimeout(() => {
+			if (!authStateResolved) {
+				console.log(
+					"Auth state taking too long, forcing ready state after 2s timeout",
+				);
+				setIsLoading(false);
+				setIsAuthReady(true);
+			}
+		}, 2000);
 
 		const unsub = auth.onAuthStateChanged(async (user) => {
+			authStateResolved = true;
+
 			if (user) {
 				await completeLoginProcess(user);
 			} else {
-				// if no user, make sure to update state in the correct order with delay
+				// if no user, make sure to update state in the correct order
 				setCurrentUser(null);
 
-				// small delay to ensure state updates properly
+				// Ensure we always wait a minimum time for better UX
 				setTimeout(() => {
 					setIsLoading(false);
 					setIsAuthReady(true);
@@ -208,38 +222,32 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 			}
 		});
 
-		// handle redirect result
+		// Handle redirect result for mobile
 		const handleRedirectResult = async () => {
 			try {
 				const result = await getRedirectResult(auth);
 
 				if (result) {
 					await completeLoginProcess(result.user);
-				} else {
-					// make sure we complete the auth process even if no redirect result
+				} else if (!authStateResolved) {
+					// Only set states if auth state hasn't been resolved yet
 					setTimeout(() => {
 						setIsLoading(false);
 						setIsAuthReady(true);
-					}, 500);
+					}, 100);
 				}
 			} catch (error) {
 				console.error("Redirect error:", error);
-				setIsLoading(false);
-				setIsAuthReady(true);
+				if (!authStateResolved) {
+					setIsLoading(false);
+					setIsAuthReady(true);
+				}
 			}
 		};
 
 		if (isMobile()) {
 			handleRedirectResult();
 		}
-
-		const backupTimer = setTimeout(() => {
-			if (isLoading) {
-				console.log("Auth state taking too long, forcing ready state");
-				setIsLoading(false);
-				setIsAuthReady(true);
-			}
-		}, 2000);
 
 		return () => {
 			unsub();

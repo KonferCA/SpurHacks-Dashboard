@@ -1,21 +1,17 @@
 import { FileBrowser } from "@/components/FileBrowse/FileBrowse";
+import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
+import { Steps } from "@/components/Steps";
 import { TextArea } from "@/components/TextArea/TextArea";
-import { defaultApplication } from "@/forms/hacker-form/defaults";
-import type {
-	ApplicationData,
-	ApplicationDataKey,
-} from "@/forms/hacker-form/types";
-import { validations } from "@/forms/hacker-form/validations";
 import { toaster } from "@/components/ui/toaster";
 import {
 	ages,
 	allergies,
 	countryNames,
 	diets,
+	educationLevels,
 	genders,
 	hackathonExps,
 	interests,
-	educationLevels,
 	majorsList,
 	programmingLanguages,
 	pronouns,
@@ -24,8 +20,22 @@ import {
 	schools,
 	sexualityList,
 } from "@/data";
+import { businessTechs } from "@/data/businessTechs";
+import { countryCodes } from "@/data/countryPhoneCodes";
 import { yearOfStudies } from "@/data/educationLevels";
+import {
+	experienceResonatesOptions,
+	interestedOppOptions,
+} from "@/data/experienceResonatesOptions";
+import { travelOptions } from "@/data/travel";
+import { defaultApplication } from "@/forms/hacker-form/defaults";
+import type {
+	ApplicationData,
+	ApplicationDataKey,
+} from "@/forms/hacker-form/types";
+import { validations } from "@/forms/hacker-form/validations";
 import { useApplications } from "@/hooks/use-applications";
+import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
@@ -36,18 +46,19 @@ import {
 	deleteGeneralResume,
 	uploadGeneralResume,
 } from "@/services/firebase/files";
+import { ApplicationDataDoc } from "@/services/firebase/types";
 import {
 	Box,
 	Button,
+	Card,
+	Link as ChakraLink,
 	Checkbox,
+	Field,
+	Fieldset,
 	Flex,
 	GridItem,
 	SimpleGrid,
 	Text,
-	Link as ChakraLink,
-	Field,
-	Fieldset,
-	Card,
 } from "@chakra-ui/react";
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@components";
 import {
@@ -58,17 +69,6 @@ import {
 	useState,
 } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
-import { Steps } from "@/components/Steps";
-import { travelOptions } from "@/data/travel";
-import { businessTechs } from "@/data/businessTechs";
-import {
-	experienceResonatesOptions,
-	interestedOppOptions,
-} from "@/data/experienceResonatesOptions";
-import { useDebounce } from "@/hooks/use-debounce";
-import { ApplicationDataDoc } from "@/services/firebase/types";
-import { countryCodes } from "@/data/countryPhoneCodes";
 
 enum StepsEnum {
 	BasicInformation,

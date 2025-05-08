@@ -95,9 +95,8 @@ export const useApplications = () => {
 			afterClose: false,
 			inRange: false,
 		},
-		enabled: !!user,
 		refetchOnWindowFocus: false,
-		refetchOnMount: false,
+		refetchOnMount: true,
 	});
 
 	/**

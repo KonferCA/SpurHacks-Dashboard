@@ -1,11 +1,11 @@
 import type { ComponentProps } from "@/components/types";
 import { type FC, useEffect, useMemo, useRef, useState } from "react";
 import {
-	createBrowserRouter,
-	RouterProvider,
 	Outlet,
-	createRoutesFromElements,
 	Route,
+	RouterProvider,
+	createBrowserRouter,
+	createRoutesFromElements,
 } from "react-router-dom";
 
 import { LoadingAnimation } from "@/components";

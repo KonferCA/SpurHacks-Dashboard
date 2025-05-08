@@ -1,8 +1,8 @@
-import { countryCodes } from "@/data/countryPhoneCodes";
-import { type FC } from "react";
 import { Select } from "@/components/Select/Select";
 import { TextInput } from "@/components/TextInput/TextInput";
+import { countryCodes } from "@/data/countryPhoneCodes";
 import { Fieldset, GridItem, SimpleGrid } from "@chakra-ui/react";
+import { type FC } from "react";
 
 // Function to format phone number to 123-444-5555 format
 const formatPhoneNumber = (value: string) => {

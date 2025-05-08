@@ -1,9 +1,9 @@
 import {
+	deleteObject,
 	getBlob,
 	getMetadata,
 	ref,
 	uploadBytes,
-	deleteObject,
 } from "firebase/storage";
 
 import { storage } from "@/services/firebase";

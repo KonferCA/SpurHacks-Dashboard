@@ -1,11 +1,11 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
-import { Toaster } from "@/components/ui/toaster";
 import { Provider } from "@/components/ui/provider";
+import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, RoutesProvider } from "@/providers";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { AuthLoadingGuard } from "./components/AuthLoadingGuard";
- 
+
 import "./index.css";
 
 // for funsies
