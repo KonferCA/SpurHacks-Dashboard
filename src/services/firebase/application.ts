@@ -23,16 +23,14 @@ import type { ApplicationDataDoc } from "./types";
  */
 export async function submitApplication(data: ApplicationData, uid: string) {
 	// Remove undefined entries
-	const payload = Object.fromEntries(
-		Object.entries({
-			...data,
-			applicantId: uid,
-			timestamp: Timestamp.now(),
-			hackathonYear: "2025",
-			applicationStatus: "pending",
-			rsvp: false,
-		}).filter(([_, value]) => value !== undefined),
-	);
+	const payload = {
+		...data,
+		applicantId: uid,
+		timestamp: Timestamp.now(),
+		hackathonYear: "2025",
+		applicationStatus: "pending",
+		rsvp: false,
+	};
 
 	try {
 		const appsRef = collection(firestore, APPLICATIONS_COLLECTION);
