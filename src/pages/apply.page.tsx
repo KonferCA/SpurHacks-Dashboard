@@ -216,7 +216,7 @@ export const ApplyPage = () => {
 				updatedApp[name] = data;
 				if (name === "educationLevels") {
 					// reset this value if the education level changes
-					updatedApp.yearOfStudies = undefined;
+					updatedApp.yearOfStudies = "";
 				}
 				autosave(updatedApp, currentUser.uid, draftId);
 				return updatedApp;
