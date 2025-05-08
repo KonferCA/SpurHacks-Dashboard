@@ -267,9 +267,14 @@ const NavbarContent = ({
 				</ChakraLink>
 			</Flex>
 			{user && (
-				<Button type="button" rounded="full" onClick={logout}>
+				<Button
+					type="button"
+					rounded="full"
+					textTransform="uppercase"
+					onClick={logout}
+				>
 					<FiLogOut size="1.5rem" color="black" />
-					<Text color="black">Sign out</Text>
+					Sign out
 				</Button>
 			)}
 		</>

@@ -257,9 +257,7 @@ export const Select: FC<SelectProps> = ({
 				/>
 			)}
 
-			<Field.HelperText color="offwhite.primary">
-				{description}
-			</Field.HelperText>
+			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

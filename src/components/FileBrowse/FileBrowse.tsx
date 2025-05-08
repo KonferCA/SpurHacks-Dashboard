@@ -82,9 +82,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					</FileUpload.Context>
 				</FileUpload.ItemGroup>
 			</FileUpload.Root>
-			<Field.HelperText color="offwhite.primary">
-				{description}
-			</Field.HelperText>
+			<Field.HelperText>{description}</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);
