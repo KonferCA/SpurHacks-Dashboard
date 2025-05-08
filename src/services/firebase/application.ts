@@ -22,14 +22,17 @@ import type { ApplicationDataDoc } from "./types";
  * Submits an application to firebase
  */
 export async function submitApplication(data: ApplicationData, uid: string) {
-	const payload = {
-		...data,
-		applicantId: uid,
-		timestamp: Timestamp.now(),
-		hackathonYear: "2025",
-		applicationStatus: "pending",
-		rsvp: false,
-	} satisfies ApplicationData;
+	// Remove undefined entries
+	const payload = Object.fromEntries(
+		Object.entries({
+			...data,
+			applicantId: uid,
+			timestamp: Timestamp.now(),
+			hackathonYear: "2025",
+			applicationStatus: "pending",
+			rsvp: false,
+		}).filter(([_, value]) => value !== undefined),
+	);
 
 	try {
 		const appsRef = collection(firestore, APPLICATIONS_COLLECTION);

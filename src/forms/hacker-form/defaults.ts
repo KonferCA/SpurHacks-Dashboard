@@ -11,6 +11,7 @@ export const defaultApplication: ApplicationData = {
 	school: "",
 	//@ts-ignore
 	educationLevels: "",
+	yearOfStudies: "",
 	age: "",
 	discord: "",
 	countryOfResidence: "",

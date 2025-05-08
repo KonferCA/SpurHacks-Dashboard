@@ -13,7 +13,7 @@ export interface ApplicationData {
 	email: string; // this field is disabled and auto popullated
 	educationLevels: EducationLevel;
 	// this is conditional, only required when educationLevels is middle,high,secondary school, college, or univerity
-	yearOfStudies?: string;
+	yearOfStudies: string;
 	school: string;
 	major: string[];
 	countryOfResidence: string;
