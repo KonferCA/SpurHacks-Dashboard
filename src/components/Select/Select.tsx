@@ -2,14 +2,12 @@ import type { FC } from "react";
 import { useCallback, useMemo } from "react";
 import CreatableSelect from "react-select/creatable";
 import SelectComponent from "react-select";
-import { components } from "react-select";
-import type { MenuListProps, OptionProps, GroupBase } from "react-select";
-import { FixedSizeList } from "react-window";
+import type { GroupBase, StylesConfig } from "react-select";
 import { Field } from "@chakra-ui/react";
-import type { StylesConfig } from "react-select";
+import { MultiSelect } from "../MultiSelect";
 
 // define the shape react-select expects for options
-interface OptionType {
+export interface OptionType {
 	value: string;
 	label: string;
 }
@@ -33,58 +31,9 @@ export interface SelectProps {
 const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
 	options.map((opt) => ({ value: opt, label: opt }));
 
-const OPTION_HEIGHT = 40; // height of each option in px
 const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
 
-// custom component for rendering individual options within the virtualized list
-const VirtualizedOption = ({
-	children,
-	...props
-}: OptionProps<OptionType, boolean, GroupBase<OptionType>>) => {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const { onMouseMove, onMouseOver, ...rest } = props.innerProps;
-	const newProps = { ...props, innerProps: rest };
-	return (
-		// use react-select's built-in Option component for consistent styling/behavior
-		<components.Option {...newProps}>{children}</components.Option>
-	);
-};
 
-// custom component for the virtualized menu list container
-const MenuList = (
-	props: MenuListProps<OptionType, boolean, GroupBase<OptionType>>,
-) => {
-	const { options, children, maxHeight, getValue } = props;
-	const [value] = getValue();
-	const initialOffset =
-		options.indexOf(value) !== -1 ? options.indexOf(value) * OPTION_HEIGHT : 0;
-
-	// ensure children is always an array for FixedSizeList
-	const childrenArray = Array.isArray(children) ? children : [children];
-
-	// calculate the list height based on options, capping at max height
-	const listHeight = Math.min(maxHeight, childrenArray.length * OPTION_HEIGHT);
-
-	// only return FixedSizeList if there are options
-	if (!childrenArray.length) {
-		return null; // or return the default no options message if needed
-	}
-
-	return (
-		<FixedSizeList
-			height={listHeight}
-			itemCount={childrenArray.length}
-			itemSize={OPTION_HEIGHT}
-			initialScrollOffset={initialOffset}
-			width="100%"
-		>
-			{({ index, style }) => (
-				// clone the option element and apply the style from react-window
-				<div style={style}>{childrenArray[index]}</div>
-			)}
-		</FixedSizeList>
-	);
-};
 
 export const Select: FC<SelectProps> = ({
 	label,
@@ -122,6 +71,11 @@ export const Select: FC<SelectProps> = ({
 		},
 		[onChange, multiple],
 	);
+	// function to display the create option prompt
+	const formatCreateLabel = useCallback(
+		(inputValue: string) => `Create "${inputValue}"`,
+		[],
+	);
 
 	// style config to mimic chakra/previous look - sorry if you're maintaing this
 	const customStyles: StylesConfig<OptionType, typeof multiple> = useMemo(
@@ -132,8 +86,9 @@ export const Select: FC<SelectProps> = ({
 			}),
 			control: (provided, state) => ({
 				...provided,
-				backgroundColor: "#333147",
-				borderColor: state.isFocused ? "orange.400" : "transparent",
+				color: "#DEEBFF",
+				backgroundColor: "#1f1e2e",
+				borderColor: "transparent",
 				borderRadius: "9999px", // full
 				minHeight: "48px", // lg size
 				boxShadow: state.isFocused ? "0 0 0 1px orange.400" : "none", // focus ring
@@ -147,17 +102,17 @@ export const Select: FC<SelectProps> = ({
 			}),
 			placeholder: (provided) => ({
 				...provided,
-				color: "#666484", // gray.500 equivalent
+				color: "#666484",
 			}),
 			input: (provided) => ({
 				...provided,
-				color: "white",
+				color: "#DEEBFF",
 				margin: 0,
 				padding: 0,
 			}),
 			singleValue: (provided) => ({
 				...provided,
-				color: "white",
+				color: "#DEEBFF",
 			}),
 			multiValue: (provided) => ({
 				...provided,
@@ -179,9 +134,10 @@ export const Select: FC<SelectProps> = ({
 			}),
 			menu: (provided) => ({
 				...provided,
-				backgroundColor: "#333147",
-				borderRadius: "0.75rem", // xl
+				backgroundColor: "#1f1e2e",
+				borderRadius: "1.5rem", // xl
 				zIndex: 2, // ensure menu is above other elements
+				overflow: "hidden",
 			}),
 			menuList: (provided) => ({
 				...provided,
@@ -191,16 +147,19 @@ export const Select: FC<SelectProps> = ({
 			option: (provided, state) => ({
 				...provided,
 				backgroundColor: state.isSelected
-					? "orange.400"
+					? "transparent"
 					: state.isFocused
-						? "#1F1E2E" // hover color
+						? "#1F1E2E"
 						: "transparent",
-				color: state.isSelected ? "#1A202C" : "white",
+				color: state.isSelected ? "#666484" : "#DEEBFF",
 				padding: "8px 12px",
 				cursor: "pointer",
+				whiteSpace: "normal",
+				wordBreak: "break-word",
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
 				},
+			
 			}),
 			indicatorSeparator: () => ({
 				display: "none",
@@ -231,12 +190,6 @@ export const Select: FC<SelectProps> = ({
 		[],
 	);
 
-	// function to display the create option prompt
-	const formatCreateLabel = useCallback(
-		(inputValue: string) => `Create "${inputValue}"`,
-		[],
-	);
-
 	// common props for both select components
 	type CommonSelectProps = {
 		options: typeof mappedOptions;
@@ -246,14 +199,10 @@ export const Select: FC<SelectProps> = ({
 		isDisabled: typeof disabled;
 		placeholder: typeof placeholder;
 		styles: typeof customStyles;
-		components: {
-			MenuList: typeof MenuList;
-			Option: typeof VirtualizedOption;
-		};
 		isClearable: boolean;
 		"aria-label": typeof label;
 		inputId: typeof label;
-		maxMenuHeight: typeof MENU_MAX_HEIGHT;
+		maxMenuHeight: number;
 		closeMenuOnSelect: boolean;
 	};
 
@@ -265,14 +214,10 @@ export const Select: FC<SelectProps> = ({
 		isDisabled: disabled,
 		placeholder: placeholder,
 		styles: customStyles,
-		components: {
-			MenuList,
-			Option: VirtualizedOption,
-		},
 		isClearable: true, // allow clearing selection
 		"aria-label": label, // accessibility
 		inputId: label, // link label to input for accessibility
-		maxMenuHeight: MENU_MAX_HEIGHT, // pass max height to component
+		maxMenuHeight: MENU_MAX_HEIGHT,
 		closeMenuOnSelect: !multiple, // keep menu open for multi-select
 	};
 
@@ -284,13 +229,21 @@ export const Select: FC<SelectProps> = ({
 			disabled={disabled}
 			width="100%"
 		>
-			<Field.Label>
+			<Field.Label color="offwhite.primary">
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 
-			{allowCustomValue ? (
-				<CreatableSelect<OptionType, typeof multiple, GroupBase<OptionType>>
+			{multiple ? (
+				<MultiSelect
+					value={Array.isArray(value) ? value : []}
+					options={initialOptions}
+					disabled={disabled}
+					allowCustomValue={allowCustomValue}
+					onChange={onChange}
+				/>
+			) : allowCustomValue ? (
+				<CreatableSelect<OptionType, boolean, GroupBase<OptionType>>
 					{...commonSelectProps}
 					// creatable props
 					formatCreateLabel={formatCreateLabel}
@@ -300,14 +253,16 @@ export const Select: FC<SelectProps> = ({
 					}
 				/>
 			) : (
-				<SelectComponent<OptionType, typeof multiple, GroupBase<OptionType>>
+				<SelectComponent<OptionType, boolean, GroupBase<OptionType>>
 					{...commonSelectProps}
 					// message when no options match search
 					noOptionsMessage={() => "No options found"}
 				/>
 			)}
 
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

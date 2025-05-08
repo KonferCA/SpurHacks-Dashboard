@@ -6,7 +6,10 @@ export interface ApplicationData {
 	firstName: string;
 	lastName: string;
 	age: string;
-	phone: string;
+	phone: {
+		country: string; // formatted country-name (+code)
+		number: string; // formatted xxx-yyy-zzzz
+	};
 	email: string; // this field is disabled and auto popullated
 	educationLevels: EducationLevel;
 	// this is conditional, only required when educationLevels is middle,high,secondary school, college, or univerity
@@ -54,10 +57,10 @@ export interface ApplicationData {
 	// Extra metadata
 	participatingAs: "Hacker";
 	applicantId: string;
-	timestamp?: Timestamp;
-	hackathonYear?: string;
-	rsvp?: boolean;
-	applicationStatus?: "pending" | "rejected" | "accepted";
+	timestamp: Timestamp;
+	hackathonYear: string;
+	rsvp: boolean;
+	applicationStatus: "draft" | "pending" | "rejected" | "accepted";
 }
 
 export type ApplicationDataKey = keyof ApplicationData;

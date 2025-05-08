@@ -3,6 +3,7 @@ import type { ApplicationData } from "@/forms/hacker-form/types";
 import { ages, countryNames, hackathonExps } from "@/data";
 import { educationLevels } from "@/data/educationLevels";
 import { travelOptions } from "@/data/travel";
+import { countryCodes } from "@/data/countryPhoneCodes";
 
 function formatResult<T, R>({ success, error }: SafeParseReturnType<T, R>) {
 	let errStr = "";
@@ -45,7 +46,16 @@ export const validations: {
 				.safeParse(v),
 		),
 	phone: (v) =>
-		formatResult(z.string().nonempty("Phone number is empty").safeParse(v)),
+		formatResult(
+			z
+				.object({
+					country: z.enum(countryCodes, { message: "Invalid country code." }),
+					number: z.string().refine((v) => /^\d{3}-\d{3}-\d{4}$/.test(v), {
+						message: "Invalid phone number format. Expected 111-222-3333.",
+					}),
+				})
+				.safeParse(v),
+		),
 	school: (v) =>
 		formatResult(z.string().nonempty("School is empty").safeParse(v)),
 	educationLevels: (v) =>
@@ -68,11 +78,12 @@ export const validations: {
 				.string()
 				.nonempty("Discord username is empty")
 				.refine((val) => {
-					if (!val.startsWith("@") && !/\#\d{4}$/.test(val)) {
+					// expects user#1234 or usernmae (no spaces or invalid chars)
+					if (!/\#\d{4}$/.test(val) && !/^[a-zA-Z0-9_.]{2,32}$/.test(val)) {
 						return false;
 					}
 					return true;
-				}, "Invalid Discord username. Expected @username or username#1234.")
+				}, "Invalid Discord username. Expected username or username#1234.")
 				.safeParse(v),
 		),
 	major: (v) =>
@@ -229,4 +240,16 @@ export const validations: {
 	generalResumeRef: () => null,
 	participateInHawkHacks: () => null,
 	agreedToReceiveEmailsFromKonferOrSpur: () => null,
+	timestamp: () => null,
+	applicationStatus: (v) =>
+		formatResult(
+			z
+				.enum(["draft", "pending", "accepted", "rejected"], {
+					message:
+						"Application status must be one of 'draft', 'pending', 'accepted', 'rejected'.",
+				})
+				.safeParse(v),
+		),
+	hackathonYear: (v) => formatResult(z.literal("2025").safeParse(v)),
+	rsvp: (v) => formatResult(z.literal(false).safeParse(v)),
 } as const;

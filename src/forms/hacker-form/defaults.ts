@@ -1,11 +1,16 @@
 import type { ApplicationData } from "@/forms/hacker-form/types";
+import { Timestamp } from "firebase/firestore";
 
 export const defaultApplication: ApplicationData = {
 	firstName: "",
 	lastName: "",
-	phone: "",
+	phone: {
+		country: "",
+		number: "",
+	},
 	school: "",
-	educationLevels: "Prefer not to answer",
+	//@ts-ignore
+	educationLevels: "",
 	age: "",
 	discord: "",
 	countryOfResidence: "",
@@ -46,4 +51,6 @@ export const defaultApplication: ApplicationData = {
 
 	hackathonYear: "2025", // maybe there is a better way to define this
 	rsvp: false,
+	timestamp: Timestamp.now(),
+	applicationStatus: "draft",
 };

@@ -1,5 +1,10 @@
 import type React from "react";
-import { Field, FileUpload, FileUploadRootProps } from "@chakra-ui/react";
+import {
+	Field,
+	FileUpload,
+	FileUploadRootProps,
+	Spinner,
+} from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 
 export interface FileBrowserProps
@@ -9,6 +14,8 @@ export interface FileBrowserProps
 	description?: string;
 	required?: boolean;
 	error?: string;
+	loading?: boolean; // if true, shows a spinning circle instead of "x"
+	disabled?: boolean; // Locks adding/removing files
 	onChange?: (files: File[]) => void;
 }
 
@@ -18,11 +25,13 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 	accept = ["image/*", "video/*"],
 	required,
 	error,
+	disabled,
+	loading,
 	description,
 	onChange,
 }) => {
 	return (
-		<Field.Root required={required} invalid={!!error}>
+		<Field.Root required={required} invalid={!!error} disabled={disabled}>
 			<FileUpload.Root
 				required={required}
 				maxFiles={maxFiles}
@@ -31,13 +40,24 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					if (onChange) onChange(details.acceptedFiles);
 				}}
 			>
-				<Field.Label>
+				<Field.Label color="offwhite.primary">
 					{label}
 					{required && <Field.RequiredIndicator />}
 				</Field.Label>
 				<FileUpload.HiddenInput />
 				<FileUpload.Trigger asChild>
-					<Button variant="outline" size="sm" width="full">
+					<Button
+						variant="outline"
+						size="xl"
+						width="full"
+						color="offwhite.primary"
+						border="none"
+						background="#1f1e2e"
+						rounded="full"
+						_hover={{
+							background: "#333147",
+						}}
+					>
 						Select File(s)
 					</Button>
 				</FileUpload.Trigger>
@@ -45,18 +65,26 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 					<FileUpload.Context>
 						{({ acceptedFiles }) =>
 							acceptedFiles.map((file) => (
-								<FileUpload.Item key={file.name} file={file}>
+								<FileUpload.Item
+									key={file.name}
+									file={file}
+									background="#333147"
+									rounded="full"
+								>
 									<FileUpload.ItemPreview />
-									<FileUpload.ItemName />
+									<FileUpload.ItemName color="offwhite.primary" />
 									<FileUpload.ItemSizeText />
-									<FileUpload.ItemDeleteTrigger />
+									{!disabled && !loading && <FileUpload.ItemDeleteTrigger />}
+									{loading && <Spinner />}
 								</FileUpload.Item>
 							))
 						}
 					</FileUpload.Context>
 				</FileUpload.ItemGroup>
 			</FileUpload.Root>
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

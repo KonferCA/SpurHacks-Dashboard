@@ -34,19 +34,26 @@ export const TextInput: React.FC<TextInputProps> = ({
 }) => {
 	return (
 		<Field.Root required={required} invalid={!!error}>
-			<Field.Label>
+			<Field.Label color="offwhite.primary">
 				{label}
 				{required && <Field.RequiredIndicator />}
 			</Field.Label>
 			<Input
-				bg="#333147"
+				color="offwhite.primary"
+				focusRing="none"
+				bg="#1f1e2e"
 				borderColor="transparent"
 				borderRadius="full"
+				_selection={{
+					background: "#666484",
+				}}
 				_placeholder={{ color: "#666484" }}
-				size="lg"
+				size="xl"
 				{...props}
 			/>
-			<Field.HelperText>{description}</Field.HelperText>
+			<Field.HelperText color="offwhite.primary">
+				{description}
+			</Field.HelperText>
 			<Field.ErrorText>{error}</Field.ErrorText>
 		</Field.Root>
 	);

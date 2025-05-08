@@ -2,12 +2,14 @@
 
 import {
 	Toaster as ChakraToaster,
+	Icon,
 	Portal,
 	Spinner,
 	Stack,
 	Toast,
 	createToaster,
 } from "@chakra-ui/react";
+import { Info } from "@phosphor-icons/react";
 
 export const toaster = createToaster({
 	placement: "bottom-end",
@@ -19,9 +21,17 @@ export const Toaster = () => {
 		<Portal>
 			<ChakraToaster toaster={toaster} insetInline={{ mdDown: "4" }}>
 				{(toast) => (
-					<Toast.Root width={{ md: "sm" }}>
+					<Toast.Root
+						width={{ md: "sm" }}
+						background={toast.type === "info" ? "#333147" : undefined}
+						color="offwhite.primary"
+					>
 						{toast.type === "loading" ? (
 							<Spinner size="sm" color="blue.solid" />
+						) : toast.type === "info" ? (
+							<Icon size="md">
+								<Info />
+							</Icon>
 						) : (
 							<Toast.Indicator />
 						)}
