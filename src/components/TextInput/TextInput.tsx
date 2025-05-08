@@ -1,5 +1,5 @@
-import type React from "react";
 import { Field, Input, InputProps } from "@chakra-ui/react";
+import type React from "react";
 
 export interface TextInputProps extends InputProps {
 	/**

@@ -1,9 +1,9 @@
 import { PageWrapper } from "@/components";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { auth } from "@/services/firebase";
 import { Box, Flex, Heading, Icon, Link, Stack, Text } from "@chakra-ui/react";
-import { Button } from "@/components/ui/button";
 import { sendEmailVerification } from "firebase/auth";
 import { useRef, useState } from "react";
 import { FiCheckCircle } from "react-icons/fi";

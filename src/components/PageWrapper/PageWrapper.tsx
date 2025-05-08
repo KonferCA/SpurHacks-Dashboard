@@ -1,6 +1,6 @@
 import type { ComponentProps } from "@/components/types";
 import { useHeaderInfo } from "@/providers";
-import { Box, Heading, Text, Link as ChakraLink } from "@chakra-ui/react";
+import { Box, Link as ChakraLink, Heading, Text } from "@chakra-ui/react";
 import { Navbar } from "@components";
 import type { FC } from "react";
 

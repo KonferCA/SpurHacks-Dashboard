@@ -1,7 +1,7 @@
 import { firestore } from "@/services/firebase";
 import {
-	APPLICATION_DRAFTS_COLLECTION,
 	APPLICATIONS_COLLECTION,
+	APPLICATION_DRAFTS_COLLECTION,
 } from "@/services/firebase/collections";
 import { logEvent } from "@/services/firebase/log";
 import {

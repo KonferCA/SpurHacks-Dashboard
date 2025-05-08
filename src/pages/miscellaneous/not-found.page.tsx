@@ -1,6 +1,6 @@
 import { FullLogo, Knots } from "@/assets";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Box, Flex, Text, Button, Link, Image } from "@chakra-ui/react";
+import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
 
 export const NotFoundPage = () => {
 	return (

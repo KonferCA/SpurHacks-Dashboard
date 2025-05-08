@@ -1,4 +1,3 @@
-import type React from "react";
 import {
 	Field,
 	FileUpload,
@@ -6,6 +5,7 @@ import {
 	Spinner,
 } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
+import type React from "react";
 
 export interface FileBrowserProps
 	extends Omit<FileUploadRootProps, "onChange"> {

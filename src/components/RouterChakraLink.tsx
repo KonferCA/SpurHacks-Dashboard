@@ -2,11 +2,11 @@ import {
 	Link as ChakraLink,
 	LinkProps as ChakraLinkProps,
 } from "@chakra-ui/react";
+import { forwardRef } from "react";
 import {
 	Link as RouterLink,
 	LinkProps as RouterLinkProps,
 } from "react-router-dom";
-import { forwardRef } from "react";
 
 type CombinedLinkProps = ChakraLinkProps & RouterLinkProps;
 

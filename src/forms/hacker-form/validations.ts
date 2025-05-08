@@ -1,9 +1,9 @@
-import { SafeParseReturnType, z } from "zod";
-import type { ApplicationData } from "@/forms/hacker-form/types";
 import { ages, countryNames, hackathonExps } from "@/data";
+import { countryCodes } from "@/data/countryPhoneCodes";
 import { educationLevels } from "@/data/educationLevels";
 import { travelOptions } from "@/data/travel";
-import { countryCodes } from "@/data/countryPhoneCodes";
+import type { ApplicationData } from "@/forms/hacker-form/types";
+import { SafeParseReturnType, z } from "zod";
 
 function formatResult<T, R>({ success, error }: SafeParseReturnType<T, R>) {
 	let errStr = "";

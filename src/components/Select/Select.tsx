@@ -1,9 +1,9 @@
+import { Field } from "@chakra-ui/react";
 import type { FC } from "react";
 import { useCallback, useMemo } from "react";
-import CreatableSelect from "react-select/creatable";
 import SelectComponent from "react-select";
 import type { GroupBase, StylesConfig } from "react-select";
-import { Field } from "@chakra-ui/react";
+import CreatableSelect from "react-select/creatable";
 import { MultiSelect } from "../MultiSelect";
 
 // define the shape react-select expects for options
@@ -32,8 +32,6 @@ const mapOptions = (options: string[] | readonly string[]): OptionType[] =>
 	options.map((opt) => ({ value: opt, label: opt }));
 
 const MENU_MAX_HEIGHT = 200; // max height of the dropdown menu in px
-
-
 
 export const Select: FC<SelectProps> = ({
 	label,
@@ -159,7 +157,6 @@ export const Select: FC<SelectProps> = ({
 				"&:active": {
 					backgroundColor: state.isSelected ? "orange.500" : "#1A1926",
 				},
-			
 			}),
 			indicatorSeparator: () => ({
 				display: "none",
