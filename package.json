@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "concurrently \"pnpm run vite\" \"pnpm run emulators\"",
+		"dev:export": "concurrently \"pnpm run vite\" \"pnpm run emulators:export\"",
 		"build": "tsc -b && vite build",
 		"build:staging": "tsc -b && vite build --mode staging && firebase hosting:channel:deploy staging",
 		"lint": "biome lint --error-on-warnings .",
@@ -16,6 +17,7 @@
 		"test:ci": "vitest run --coverage",
 		"typecheck": "tsc --noEmit",
 		"emulators": "firebase emulators:start --project spurhacks-dashboard --import ./data",
+		"emulators:export": "firebase emulators:start --project spurhacks-dashboard --import ./data --export-on-exit",
 		"setup": "firebase init emulators",
 		"firebase": "firebase",
 		"vite": "vite",
