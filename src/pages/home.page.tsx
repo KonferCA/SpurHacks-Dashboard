@@ -9,13 +9,13 @@ import {
 	Box,
 	Button,
 	Card,
+	Link as ChakraLink,
 	Flex,
 	Heading,
 	Icon,
 	Image,
 	Link,
 	Text,
-	Link as ChakraLink,
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
