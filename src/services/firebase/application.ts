@@ -18,6 +18,12 @@ import {
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import type { ApplicationDataDoc } from "./types";
 
+export class DuplicateApplicationError extends Error {
+	constructor() {
+		super("Duplicate application error");
+	}
+}
+
 /**
  * Submits an application to firebase
  */
@@ -31,6 +37,20 @@ export async function submitApplication(data: ApplicationData, uid: string) {
 		applicationStatus: "pending",
 		rsvp: false,
 	};
+
+	try {
+		const apps = await getUserApplications(uid);
+		if (apps.length) throw new DuplicateApplicationError();
+	} catch (e) {
+		logEvent("error", {
+			event: "duplicatE_app_check_error",
+			message: (e as Error).message,
+			name: (e as Error).name,
+			stack: (e as Error).stack,
+		});
+		// pass this along so that the application page handles the error
+		throw e;
+	}
 
 	try {
 		const appsRef = collection(firestore, APPLICATIONS_COLLECTION);

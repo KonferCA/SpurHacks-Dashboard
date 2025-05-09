@@ -39,6 +39,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
+	DuplicateApplicationError,
 	saveApplicationDraft,
 	submitApplication,
 } from "@/services/firebase/application";
@@ -330,10 +331,18 @@ export const ApplyPage = () => {
 			});
 			await refreshApplications();
 		} catch (e) {
-			toaster.error({
-				title: "Error Submitting Application",
-				description: "Please retry later.",
-			});
+			if (e instanceof DuplicateApplicationError) {
+				toaster.error({
+					title: "Duplicate Submission",
+					description:
+						"We got your previous submission. You'll hear from us early June.",
+				});
+			} else {
+				toaster.error({
+					title: "Error Submitting Application",
+					description: "Please retry later.",
+				});
+			}
 			console.error(e);
 		} finally {
 			// navigate to post submission page
