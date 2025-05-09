@@ -629,7 +629,7 @@ export const ApplyPage = () => {
 									<TextInput
 										label="What is your Discord username?"
 										id="discord"
-										placeholder="@username or username#1234"
+										placeholder="username or username#1234"
 										value={application.discord}
 										onChange={(e) => handleChange("discord", e.target.value)}
 										description="Discord will be our primary form of communication."
