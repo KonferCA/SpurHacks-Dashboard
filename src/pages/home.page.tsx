@@ -4,6 +4,7 @@ import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
+import { getTypeforms } from "@/services/firebase/misc";
 import {
 	Box,
 	Button,
@@ -14,9 +15,11 @@ import {
 	Image,
 	Link,
 	Text,
+	Link as ChakraLink,
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -29,60 +32,130 @@ const HomePage = () => {
 		return app && app.applicationStatus === "pending";
 	}, [applications]);
 
+	const { data: typeforms, isLoading: isLoadingTypeforms } = useQuery({
+		queryKey: ["typeforms"],
+		queryFn: getTypeforms,
+		// Disable refetches because the data will never be updated enough time that it will matter.
+		refetchOnMount: false,
+		refetchOnReconnect: false,
+		refetchOnWindowFocus: false,
+	});
+
+	const cardStyles = useMemo(() => {
+		if (typeforms && typeforms.mjvURL) {
+			return {
+				maxWidth: { base: "none", xl: "300px" },
+				width: "full",
+				rounded: "4xl",
+			};
+		}
+
+		return {
+			maxWidth: { base: "none", md: "300px" },
+			width: "full",
+			rounded: "4xl",
+		};
+	}, [typeforms]);
+
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
-				<Card.Root maxWidth="400px">
-					<Card.Body>
-						<Heading mb="1rem">Hacker Status</Heading>
-						{deadlines.inRange && (
-							<Box spaceY="1rem">
-								<Flex alignItems="center" gapX="1rem">
-									<Text color="#666484">
-										{hasApplied
-											? "Application submitted"
-											: "Application not submitted"}
-									</Text>
-									<Icon
-										size="lg"
-										color={hasApplied ? "green.400" : "yellow.400"}
-									>
-										{hasApplied ? <CheckCircle /> : <WarningCircle />}
-									</Icon>
-								</Flex>
-								{!hasApplied && (
-									<Flex justifyContent="end">
-										<Button
-											color="black"
-											colorScheme="brand"
-											onClick={() => navigate(paths.apply)}
+				<Flex gap="1.5rem" flexWrap={{ base: "wrap", xl: "nowrap" }}>
+					<Card.Root {...cardStyles}>
+						<Card.Header>
+							<Card.Title>Hacker Status</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							{/* <Heading mb="1rem">Hacker Status</Heading> */}
+							{deadlines.inRange && (
+								<Box spaceY="1rem">
+									<Flex alignItems="center" gapX="1rem">
+										<Text color="fg.muted">
+											{hasApplied
+												? "Application submitted"
+												: "Application not submitted"}
+										</Text>
+										<Icon
 											size="lg"
-											rounded="full"
-											marginTop="1rem"
-											textTransform="uppercase"
+											color={hasApplied ? "green.400" : "yellow.400"}
 										>
-											Apply Now
-										</Button>
+											{hasApplied ? <CheckCircle /> : <WarningCircle />}
+										</Icon>
 									</Flex>
-								)}
-							</Box>
-						)}
-						{deadlines.beforeStart && (
-							<Box>
-								<Text>
-									Applications for SpurHacks 2025 open on{" "}
-									{deadlines.startDateStr}.
+								</Box>
+							)}
+							{deadlines.beforeStart && (
+								<Box>
+									<Text>
+										Applications for SpurHacks 2025 open on{" "}
+										{deadlines.startDateStr}.
+									</Text>
+								</Box>
+							)}
+							{deadlines.afterClose && (
+								<Box>
+									<Text>Applications have now closed for SpurHacks 2025.</Text>
+								</Box>
+							)}
+						</Card.Body>
+						<Card.Footer>
+							{!hasApplied && (
+								<Button
+									color="black"
+									colorScheme="brand"
+									onClick={() => navigate(paths.apply)}
+									marginLeft="auto"
+									size="lg"
+									rounded="full"
+									marginTop="1rem"
+									textTransform="uppercase"
+								>
+									Apply Now
+								</Button>
+							)}
+						</Card.Footer>
+					</Card.Root>
+
+					{!isLoadingTypeforms && typeforms?.mjvURL && (
+						<Card.Root
+							maxWidth={{ base: "none", xl: "600px" }}
+							width="full"
+							rounded="4xl"
+						>
+							<Card.Header>
+								<Card.Title>
+									Join us as a Mentor, Judge, or Volunteer!
+								</Card.Title>
+							</Card.Header>
+							<Card.Body>
+								<Text color="fg.muted" mb="1rem">
+									Play a key role in helping the event run smoothly. Whether
+									you’re sharing your expertise or lending a hand, your
+									contributions make a huge difference!
 								</Text>
-							</Box>
-						)}
-						{deadlines.afterClose && (
-							<Box>
-								<Text>Applications have now closed for SpurHacks 2025.</Text>
-							</Box>
-						)}
-					</Card.Body>
-				</Card.Root>
-				<Card.Root maxWidth="400px">
+							</Card.Body>
+							<Card.Footer>
+								<ChakraLink
+									href={typeforms.mjvURL}
+									target="_blank"
+									rel="noopener noreferrer"
+									marginLeft="auto"
+									rounded="full"
+									bg="brand.primary"
+									color="brand.contrast"
+									py="2.5"
+									px="5"
+									textTransform="uppercase"
+									transition="colors"
+									_hover={{ textDecor: "none", bg: "brand.primary/90" }}
+								>
+									apply to join
+								</ChakraLink>
+							</Card.Footer>
+						</Card.Root>
+					)}
+				</Flex>
+				<Card.Root {...cardStyles}>
 					<Card.Header>
 						<Heading>Stay Connected</Heading>
 					</Card.Header>
