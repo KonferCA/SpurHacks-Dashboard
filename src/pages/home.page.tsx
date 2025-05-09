@@ -35,10 +35,6 @@ const HomePage = () => {
 	const { data: typeforms, isLoading: isLoadingTypeforms } = useQuery({
 		queryKey: ["typeforms"],
 		queryFn: getTypeforms,
-		// Disable refetches because the data will never be updated enough time that it will matter.
-		refetchOnMount: false,
-		refetchOnReconnect: false,
-		refetchOnWindowFocus: false,
 	});
 
 	const cardStyles = useMemo(() => {

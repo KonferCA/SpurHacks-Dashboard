@@ -37,8 +37,6 @@ export const useApplications = () => {
 		},
 		initialData: [],
 		enabled: !!user,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
 	});
 
 	const { data: drafts = [], isLoading: loadingDrafts } = useQuery({
@@ -49,8 +47,6 @@ export const useApplications = () => {
 		},
 		initialData: [],
 		enabled: !!user,
-		refetchOnWindowFocus: false,
-		refetchOnMount: false,
 	});
 
 	const { data: deadlines, isLoading: loadingDeadlines } = useQuery({
@@ -95,8 +91,6 @@ export const useApplications = () => {
 			afterClose: false,
 			inRange: false,
 		},
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
 	});
 
 	/**
