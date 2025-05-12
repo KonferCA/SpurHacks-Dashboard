@@ -991,7 +991,12 @@ export const ApplyPage = () => {
 											}
 										>
 											<Checkbox.HiddenInput />
-											<Checkbox.Control />
+											<Checkbox.Control
+												borderColor="fg.muted"
+												_checked={{
+													borderColor: "brand.solid",
+												}}
+											/>
 											<Checkbox.Label>
 												Would you like to attend{" "}
 												<ChakraLink
@@ -1017,7 +1022,12 @@ export const ApplyPage = () => {
 												}
 											>
 												<Checkbox.HiddenInput />
-												<Checkbox.Control />
+												<Checkbox.Control
+													borderColor="fg.muted"
+													_checked={{
+														borderColor: "brand.solid",
+													}}
+												/>
 												<Checkbox.Label>
 													I have read and agree to the{" "}
 													<ChakraLink
@@ -1045,7 +1055,12 @@ export const ApplyPage = () => {
 												}
 											>
 												<Checkbox.HiddenInput />
-												<Checkbox.Control />
+												<Checkbox.Control
+													borderColor="fg.muted"
+													_checked={{
+														borderColor: "brand.solid",
+													}}
+												/>
 												<Checkbox.Label>
 													I have read and agree to the{" "}
 													<ChakraLink
@@ -1073,7 +1088,12 @@ export const ApplyPage = () => {
 												}
 											>
 												<Checkbox.HiddenInput />
-												<Checkbox.Control />
+												<Checkbox.Control
+													borderColor="fg.muted"
+													_checked={{
+														borderColor: "brand.solid",
+													}}
+												/>
 												<Checkbox.Label>
 													<Text>
 														I authorize you to share my application/registration
@@ -1126,7 +1146,12 @@ export const ApplyPage = () => {
 												}
 											>
 												<Checkbox.HiddenInput />
-												<Checkbox.Control />
+												<Checkbox.Control
+													borderColor="fg.muted"
+													_checked={{
+														borderColor: "brand.solid",
+													}}
+												/>
 												<Checkbox.Label>
 													<Text>
 														I authorize MLH to send me occasional emails about
@@ -1149,7 +1174,12 @@ export const ApplyPage = () => {
 												}
 											>
 												<Checkbox.HiddenInput />
-												<Checkbox.Control />
+												<Checkbox.Control
+													borderColor="fg.muted"
+													_checked={{
+														borderColor: "brand.solid",
+													}}
+												/>
 												<Checkbox.Label>
 													<Text>
 														I authorize Konfer and SPUR to send me occasional
