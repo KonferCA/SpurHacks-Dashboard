@@ -186,7 +186,7 @@ export const validations: {
 		formatResult(
 			z
 				.string()
-				.nonempty("Please tell us why you want to  particiapte at HawkHacks.")
+				.nonempty("Please tell us why you want to  particiapte at SpurHacks.")
 				.safeParse(v),
 		),
 	revolutionizingTechnology: (v) =>
@@ -202,7 +202,7 @@ export const validations: {
 				.string()
 				.array()
 				.nonempty(
-					"Please tell us how you heard about HawkHacks. If non of the options reflect your situation, please write your answer in the text input.",
+					"Please tell us how you heard about SpurHacks. If non of the options reflect your situation, please write your answer in the text input.",
 				)
 				.safeParse(v),
 		),

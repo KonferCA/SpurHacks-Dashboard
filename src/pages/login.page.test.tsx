@@ -15,7 +15,7 @@ describe("Login Page", () => {
 		});
 	});
 
-	it("should render HawkHacks Hacker Portal Heading", () => {
+	it("should render SpurHacks Hacker Portal Heading", () => {
 		render(<LoginPage />);
 		expect(
 			screen.getByRole("heading", {

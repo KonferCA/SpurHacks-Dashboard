@@ -228,7 +228,7 @@ export const createPassObject = onCall(async (data: any, res) => {
 		cardTitle: {
 			defaultValue: {
 				language: "en-US",
-				value: "HawkHacks 2024",
+				value: "SpurHacks 2024",
 			},
 		},
 		subheader: {
@@ -240,7 +240,7 @@ export const createPassObject = onCall(async (data: any, res) => {
 		header: {
 			defaultValue: {
 				language: "en-US",
-				value: "HawkHacks 2024",
+				value: "SpurHacks 2024",
 			},
 		},
 		linksModuleData: {
@@ -248,7 +248,7 @@ export const createPassObject = onCall(async (data: any, res) => {
 				{
 					kind: "walletobjects#uri",
 					uri: "https://www.hawkhacks.ca",
-					description: "Visit HawkHacks",
+					description: "Visit SpurHacks",
 				},
 			],
 		},

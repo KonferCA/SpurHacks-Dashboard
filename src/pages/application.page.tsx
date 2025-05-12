@@ -16,7 +16,7 @@ export const ApplicationPage = () => {
 						text={
 							userApp && userApp.applicationStatus !== "accepted"
 								? "Unfortunately, due to high volume of applications and limited spots, we are unable to accept your application this year... We encourage you to try again next year."
-								: "Applications have now closed for HawkHacks 2024."
+								: "Applications have now closed for SpurHacks 2024."
 						}
 					/>
 				</div>

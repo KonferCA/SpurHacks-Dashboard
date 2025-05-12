@@ -75,7 +75,7 @@ export const Application: FC<ApplicationProps> = ({ app }) => {
 			{app.participatingAs === "Hacker" && (
 				<div className="py-2 space-y-2 max-w-lg">
 					<Field
-						label="Why do you want to participate at HawkHacks?"
+						label="Why do you want to participate at SpurHacks?"
 						value={app.reasonToBeInSpurHacks}
 					/>
 					<Field

@@ -44,7 +44,7 @@ export const titles: Record<string, HeaderInfo> = {
 	},
 	[paths.networking]: {
 		title: "Networking",
-		subTitle: "A quick way to connect with new people at HawkHacks!",
+		subTitle: "A quick way to connect with new people at SpurHacks!",
 	},
 	[paths.apply]: {
 		title: "Application",
@@ -61,7 +61,7 @@ export const titles: Record<string, HeaderInfo> = {
 	[paths.myTicket]: {
 		title: "Ticket",
 		subTitle:
-			"This ticket is required for registration at our HawkHacks sign-in desk.\nKeep this ticket safe - download or add it to your wallet for convenience!",
+			"This ticket is required for registration at our SpurHacks sign-in desk.\nKeep this ticket safe - download or add it to your wallet for convenience!",
 	},
 	[paths.myTeam]: {
 		title: "My Team",
@@ -77,6 +77,6 @@ export const titles: Record<string, HeaderInfo> = {
 	},
 	[paths.perks]: {
 		title: "Perks",
-		subTitle: "Explore the amazing perks available at HawkHacks!",
+		subTitle: "Explore the amazing perks available at SpurHacks!",
 	},
 };

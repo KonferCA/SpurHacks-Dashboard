@@ -13,7 +13,7 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 	if (location.pathname.startsWith("/ticket")) {
 		headerInfo = {
 			title: "Networking",
-			subTitle: "A quick way to connect with new people at HawkHacks!",
+			subTitle: "A quick way to connect with new people at SpurHacks!",
 		};
 	}
 

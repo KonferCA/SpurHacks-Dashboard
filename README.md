@@ -21,7 +21,7 @@ $ npm install -g pnpm
 > Clone the repo
 
 ```sh
-$ git clone https://github.com/KonferCA/HawkHacks-Dashboard.git
+$ git clone https://github.com/KonferCA/SpurHacks-Dashboard.git
 ```
 
 > From your terminal, navigate to the root path of clone
@@ -44,4 +44,4 @@ $ pnpm dev
 
 ## Contributing :heart:
 
-**If you want to help improve the project, please check our [contribution guide](https://github.com/KonferCA/HawkHacks-Dashboard/blob/dev/docs/CONTRIBUTING.md) for guidelines on how to contribute.**
+**If you want to help improve the project, please check our [contribution guide](https://github.com/KonferCA/SpurHacks-Dashboard/blob/dev/docs/CONTRIBUTING.md) for guidelines on how to contribute.**

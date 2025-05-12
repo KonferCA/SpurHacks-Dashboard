@@ -294,7 +294,7 @@ export const VerifyRSVP = () => {
 												className="form-checkbox h-5 w-5 text-gray-600"
 											/>
 											<span className="ml-2 text-gray-700">
-												I confirm that I will be attending HawkHacks{" "}
+												I confirm that I will be attending SpurHacks{" "}
 												<span className="font-bold uppercase underline">
 													in person
 												</span>{" "}

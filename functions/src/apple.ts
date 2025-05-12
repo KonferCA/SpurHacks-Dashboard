@@ -76,13 +76,13 @@ export const createTicket = onCall(async (_, res) => {
 				passTypeIdentifier: "pass.com.dashboard.hawkhacks",
 				formatVersion: 1,
 				teamIdentifier: teamIdentifier,
-				organizationName: "HawkHacks",
+				organizationName: "SpurHacks",
 				serialNumber: ticketId,
-				description: "Access to HawkHacks 2024",
+				description: "Access to SpurHacks 2024",
 				foregroundColor: "rgb(255, 255, 255)",
 				backgroundColor: "rgb(12, 105, 117)",
 				labelColor: "rgb(255, 255, 255)",
-				logoText: "HawkHacks",
+				logoText: "SpurHacks",
 				barcodes: [
 					{
 						message: `${process.env.FE_URL}/ticket/${ticketId}`,

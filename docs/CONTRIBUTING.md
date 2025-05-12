@@ -1,12 +1,12 @@
-# <div align="center">🤝 Contributing to HawkHacks Dashboard</div>
+# <div align="center">🤝 Contributing to SpurHacks Dashboard</div>
 
 <div align="center">
-  <p>Thank you for your interest in contributing to the HawkHacks dashboard!</p>
+  <p>Thank you for your interest in contributing to the SpurHacks dashboard!</p>
   <p>This document provides guidelines and instructions for contributing to this project.</p>
   
-  ![GitHub contributors](https://img.shields.io/github/contributors/KonferCA/HawkHacks-Dashboard?style=for-the-badge)
-  ![GitHub last commit](https://img.shields.io/github/last-commit/KonferCA/HawkHacks-Dashboard?style=for-the-badge)
-  ![GitHub issues](https://img.shields.io/github/issues/KonferCA/HawkHacks-Dashboard?style=for-the-badge)
+  ![GitHub contributors](https://img.shields.io/github/contributors/KonferCA/SpurHacks-Dashboard?style=for-the-badge)
+  ![GitHub last commit](https://img.shields.io/github/last-commit/KonferCA/SpurHacks-Dashboard?style=for-the-badge)
+  ![GitHub issues](https://img.shields.io/github/issues/KonferCA/SpurHacks-Dashboard?style=for-the-badge)
 </div>
 
 ## 📋 Table of Contents
@@ -60,12 +60,12 @@
 ```sh
 # Fork the repository (if you don't have write access)
 # Then clone your fork
-git clone https://github.com/YOUR_USERNAME/HawkHacks-Dashboard.git
-cd HawkHacks-Dashboard
+git clone https://github.com/YOUR_USERNAME/SpurHacks-Dashboard.git
+cd SpurHacks-Dashboard
 
 # Alternatively, if you have write access
-git clone https://github.com/KonferCA/HawkHacks-Dashboard.git
-cd HawkHacks-Dashboard
+git clone https://github.com/KonferCA/SpurHacks-Dashboard.git
+cd SpurHacks-Dashboard
 ```
 
 > Install Dependencies
