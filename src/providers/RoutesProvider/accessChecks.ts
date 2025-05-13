@@ -33,10 +33,10 @@ export const isAdmin: AccessControlFn = (ctx) => {
  */
 export const hasApplied: AccessControlFn = (ctx) => {
 	if (ctx.applicationsCtx.applications.length < 1) return false;
-	const app = ctx.applicationsCtx.applications.find(
+	const idx = ctx.applicationsCtx.applications.findIndex(
 		(app) => app.hackathonYear === "2025",
 	);
-	return app?.applicationStatus === "pending";
+	return idx !== -1;
 };
 
 /**
