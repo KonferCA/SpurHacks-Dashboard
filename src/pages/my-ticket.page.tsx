@@ -109,8 +109,8 @@ export const MyTicketPage = () => {
 			<div className="flex justify-start">
 				<div className="bg-white drop-shadow-xl rounded-xl box-border max-w-[400px] w-full p-8 flex flex-col gap-2">
 					<div className="flex items-center font-bold text-2xl md:text-[30px]">
-						<img src={Logo} alt="HawkHacks Logo" className="w-6 mr-2" />
-						HawkHacks 2024
+						<img src={Logo} alt="SpurHacks Logo" className="w-6 mr-2" />
+						SpurHacks 2024
 					</div>
 					<div className="flex flex-col gap-2 mt-2">
 						<h1 className="font-semibold text-3xl md:text-[42px]">

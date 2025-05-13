@@ -34,7 +34,7 @@ const SocialIconLink = ({
 			className={`${className} transition-colors`}
 			target="_blank"
 			rel="noopener noreferrer"
-			aria-label={`Visit our ${platform} page to learn more about HawkHacks!`}
+			aria-label={`Visit our ${platform} page to learn more about SpurHacks!`}
 		>
 			<Icon
 				size={25}

@@ -65,7 +65,7 @@ export const PostSubmissionPage = () => {
 						rel="noopener noreferrer"
 						className="underline font-bold"
 					>
-						HawkHacks Discord
+						SpurHacks Discord
 					</a>{" "}
 					server!
 				</p>
@@ -75,7 +75,7 @@ export const PostSubmissionPage = () => {
 				<div className="flex gap-2 items-center mt-12">
 					<img alt="Hawkhacks logo" src={Logo} className="w-6 h-6" />
 					<span className="font-bold bg-clip-text bg-gradient-to-b from-deepMarine to-tbrand-highlight text-transparent sm:text-lg">
-						HawkHacks
+						SpurHacks
 					</span>
 				</div>
 			</div>
