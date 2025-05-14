@@ -40,7 +40,7 @@ const HomePage = () => {
 	const cardStyles = useMemo(() => {
 		if (typeforms && typeforms.mjvURL) {
 			return {
-				maxWidth: { base: "none", xl: "300px" },
+				maxWidth: { base: "none", xl: "450px" },
 				width: "full",
 				rounded: "4xl",
 			};
@@ -78,6 +78,11 @@ const HomePage = () => {
 											{hasApplied ? <CheckCircle /> : <WarningCircle />}
 										</Icon>
 									</Flex>
+									<Text color="fg.muted">
+										{hasApplied
+											? "You’ll receive a confirmation on your application status in the email you provided."
+											: "Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
+									</Text>
 								</Box>
 							)}
 							{deadlines.beforeStart && (
