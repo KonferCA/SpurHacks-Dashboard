@@ -23,6 +23,7 @@ const config = defineConfig({
 				bg: {
 					DEFAULT: { value: "#13151c" },
 					panel: { value: "#13151c" },
+					hover: { value: "#1F1E2E" },
 				},
 				fg: {
 					DEFAULT: { value: "{colors.offwhite.primary}" },
