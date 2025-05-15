@@ -1,8 +1,12 @@
 import { DiscordLogo, FullLogo, Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
 import type { AccessControlContext } from "@/navigation";
-import { RouteConfig, useAuth } from "@/providers";
-import { useRouteDefinitions, useUser } from "@/providers";
+import {
+	type RouteConfig,
+	useAuth,
+	useRouteDefinitions,
+	useUser,
+} from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import {
 	Box,
@@ -336,6 +340,19 @@ export const Navbar = () => {
 					borderRightColor="#1F1E2E"
 					borderRightStyle="solid"
 					borderRightWidth={1}
+					style={{
+						background: `radial-gradient(
+							circle at top left,
+							#000000 -100%,
+							#191C26 80%,
+							#26252F 110%,
+							#332D38 130%,
+							#4D3E4A 150%,
+							#6B5C6D 170%,
+							#897B90 180%,
+							#C5B8D6 250%
+						)`,
+					}}
 				>
 					<Flex alignItems="center" justifyContent="center" padding="1rem">
 						<Link to={paths.home}>
