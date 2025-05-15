@@ -175,7 +175,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.networking,
 				element: <NetworkingPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
 			},
 			{
 				path: paths.myTicket,
