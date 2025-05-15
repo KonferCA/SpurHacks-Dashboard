@@ -170,7 +170,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.schedule,
 				element: <SchedulePage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
 			},
 			{
 				path: paths.networking,
@@ -203,7 +203,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.myTeam,
 				element: <MyTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
 			},
 			{
 				path: paths.joinTeam,
@@ -213,7 +213,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.perks,
 				element: <PerksPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
 			},
 		];
 
