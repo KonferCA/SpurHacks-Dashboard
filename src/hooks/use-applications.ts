@@ -5,11 +5,13 @@ import {
 	getUserApplications,
 } from "@/services/firebase/application";
 import { getDeadlines } from "@/services/firebase/deadlines";
+import { ApplicationDataDoc } from "@/services/firebase/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format, isAfter, isBefore, parseISO } from "date-fns";
 import { useCallback, useMemo } from "react";
 
 export type ApplicationsHookValue = {
+	current?: ApplicationDataDoc;
 	applications: ApplicationData[];
 	drafts: ApplicationData[];
 	deadlines: {
@@ -109,6 +111,7 @@ export const useApplications = () => {
 
 	const value = useMemo(() => {
 		return {
+			current: applications.find((app) => app.hackathonYear === "2025"),
 			deadlines,
 			drafts,
 			applications,
