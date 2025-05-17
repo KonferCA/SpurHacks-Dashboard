@@ -4,10 +4,10 @@ import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { logError } from "@/services/firebase/log";
-import { Logo } from "@assets";
+import { OffwhiteLogo } from "@assets";
+import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useEffect, useState } from "react";
-import { FiDownload } from "react-icons/fi";
 import { Navigate } from "react-router-dom";
 
 export const MyTicketPage = () => {
@@ -106,66 +106,101 @@ export const MyTicketPage = () => {
 
 	return (
 		<PageWrapper>
-			<div className="flex justify-start">
-				<div className="bg-white drop-shadow-xl rounded-xl box-border max-w-[400px] w-full p-8 flex flex-col gap-2">
-					<div className="flex items-center font-bold text-2xl md:text-[30px]">
-						<img src={Logo} alt="SpurHacks Logo" className="w-6 mr-2" />
-						SpurHacks 2024
-					</div>
-					<div className="flex flex-col gap-2 mt-2">
-						<h1 className="font-semibold text-3xl md:text-[42px]">
+			<Flex justify="start">
+				<Box
+					bg="#1F1E2E"
+					rounded="xl"
+					maxW="400px"
+					w="full"
+					p={8}
+					display="flex"
+					flexDirection="column"
+					gap={2}
+				>
+					<Flex
+						align="center"
+						fontWeight="bold"
+						fontSize={{ base: "2xl", md: "30px" }}
+					>
+						<Image src={OffwhiteLogo} alt="SpurHacks Logo" w="1/2" mr={2} />
+					</Flex>
+
+					<Flex direction="column" gap={2} my={2}>
+						<Text fontSize={{ base: "3xl", md: "4xl" }} fontWeight="semibold">
 							{firstName} {lastName}
-						</h1>
-						<h2 className="text-gray-500 underline truncate">{email}</h2>
-					</div>
-					<div className="bg-gray-200 rounded-xl h-[2px]" />
-					<div className="flex flex-col items-center">
-						<img src={qrCode} alt="QR Code" className="w-full" />
-						<button
-							type="button"
-							className="text-3xl mb-4"
-							onClick={handleDownload}
-						>
-							<FiDownload />
-						</button>
-						<div className="flex w-full justify-evenly items-center">
-							<button
-								type="button"
-								onClick={() => {
-									handleCreatePassObject("apple");
-								}}
-								style={{
-									display: "inline-block",
-									width: "40%",
-								}}
+						</Text>
+						<Text color="white" truncate>
+							{email}
+						</Text>
+					</Flex>
+
+					<Box bg="white/40" h="1px" rounded="xl" />
+
+					<Flex direction="column" align="center" gap={5}>
+						<Image src={qrCode} alt="QR Code" w="full" />
+
+						<Flex w="full" justify="space-evenly" align="center">
+							<Button
+								p={0}
+								bg="transparent"
+								_hover={{ bg: "transparent" }}
+								onClick={() => handleCreatePassObject("apple")}
+								w="40%"
 							>
-								<img
+								<Image
 									src={AppleWalletBadge}
 									alt="Add to Apple Wallet"
-									style={{ width: "100%", height: "auto" }}
+									w="100%"
+									h="auto"
 								/>
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									handleCreatePassObject("google");
-								}}
-								style={{
-									display: "inline-block",
-									width: "45%",
-								}}
+							</Button>
+							<Button
+								p={0}
+								bg="transparent"
+								_hover={{ bg: "transparent" }}
+								onClick={() => handleCreatePassObject("google")}
+								w="45%"
 							>
-								<img src={GoogleWalletBadge} alt="Add to Google Wallet" />
-							</button>
-						</div>
-					</div>
+								<Image src={GoogleWalletBadge} alt="Add to Google Wallet" />
+							</Button>
+						</Flex>
+
+						<Box
+							w="full"
+							display="flex"
+							flexDirection="row"
+							justifyItems="center"
+							alignItems="center"
+						>
+							<Box bg="white/20" h="1px" w="full" rounded="xl" />
+							<Text color="white/20" px={10}>
+								OR
+							</Text>
+							<Box bg="white/20" h="1px" w="full" rounded="xl" />
+						</Box>
+
+						<Link bg="none" color="white" onClick={handleDownload}>
+							Download to your device
+						</Link>
+					</Flex>
+
 					{loading && (
-						<div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 flex justify-center items-center rounded-xl">
-							<img src={LoadingDots} alt="Loading..." />
-						</div>
+						<Flex
+							position="absolute"
+							top={0}
+							left={0}
+							w="full"
+							h="full"
+							bg="blackAlpha.300"
+							justify="center"
+							align="center"
+							rounded="xl"
+						>
+							<Image src={LoadingDots} alt="Loading..." />
+						</Flex>
 					)}
-				</div>
-			</div>
+				</Box>
+			</Flex>
 		</PageWrapper>
 	);
 };

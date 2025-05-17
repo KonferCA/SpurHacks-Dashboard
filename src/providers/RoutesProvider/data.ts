@@ -59,9 +59,9 @@ export const titles: Record<string, HeaderInfo> = {
 		subTitle: "All checkboxes are required.",
 	},
 	[paths.myTicket]: {
-		title: "Ticket",
+		title: "My Ticket",
 		subTitle:
-			"This ticket is required for registration at our SpurHacks sign-in desk.\nKeep this ticket safe - download or add it to your wallet for convenience!",
+			"This is your event ticket! Make sure to keep it somewhere safe—you’ll need it to check in, claim food, win prizes, and more.",
 	},
 	[paths.myTeam]: {
 		title: "My Team",
