@@ -1,11 +1,14 @@
 import { AppleWalletBadge, GoogleWalletBadge, LoadingDots } from "@/assets";
 import { PageWrapper } from "@/components";
+import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { logError } from "@/services/firebase/log";
+import { fetchTicket } from "@/services/firebase/ticket";
 import { OffwhiteLogo } from "@assets";
 import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
+import { useQuery } from "@tanstack/react-query";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
@@ -24,45 +27,35 @@ export const MyTicketPage = () => {
 		currentUser?.displayName?.split(" ")[1] ||
 		currentUser?.type ||
 		"Unknown";
-	const [qrCode, setQRCode] = useState<string>(LoadingDots);
 	const [loading, setLoading] = useState<boolean>(false);
-
-	useEffect(() => {
-		const qrCodeUrl = window.localStorage.getItem("qrCodeUrl");
-		if (qrCodeUrl) {
-			setQRCode(qrCodeUrl);
-			window.localStorage.setItem("qrCodeUrl", qrCodeUrl);
-		} else if (currentUser) {
-			fetchOrGenerateTicket(currentUser.uid).then((qrCodeUrl) => {
-				setQRCode(qrCodeUrl);
-				window.localStorage.setItem("qrCodeUrl", qrCodeUrl);
-			});
-		}
-	}, [currentUser]);
+	const { data: qrCode, isLoading: loadingQRCode } = useQuery({
+		queryKey: ["ticket-qrcode", currentUser],
+		queryFn: async () => {
+			if (!currentUser) return;
+			try {
+				const storedQRCode = window.localStorage.getItem("spurhacks.qrcode");
+				if (storedQRCode) return storedQRCode;
+				return await fetchTicket(currentUser.uid);
+			} catch (error) {
+				console.error(error);
+				toaster.error({
+					title: "Failed to fetch QR Code",
+					description:
+						"There seems to be a problem fetching your ticket QR code. Please try again later. If problem persists, please reach out to us in our Discord general channel.",
+				});
+			}
+		},
+		initialData: "",
+		enabled: !!currentUser,
+	});
 
 	useEffect(() => {
 		window.localStorage.setItem(paths.myTicket, "visited");
 	}, []);
 
-	const fetchOrGenerateTicket = async (userId: string): Promise<string> => {
-		const fetchTicket = httpsCallable<
-			{ userId: string },
-			{ qrCodeUrl?: string }
-		>(functions, "fetchOrGenerateTicket");
-		try {
-			const result = await fetchTicket({
-				userId: userId,
-			});
-			return result.data.qrCodeUrl ?? LoadingDots;
-		} catch (error) {
-			console.error("Error fetching or generating ticket:", error);
-			return LoadingDots;
-		}
-	};
-
 	const handleDownload = () => {
 		const link = document.createElement("a");
-		link.href = qrCode;
+		link.href = qrCode ?? "";
 		link.download = "qrcode.png";
 		link.click();
 	};
@@ -137,7 +130,11 @@ export const MyTicketPage = () => {
 					<Box bg="white/40" h="1px" rounded="xl" />
 
 					<Flex direction="column" align="center" gap={5}>
-						<Image src={qrCode} alt="QR Code" w="full" />
+						<Image
+							src={loadingQRCode || !qrCode ? LoadingDots : qrCode}
+							alt="QR Code"
+							w="full"
+						/>
 
 						<Flex w="full" justify="space-evenly" align="center">
 							<Button

@@ -10,6 +10,22 @@ import type {
 import { addDoc, collection } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 
+const fetchOrGenerateTicket = httpsCallable<
+	{ userId: string },
+	{ qrCodeUrl?: string }
+>(functions, "fetchOrGenerateTicket");
+
+export async function fetchTicket(userId: string) {
+	const storedQRCode = window.localStorage.getItem("spurhacks.qrcode");
+	if (storedQRCode) return storedQRCode;
+	const result = await fetchOrGenerateTicket({ userId });
+	if (result.data.qrCodeUrl) {
+		window.localStorage.setItem("spurhacks.qrcode", result.data.qrCodeUrl);
+		return result.data.qrCodeUrl;
+	}
+	return;
+}
+
 export async function getTicketData(id: string) {
 	try {
 		const fn = httpsCallable<unknown, CloudFunctionResponse<TicketData>>(

@@ -214,6 +214,9 @@ export const AuthProvider = ({ children }: { children?: React.ReactNode }) => {
 				// if no user, make sure to update state in the correct order
 				setCurrentUser(null);
 
+				// Clear cached content
+				window.localStorage.removeItem("spurhacks.qrcode");
+
 				// Ensure we always wait a minimum time for better UX
 				setTimeout(() => {
 					setIsLoading(false);
