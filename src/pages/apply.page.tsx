@@ -1033,7 +1033,7 @@ export const ApplyPage = () => {
 													<ChakraLink
 														color="skyblue"
 														textDecor="underline"
-														href="#"
+														href="/code-of-conduct.pdf"
 														target="_blank"
 														rel="noopener noreferrer"
 													>
