@@ -24,6 +24,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+const importantInfo = [
+	{ day: "FRI", time: "7:00PM", label: "Opening Ceremony" },
+	{ day: "SUN", time: "9:00AM", label: "Projects Due" },
+	{ day: "SUN", time: "5:00PM", label: "Closing Ceremony" },
+];
+
 const HomePage = () => {
 	const { deadlines, current: currentApplication } = useApplications();
 	const navigate = useNavigate();
@@ -245,11 +251,7 @@ const HomePage = () => {
 							</Card.Header>
 							<Card.Body>
 								<Flex direction="column" gap={4}>
-									{[
-										{ day: "FRI", time: "7:00PM", label: "Opening Ceremony" },
-										{ day: "SUN", time: "9:00AM", label: "Projects Due" },
-										{ day: "SUN", time: "5:00PM", label: "Closing Ceremony" },
-									].map(({ day, time, label }) => (
+									{importantInfo.map(({ day, time, label }) => (
 										<Flex key={label} align="center" gap={6}>
 											<Flex
 												px={4}
