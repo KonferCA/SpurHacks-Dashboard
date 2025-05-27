@@ -1,166 +1,138 @@
-import { Modal, PageWrapper } from "@/components";
-import { type PerksData, perksData } from "@/data/perks";
-import { paths } from "@/providers/RoutesProvider/data";
-import { useEffect, useRef, useState } from "react";
+import { PageWrapper } from "@/components";
+import { PerksMLH } from "@/assets";
+import {
+	Button,
+	Box,
+	Flex,
+	Grid,
+	Heading,
+	Image,
+	Text,
+	Icon,
+	Link,
+} from "@chakra-ui/react";
+import { ArrowSquareOut } from "@phosphor-icons/react";
+import { useState } from "react";
 
-const PerksPage = () => {
-	const foodItemsRef = useRef([]);
-	const otherItemsRef = useRef([]);
-	const featuredItemsRef = useRef<(HTMLButtonElement | null)[]>([]);
-	const [selectedPerk, setSelectedPerk] = useState<PerksData | null>(null);
-	const [isPopup, setIsPopup] = useState(false);
-	useEffect(() => {
-		window.localStorage.setItem(paths.perks, "visited");
-	}, []);
+interface SponsorProps {
+	imgSrc: string;
+	name: string;
+	description?: string;
+	sponsorUrl?: string;
+}
 
-	useEffect(() => {
-		const fadeInItems = (
-			items: (HTMLButtonElement | null)[],
-			delay: number,
-		) => {
-			items.forEach((item, index) => {
-				if (item) {
-					setTimeout(
-						() => {
-							item.classList.add("opacity-100");
-						},
-						delay + 75 * index,
-					);
-				}
-			});
-		};
-
-		let currentDelay = 0;
-
-		fadeInItems(featuredItemsRef.current, currentDelay);
-		currentDelay += featuredItemsRef.current.length * 75;
-
-		fadeInItems(foodItemsRef.current, currentDelay);
-		currentDelay += foodItemsRef.current.length * 75;
-
-		fadeInItems(otherItemsRef.current, currentDelay);
-	}, []);
-
-	const openPopup = (perk: PerksData) => {
-		setSelectedPerk(perk);
-		setIsPopup(true);
-	};
-
-	const closePopup = () => {
-		setIsPopup(false);
-	};
-	const renderPerk = (
-		perk: PerksData,
-		ref: React.MutableRefObject<(HTMLButtonElement | null)[]>,
-	) => {
-		const shortenDescription = (description: string, maxLength: number) => {
-			if (description.length <= maxLength) {
-				return description;
-			}
-			return `${description.slice(0, maxLength)}...`;
-		};
-
-		const isFreeBubbleTea = perk.title.includes("Fantuan");
-		const perkStyle = isFreeBubbleTea
-			? {
-					animation: "pulse 2s infinite",
-					boxShadow: "0 0 0 0 rgba(255, 204, 0, 0.7)",
-					borderColor: "#0FA3B1",
-					borderWidth: "2px",
-					borderStyle: "solid",
-					background: "#0FA3B1",
-				}
-			: {};
-
-		return (
-			<button
-				type="button"
-				ref={(el) => {
-					ref.current[ref.current.length] = el;
-				}}
-				className="bg-white shadow-md p-4 rounded-xl flex items-center mb-4 transition duration-300 ease-in-out transform hover:scale-105 cursor-pointer"
-				onClick={() => openPopup(perk)}
-				style={{ flexBasis: "33%", marginBottom: "16px", ...perkStyle }}
-			>
-				{isFreeBubbleTea && (
-					<div className="absolute top-2 left-2 bg-[#0FA3B1] text-white py-1 px-3 rounded-full text-xs font-bold">
-						FREE Bubble Tea!
-					</div>
-				)}
-				<div className="w-40 h-24 mr-4 flex items-center justify-center">
-					<img
-						src={perk.image}
-						alt={perk.alt}
-						className="max-w-full max-h-full object-contain"
-					/>
-				</div>
-				<div className="flex-grow">
-					<h3 className="font-bold mt-2 cursor-default">{perk.title}</h3>
-					<p className="text-gray-500 mt-1 cursor-default">
-						{shortenDescription(perk.description, 80)}
-					</p>
-				</div>
-			</button>
-		);
-	};
+function Sponsor({ name, imgSrc, description, sponsorUrl }: SponsorProps) {
+	const [isHovered, setIsHovered] = useState(false);
 
 	return (
-		<PageWrapper>
-			<div>
-				<div className="mb-8">
-					<h2 className="text-xl font-bold mb-4">Featured</h2>
-					<div className="flex flex-wrap justify-start gap-x-32 gap-y-2">
-						{perksData.featured.map((perk) =>
-							renderPerk(perk, featuredItemsRef),
-						)}
-					</div>
-				</div>
+		<Box
+			h={{ base: "375px" }}
+			borderStyle="solid"
+			borderWidth="1px"
+			overflowY="hidden"
+			position="relative"
+			onMouseEnter={() => setIsHovered(true)}
+			onMouseLeave={() => setIsHovered(false)}
+			style={{ perspective: "1000px" }}
+		>
+			<Box
+				position="relative"
+				w="full"
+				h="full"
+				style={{
+					transformStyle: "preserve-3d",
+					transition: "transform 0.6s",
+					transform: isHovered ? "rotateY(180deg)" : "rotateY(0deg)",
+				}}
+			>
+				{/* Front side - Image */}
+				<Flex
+					justifyContent="center"
+					alignItems="center"
+					h="full"
+					w="full"
+					position="absolute"
+					style={{
+						backfaceVisibility: "hidden",
+					}}
+				>
+					<Image src={imgSrc} alt={name} />
+				</Flex>
 
-				<div className="flex gap-32">
-					<div className="w-1/3">
-						<h2 className="text-xl font-bold mb-4">Food</h2>
-						{perksData.food.map((perk) => renderPerk(perk, foodItemsRef))}
-					</div>
-					<div className="w-1/3">
-						<h2 className="text-xl font-bold mb-4">Other</h2>
-						{perksData.other.map((perk) => renderPerk(perk, otherItemsRef))}
-					</div>
-				</div>
+				{/* Back side - Description */}
+				<Flex
+					h="full"
+					w="full"
+					position="absolute"
+					bg="bg.hover"
+					p="3.5rem"
+					style={{
+						backfaceVisibility: "hidden",
+						transform: "rotateY(180deg)",
+					}}
+					flexDirection="column"
+					justifyContent="space-between"
+				>
+					<Heading textAlign="center">{name}</Heading>
+					<Text textAlign="center">{description}</Text>
+					<Button
+						as={Link}
+						href={sponsorUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+						textTransform="uppercase"
+						rounded="full"
+					>
+						visit website
+						<Icon>
+							<ArrowSquareOut />
+						</Icon>
+					</Button>
+				</Flex>
+			</Box>
+		</Box>
+	);
+}
 
-				<Modal title="" subTitle="" open={isPopup} onClose={closePopup}>
-					{selectedPerk && (
-						<div className="p-2">
-							<img
-								src={selectedPerk.image}
-								alt={selectedPerk.alt}
-								className="w-28 mb-4 object-contain"
-							/>
-							<p className="text-gray-800 mb-6">{selectedPerk.description}</p>
-							{selectedPerk.link && (
-								<a
-									href={selectedPerk.link}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									{selectedPerk.buttonTitle || "Learn More"}
-								</a>
-							)}
-							<div className="flex gap-4">
-								{selectedPerk.actions?.map((action, idx) => (
-									<a
-										key={idx}
-										href={action.link}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										{action.title}
-									</a>
-								))}
-							</div>
-						</div>
-					)}
-				</Modal>
-			</div>
+const sponsors = [
+	{
+		imgSrc: PerksMLH,
+		name: "MLH 1",
+		description:
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat fermentum est et volutpat. Proin ac egestas risus. Phasellus accumsan consequat finibus. Curabitur a mattis.",
+		sponsorUrl: "https://mlh.io/",
+	},
+	{
+		imgSrc: PerksMLH,
+		name: "MLH 2",
+		description:
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat fermentum est et volutpat. Proin ac egestas risus. Phasellus accumsan consequat finibus. Curabitur a mattis.",
+		sponsorUrl: "https://mlh.io/",
+	},
+	{
+		imgSrc: PerksMLH,
+		name: "MLH 3",
+		description:
+			"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus placerat fermentum est et volutpat. Proin ac egestas risus. Phasellus accumsan consequat finibus. Curabitur a mattis.",
+		sponsorUrl: "https://mlh.io/",
+	},
+];
+
+const PerksPage = () => {
+	return (
+		<PageWrapper noPadding>
+			<Grid
+				templateColumns={{
+					base: "1fr",
+					sm: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))",
+				}}
+			>
+				{sponsors.map((s) => (
+					<Box key={s.name} w="full">
+						<Sponsor {...s} />
+					</Box>
+				))}
+			</Grid>
 		</PageWrapper>
 	);
 };
