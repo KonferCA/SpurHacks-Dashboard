@@ -24,6 +24,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
+const importantInfo = [
+	{ day: "FRI", time: "7:00PM", label: "Opening Ceremony" },
+	{ day: "SUN", time: "9:00AM", label: "Projects Due" },
+	{ day: "SUN", time: "5:00PM", label: "Closing Ceremony" },
+];
+
 const HomePage = () => {
 	const { deadlines, current: currentApplication } = useApplications();
 	const navigate = useNavigate();
@@ -232,6 +238,41 @@ const HomePage = () => {
 									apply to join
 								</ChakraLink>
 							</Card.Footer>
+						</Card.Root>
+					)}
+					{currentApplication?.rsvp && (
+						<Card.Root
+							maxWidth={{ base: "none", xl: "600px" }}
+							width={{ base: "full" }}
+							rounded="4xl"
+						>
+							<Card.Header>
+								<Card.Title>Important Info</Card.Title>
+							</Card.Header>
+							<Card.Body>
+								<Flex direction="column" gap={4}>
+									{importantInfo.map(({ day, time, label }) => (
+										<Flex key={label} align="center" gap={6}>
+											<Flex
+												px={4}
+												py={2}
+												borderWidth={1}
+												borderColor="#FFA75F"
+												rounded="full"
+												fontSize="sm"
+												justify="space-between"
+												w="130px"
+											>
+												<Text>{day}</Text>
+												<Text>{time}</Text>
+											</Flex>
+											<Text color="gray.200" fontSize="sm">
+												{label}
+											</Text>
+										</Flex>
+									))}
+								</Flex>
+							</Card.Body>
 						</Card.Root>
 					)}
 				</Flex>
