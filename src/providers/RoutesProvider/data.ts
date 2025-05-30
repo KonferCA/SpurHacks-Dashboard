@@ -77,6 +77,7 @@ export const titles: Record<string, HeaderInfo> = {
 	},
 	[paths.perks]: {
 		title: "Perks",
-		subTitle: "Explore the amazing perks available at SpurHacks!",
+		subTitle:
+			"Shoutout to our sponsors! Here’s how they’re contributing to SpurHacks 2025.",
 	},
 };

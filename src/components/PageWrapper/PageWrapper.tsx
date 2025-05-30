@@ -4,7 +4,11 @@ import { Box, Link as ChakraLink, Heading, Text } from "@chakra-ui/react";
 import { Navbar } from "@components";
 import type { FC } from "react";
 
-export const PageWrapper: FC<ComponentProps> = ({ children }) => {
+interface PageWrapperProps extends ComponentProps {
+	noPadding?: boolean;
+}
+
+export const PageWrapper: FC<PageWrapperProps> = ({ children, noPadding }) => {
 	let headerInfo = useHeaderInfo() ?? {
 		title: "Wow!",
 		subTitle: "How did you end up here?",
@@ -53,7 +57,7 @@ export const PageWrapper: FC<ComponentProps> = ({ children }) => {
 						support channel.
 					</Text>
 				</Box>
-				<Box padding="1.5rem">{children}</Box>
+				<Box padding={!noPadding ? "1.5rem" : ""}>{children}</Box>
 			</Box>
 		</Box>
 	);
