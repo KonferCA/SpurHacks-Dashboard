@@ -9,8 +9,9 @@ import {
 	format12HourTime,
 } from "@/components/Schedule/Schedule";
 import { Box, Text, VStack } from "@chakra-ui/react";
-import { schedule } from '@/data/events';
 import { useState } from "react";
+
+import { schedule } from "@/data/events";
 
 interface ScheduleEntryProps {
 	eventId: string;
@@ -38,14 +39,14 @@ function ScheduleEntry(
 			isExpanded={props.isExpanded}
 			onExpand={props.onExpand}
 		>
-			<VStack align="start" h="100%">
-				<Text fontWeight="bold" fontSize="sm">
+			<VStack align="start" h="100%" justify="start">
+				<Text fontWeight="bold" fontSize="sm" lineHeight="1.2">
 					{props.title}
 				</Text>
-				<Text fontSize="xs" opacity={0.8}>
+				<Text fontSize="xs" opacity={0.9} lineHeight="1.1">
 					{props.location}
 				</Text>
-				<Text fontSize="xs" opacity={0.7} mt="auto">
+				<Text fontSize="xs" opacity={0.8} lineHeight="1.1" mt={1}>
 					{format12HourTime(props.startTime)} -{" "}
 					{format12HourTime(props.endTime)}
 				</Text>
@@ -110,6 +111,7 @@ export const SchedulePage: React.FC = () => {
 		acc.set(dayKey, dayMapEntry);
 		dayMapEntry.entries.push(entry);
 		dayMapEntry.events.push(event);
+
 		return acc;
 	}, new Map<
 		string,
@@ -127,52 +129,54 @@ export const SchedulePage: React.FC = () => {
 	);
 
 	return (
-		<Box bg="gray.900" minH="100vh" color="white">
+		<Box bg="bg" minH="100vh" color="white">
 			<PageWrapper>
-				<VStack align="stretch" h="100%">
-					<ScheduleRoot defaultValue={scheduleEntries[0]?.[0]}>
-						<ScheduleTabList>
-							{scheduleEntries.map(([dayKey, { dayDate }]) => (
-								<ScheduleTabTrigger key={dayKey} value={dayKey}>
-									{dayDate.toLocaleDateString("en-US", {
-										weekday: "long",
-									})}
-								</ScheduleTabTrigger>
-							))}
-						</ScheduleTabList>
+				<VStack align="stretch">
+					<Box flex="1" minH="650px">
+						<ScheduleRoot defaultValue={scheduleEntries[0]?.[0]}>
+							<ScheduleTabList>
+								{scheduleEntries.map(([dayKey, { dayDate }]) => (
+									<ScheduleTabTrigger key={dayKey} value={dayKey}>
+										{dayDate.toLocaleDateString("en-US", {
+											weekday: "long",
+										})}
+									</ScheduleTabTrigger>
+								))}
+							</ScheduleTabList>
 
-						{scheduleEntries.map(
-							([dayKey, { dayDate, entries, timeRange, timelineWidth }]) => (
-								<ScheduleTabContent key={dayKey} value={dayKey}>
-									<ScheduleGrid
-										dayDate={dayDate}
-										timeRange={timeRange}
-										expandedEvent={expandedEvent}
-										onEventExpand={setExpandedEvent}
-									>
-										{entries.map((entry, idx) => (
-											<ScheduleEntry
-												key={entry.eventId}
-												scrollIntoViewOnMount={idx === 0}
-												eventId={entry.eventId}
-												startTime={entry.startTime}
-												endTime={entry.endTime}
-												color={entry.color}
-												title={entry.title}
-												location={entry.location}
-												description={entry.description}
-												row={entry.row}
-												timeRange={timeRange}
-												timelineWidth={timelineWidth}
-												isExpanded={expandedEvent === entry.eventId}
-												onExpand={setExpandedEvent}
-											/>
-										))}
-									</ScheduleGrid>
-								</ScheduleTabContent>
-							),
-						)}
-					</ScheduleRoot>
+							{scheduleEntries.map(
+								([dayKey, { dayDate, entries, timeRange, timelineWidth }]) => (
+									<ScheduleTabContent key={dayKey} value={dayKey}>
+										<ScheduleGrid
+											dayDate={dayDate}
+											timeRange={timeRange}
+											expandedEvent={expandedEvent}
+											onEventExpand={setExpandedEvent}
+										>
+											{entries.map((entry) => (
+												<ScheduleEntry
+													key={entry.eventId}
+													scrollIntoViewOnMount={false}
+													eventId={entry.eventId}
+													startTime={entry.startTime}
+													endTime={entry.endTime}
+													color={entry.color}
+													title={entry.title}
+													location={entry.location}
+													description={entry.description}
+													row={entry.row}
+													timeRange={timeRange}
+													timelineWidth={timelineWidth}
+													isExpanded={expandedEvent === entry.eventId}
+													onExpand={setExpandedEvent}
+												/>
+											))}
+										</ScheduleGrid>
+									</ScheduleTabContent>
+								),
+							)}
+						</ScheduleRoot>
+					</Box>
 				</VStack>
 			</PageWrapper>
 		</Box>
