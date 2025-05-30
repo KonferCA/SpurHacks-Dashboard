@@ -4,7 +4,6 @@ import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
-import { getTypeforms } from "@/services/firebase/misc";
 import {
 	Badge,
 	Box,
@@ -20,34 +19,23 @@ import {
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+
+const importantInfo = [
+	{ day: "FRI", time: "7:00PM", label: "Opening Ceremony" },
+	{ day: "SUN", time: "9:00AM", label: "Projects Due" },
+	{ day: "SUN", time: "5:00PM", label: "Closing Ceremony" },
+];
+
+const cardStyles = {
+	maxWidth: { base: "none", xl: "450px" },
+	width: "full",
+	rounded: "4xl",
+};
 
 const HomePage = () => {
 	const { deadlines, current: currentApplication } = useApplications();
 	const navigate = useNavigate();
-
-	const { data: typeforms, isLoading: isLoadingTypeforms } = useQuery({
-		queryKey: ["typeforms"],
-		queryFn: getTypeforms,
-	});
-
-	const cardStyles = useMemo(() => {
-		if (typeforms && typeforms.mjvURL) {
-			return {
-				maxWidth: { base: "none", xl: "450px" },
-				width: "full",
-				rounded: "4xl",
-			};
-		}
-
-		return {
-			maxWidth: { base: "none", md: "300px" },
-			width: "full",
-			rounded: "4xl",
-		};
-	}, [typeforms]);
 
 	return (
 		<PageWrapper>
@@ -196,82 +184,152 @@ const HomePage = () => {
 						</Card.Root>
 					)}
 
-					{!isLoadingTypeforms && typeforms?.mjvURL && (
+					<Card.Root
+						maxWidth={{ base: "none", xl: "600px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>Join us as a Mentor, Judge, or Volunteer!</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem">
+								Play a key role in helping the event run smoothly. Whether
+								you’re sharing your expertise or lending a hand, your
+								contributions make a huge difference!
+							</Text>
+						</Card.Body>
+						<Card.Footer>
+							<ChakraLink
+								href="https://talent.spurhacks.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								marginLeft="auto"
+								rounded="full"
+								bg="brand.primary"
+								color="brand.contrast"
+								py="2.5"
+								px="5"
+								textTransform="uppercase"
+								transition="colors"
+								_hover={{ textDecor: "none", bg: "brand.primary/90" }}
+							>
+								apply to join
+							</ChakraLink>
+						</Card.Footer>
+					</Card.Root>
+
+					{currentApplication?.rsvp && (
 						<Card.Root
 							maxWidth={{ base: "none", xl: "600px" }}
-							width="full"
+							width={{ base: "full" }}
 							rounded="4xl"
 						>
 							<Card.Header>
-								<Card.Title>
-									Join us as a Mentor, Judge, or Volunteer!
-								</Card.Title>
+								<Card.Title>Important Info</Card.Title>
 							</Card.Header>
 							<Card.Body>
-								<Text color="fg.muted" mb="1rem">
-									Play a key role in helping the event run smoothly. Whether
-									you’re sharing your expertise or lending a hand, your
-									contributions make a huge difference!
-								</Text>
+								<Flex direction="column" gap={4}>
+									{importantInfo.map(({ day, time, label }) => (
+										<Flex key={label} align="center" gap={6}>
+											<Flex
+												px={4}
+												py={2}
+												borderWidth={1}
+												borderColor="#FFA75F"
+												rounded="full"
+												fontSize="sm"
+												justify="space-between"
+												w="130px"
+											>
+												<Text>{day}</Text>
+												<Text>{time}</Text>
+											</Flex>
+											<Text color="gray.200" fontSize="sm">
+												{label}
+											</Text>
+										</Flex>
+									))}
+								</Flex>
 							</Card.Body>
-							<Card.Footer>
-								<ChakraLink
-									href={typeforms.mjvURL}
-									target="_blank"
-									rel="noopener noreferrer"
-									marginLeft="auto"
-									rounded="full"
-									bg="brand.primary"
-									color="brand.contrast"
-									py="2.5"
-									px="5"
-									textTransform="uppercase"
-									transition="colors"
-									_hover={{ textDecor: "none", bg: "brand.primary/90" }}
-								>
-									apply to join
-								</ChakraLink>
-							</Card.Footer>
 						</Card.Root>
 					)}
 				</Flex>
-				<Card.Root {...cardStyles}>
-					<Card.Header>
-						<Heading>Stay Connected</Heading>
-					</Card.Header>
-					<Card.Body>
-						<Flex alignItems="center" gap="1rem">
-							<Link
-								href="https://www.instagram.com/spurhacks/"
+
+				<Flex gap="1.5rem" flexWrap={{ base: "wrap", xl: "nowrap" }}>
+					<Card.Root
+						maxWidth={{ base: "none", xl: "600px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>Traveling to SpurHacks? Let us help!</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem">
+								We appreciate your commitment towards attending SpurHacks. If
+								you need travel accomodations, reimbursements, or other
+								inquiries, let us know!
+							</Text>
+						</Card.Body>
+						<Card.Footer>
+							<ChakraLink
+								href="https://travel.spurhacks.com"
 								target="_blank"
 								rel="noopener noreferrer"
+								marginLeft="auto"
+								rounded="full"
+								bg="brand.primary"
+								color="brand.contrast"
+								py="2.5"
+								px="5"
+								textTransform="uppercase"
+								transition="colors"
+								_hover={{ textDecor: "none", bg: "brand.primary/90" }}
 							>
-								<Image src={InstagramLogo} width="1.5rem" height="1.5rem" />
-							</Link>
-							<Link
-								href="https://www.linkedin.com/company/spurhacks"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<Image src={LinkedinLogo} width="1.5rem" height="1.5rem" />
-							</Link>
-							<Link
-								href="https://www.tiktok.com/@spur_hacks"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<Image src={TiktokLogo} width="1.5rem" height="1.5rem" />
-							</Link>
-							<Link
-								href="https://discord.gg/NpnSUrZJQy"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
-							</Link>
-						</Flex>
-					</Card.Body>
-				</Card.Root>
+								submit application
+							</ChakraLink>
+						</Card.Footer>
+					</Card.Root>
+
+					<Card.Root {...cardStyles}>
+						<Card.Header>
+							<Heading>Stay Connected</Heading>
+						</Card.Header>
+						<Card.Body>
+							<Flex alignItems="center" gap="1rem">
+								<Link
+									href="https://www.instagram.com/spurhacks/"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Image src={InstagramLogo} width="1.5rem" height="1.5rem" />
+								</Link>
+								<Link
+									href="https://www.linkedin.com/company/spurhacks"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Image src={LinkedinLogo} width="1.5rem" height="1.5rem" />
+								</Link>
+								<Link
+									href="https://www.tiktok.com/@spur_hacks"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Image src={TiktokLogo} width="1.5rem" height="1.5rem" />
+								</Link>
+								<Link
+									href="https://discord.gg/NpnSUrZJQy"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
+								</Link>
+							</Flex>
+						</Card.Body>
+					</Card.Root>
+				</Flex>
 			</Box>
 		</PageWrapper>
 	);
