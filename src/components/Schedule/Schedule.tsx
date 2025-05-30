@@ -16,7 +16,7 @@ export function ScheduleRoot(props: ScheduleRootProps) {
 			flex="1"
 			minH="0"
 			lazyMount
-			bg="gray.900"
+			bg="bg"
 			{...props}
 		/>
 	);
@@ -46,7 +46,7 @@ export function ScheduleTabTrigger(props: ScheduleTabTriggerProps) {
 			flex="1"
 			display="flex"
 			justifyContent="center"
-			color="gray.400"
+			color="offwhite.primary"
 			fontWeight="medium"
 			fontSize="sm"
 			textTransform="uppercase"
@@ -77,7 +77,7 @@ export function ScheduleTabContent(props: ScheduleContentProps) {
 			flexDirection="column"
 			flex="1"
 			minH="0"
-			bg="gray.900"
+			bg="bg"
 			{...props}
 		/>
 	);
@@ -108,8 +108,20 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 		});
 	}
 
+	// row spacing: 110px, event height: 100px, starting position: 20px
+	// row 4 (bottom) = 20px + (3 * 110px) + 100px = 450px
+	// additional padding = 480px total content height
+	const contentHeight = 480;
+	const totalGridHeight = contentHeight + 60;
+
 	return (
-		<Box w="100%" minH="0" flex="1" bg="gray.900" position="relative">
+		<Box
+			w="100%"
+			flex="1"
+			bg="bg"
+			position="relative"
+			h={`${totalGridHeight}px`}
+		>
 			<Box position="relative" w="100%" h="100%">
 				<Box
 					position="absolute"
@@ -118,7 +130,7 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 					w="60px"
 					h="100%"
 					bgGradient="linear(to-r, gray.900, transparent)"
-					zIndex={20}
+					zIndex={30}
 					pointerEvents="none"
 				/>
 
@@ -129,7 +141,7 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 					w="60px"
 					h="100%"
 					bgGradient="linear(to-l, gray.900, transparent)"
-					zIndex={20}
+					zIndex={30}
 					pointerEvents="none"
 				/>
 
@@ -140,6 +152,7 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 					css={{
 						"&::-webkit-scrollbar": {
 							height: "8px",
+							width: "8px",
 						},
 						"&::-webkit-scrollbar-track": {
 							background: "rgba(0,0,0,0.1)",
@@ -156,10 +169,11 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 					<Box
 						position="sticky"
 						top="0"
-						zIndex={10}
-						bg="gray.900"
+						zIndex={40}
+						bg="bg"
 						borderBottom="1px solid"
 						borderColor="gray.700"
+						boxShadow="0 2px 8px rgba(0,0,0,0.3)"
 					>
 						<Box
 							position="relative"
@@ -188,24 +202,26 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 						</Box>
 					</Box>
 
-					<Box position="relative" minH="400px">
+					<Box position="relative" h={`${contentHeight}px`}>
 						<Box
 							minW={`${timelineWidth}px`}
 							position="relative"
 							px={4}
-							py={6}
+							pt={4}
+							pb={4}
 							h="100%"
 						>
 							{timeSlots.map((_, i) => (
 								<Box
-									key={i}
+									key={`vertical-${i}`}
 									position="absolute"
 									left={`${16 + (i / totalHours) * (timelineWidth - 32)}px`}
 									top="0"
-									bottom="0"
 									w="1px"
 									bg="gray.800"
 									opacity={0.3}
+									h="100%"
+									zIndex={1}
 								/>
 							))}
 
@@ -213,11 +229,26 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 								position="absolute"
 								left={`${timelineWidth - 16}px`}
 								top="0"
-								bottom="0"
 								w="1px"
 								bg="gray.800"
 								opacity={0.3}
+								h="100%"
+								zIndex={1}
 							/>
+
+							{Array.from({ length: 5 }, (_, i) => (
+								<Box
+									key={`horizontal-${i}`}
+									position="absolute"
+									left="0"
+									top={`${i * 110 + 16}px`}
+									h="1px"
+									bg="gray.800"
+									opacity={0.2}
+									w="100%"
+									zIndex={1}
+								/>
+							))}
 
 							<ScheduleCurrentTimeLine
 								dayDate={props.dayDate}
@@ -233,12 +264,14 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 									right="0"
 									bottom="0"
 									bg="blackAlpha.600"
-									zIndex={5}
+									zIndex={25}
 									onClick={() => onEventExpand(null)}
 								/>
 							)}
 
-							{props.children}
+							<Box position="relative" zIndex={10}>
+								{props.children}
+							</Box>
 						</Box>
 					</Box>
 				</Box>
@@ -290,19 +323,35 @@ function ScheduleCurrentTimeLine({
 	}, [dayDate, timeRange]);
 
 	if (!shouldShow) {
-        return null;
-    }
+		return null;
+	}
 
 	return (
-		<Box
-			position="absolute"
-			left={`${16 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
-			top="0"
-			bottom="0"
-			w="2px"
-			bg="red.500"
-			zIndex={5}
-		/>
+		<>
+			<Box
+				position="absolute"
+				left={`${16 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
+				top="-40px"
+				w="2px"
+				bg="white"
+				zIndex={50}
+				h="calc(100% + 40px)"
+				opacity={0.9}
+				boxShadow="0 0 4px rgba(255,255,255,0.5)"
+			/>
+
+			<Box
+				position="absolute"
+				left={`${14 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
+				top="-42px"
+				w="6px"
+				h="6px"
+				bg="white"
+				borderRadius="50%"
+				zIndex={51}
+				boxShadow="0 0 8px rgba(255,255,255,0.8)"
+			/>
+		</>
 	);
 }
 
@@ -374,13 +423,14 @@ export function ScheduleGridItem({
 	const leftPosition = 16 + startOffset * (timelineWidth - 32);
 	const normalWidth = duration * (timelineWidth - 32);
 
-	const threeHourWidth = (3 / totalHours) * (timelineWidth - 32);
+	const minWidth = 180;
+	const maxWidth = 250;
 
 	const displayWidth = isExpanded
-		? Math.min(threeHourWidth, Math.max(normalWidth, 300))
-		: normalWidth;
+		? Math.min(maxWidth * 1.5, Math.max(normalWidth, minWidth * 1.2))
+		: Math.min(maxWidth, Math.max(normalWidth, minWidth));
 
-	const displayHeight = isExpanded ? 200 : 80;
+	const displayHeight = isExpanded ? 160 : 100;
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -395,114 +445,93 @@ export function ScheduleGridItem({
 		}
 	};
 
-	const timelineConnectionX = leftPosition;
-
 	return (
-		<>
-			{isExpanded && (
-				<Box
-					position="absolute"
-					left={`${timelineConnectionX}px`}
-					top="-40px"
-					w="2px"
-					h={`${(row - 1) * 100 + 60}px`}
-					bg={colors.border}
-					zIndex={30}
-					opacity={0.8}
-					transition="opacity 0.3s ease"
-					pointerEvents="none"
-				/>
-			)}
-
-			<Box
-				ref={itemRef}
-				position="absolute"
-				left={`${leftPosition}px`}
-				width={`${displayWidth}px`}
-				top={`${(row - 1) * 100 + 20}px`}
-				height={`${displayHeight}px`}
-				bg={colors.bg}
-				borderRadius="lg"
-				p={isExpanded ? 4 : 3}
-				cursor="pointer"
-				onClick={handleClick}
-				color="white"
-				boxShadow={isExpanded ? "2xl" : "lg"}
-				border="2px solid"
-				borderColor={colors.border}
-				transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-				transformOrigin="bottom left"
-				transform={isExpanded ? "scale(1.02)" : "scale(1)"}
-				zIndex={isExpanded ? 35 : 20}
-				overflow="hidden"
-				_hover={{
-					transform: isExpanded
-						? "scale(1.02)"
-						: "translateY(-2px) scale(1.02)",
-					boxShadow: isExpanded ? "2xl" : "xl",
-				}}
-			>
-				{isExpanded ? (
-					<VStack align="start" h="100%">
-						<VStack align="start" flexShrink={0}>
-							<Text fontWeight="bold" fontSize="md">
-								{title}
-							</Text>
-							<Text fontSize="sm" color="gray.200">
-								{location}
-							</Text>
-							<Text fontSize="sm" color="gray.300">
-								{format12HourTime(startTime)} - {format12HourTime(endTime)}
-							</Text>
-						</VStack>
-
-						{description && (
-							<Box
-								flex="1"
-								overflow="auto"
-								w="100%"
-								mt={1}
-								css={{
-									"&::-webkit-scrollbar": {
-										width: "4px",
-									},
-									"&::-webkit-scrollbar-track": {
-										background: "rgba(0,0,0,0.1)",
-									},
-									"&::-webkit-scrollbar-thumb": {
-										background: "rgba(255,255,255,0.3)",
-										borderRadius: "2px",
-									},
-								}}
-							>
-								<Text fontSize="sm">{description}</Text>
-							</Box>
-						)}
-
-						<HStack flexShrink={0} mt={1}>
-							<Button
-								size="sm"
-								bg="orange.500"
-								color="white"
-								borderRadius="full"
-								px={6}
-								fontSize="xs"
-								h="28px"
-								_hover={{ bg: "orange.600" }}
-								onClick={(e) => {
-									e.stopPropagation();
-									console.log("RSVP clicked for", title);
-								}}
-							>
-								RSVP
-							</Button>
-						</HStack>
+		<Box
+			ref={itemRef}
+			position="absolute"
+			left={`${leftPosition}px`}
+			width={`${displayWidth}px`}
+			top={`${(row - 1) * 110 + 16}px`}
+			height={`${displayHeight}px`}
+			bg={colors.bg}
+			borderRadius="lg"
+			p={isExpanded ? 3 : 2}
+			cursor="pointer"
+			onClick={handleClick}
+			color="white"
+			boxShadow={isExpanded ? "2xl" : "lg"}
+			border="2px solid"
+			borderColor={colors.border}
+			transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
+			transformOrigin="bottom left"
+			transform={isExpanded ? "scale(1.02)" : "scale(1)"}
+			zIndex={isExpanded ? 35 : 15}
+			overflow="hidden"
+			_hover={{
+				transform: isExpanded ? "scale(1.02)" : "translateY(-2px) scale(1.02)",
+				boxShadow: isExpanded ? "2xl" : "xl",
+			}}
+		>
+			{isExpanded ? (
+				<VStack align="start" h="100%">
+					<VStack align="start" flexShrink={0}>
+						<Text fontWeight="bold" fontSize="sm">
+							{title}
+						</Text>
+						<Text fontSize="xs" color="gray.200">
+							{location}
+						</Text>
+						<Text fontSize="xs" color="gray.300">
+							{format12HourTime(startTime)} - {format12HourTime(endTime)}
+						</Text>
 					</VStack>
-				) : (
-					children
-				)}
-			</Box>
-		</>
+
+					{description && (
+						<Box
+							flex="1"
+							overflow="auto"
+							w="100%"
+							mt={1}
+							css={{
+								"&::-webkit-scrollbar": {
+									width: "4px",
+								},
+								"&::-webkit-scrollbar-track": {
+									background: "rgba(0,0,0,0.1)",
+								},
+								"&::-webkit-scrollbar-thumb": {
+									background: "rgba(255,255,255,0.3)",
+									borderRadius: "2px",
+								},
+							}}
+						>
+							<Text fontSize="xs">{description}</Text>
+						</Box>
+					)}
+
+					<HStack flexShrink={0} mt={1}>
+						<Button
+							size="xs"
+							bg="orange.500"
+							color="white"
+							borderRadius="full"
+							px={4}
+							fontSize="xs"
+							h="24px"
+							_hover={{ bg: "orange.600" }}
+							onClick={(e) => {
+								e.stopPropagation();
+								console.log("RSVP clicked for", title);
+							}}
+						>
+							RSVP
+						</Button>
+					</HStack>
+				</VStack>
+			) : (
+				children
+			)}
+		</Box>
 	);
 }
 
