@@ -423,12 +423,11 @@ export function ScheduleGridItem({
 	const leftPosition = 16 + startOffset * (timelineWidth - 32);
 	const normalWidth = duration * (timelineWidth - 32);
 
-	const minWidth = 180;
-	const maxWidth = 250;
+	const minWidth = 140;
 
 	const displayWidth = isExpanded
-		? Math.min(maxWidth * 1.5, Math.max(normalWidth, minWidth * 1.2))
-		: Math.min(maxWidth, Math.max(normalWidth, minWidth));
+		? Math.max(normalWidth * 1.1, minWidth * 1.2) 
+		: Math.max(normalWidth, minWidth); 
 
 	const displayHeight = isExpanded ? 160 : 100;
 
