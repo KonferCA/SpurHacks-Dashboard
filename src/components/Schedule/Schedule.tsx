@@ -425,20 +425,40 @@ export function ScheduleGridItem({
 
 	const minWidth = 140;
 
-	const displayWidth = isExpanded
-		? Math.max(normalWidth * 1.1, minWidth * 1.2) 
-		: Math.max(normalWidth, minWidth); 
+	// calculate max width : 3 hours of timeline width
+	const maxWidth = (3 / totalHours) * (timelineWidth - 32);
 
-	const displayHeight = isExpanded ? 160 : 100;
+	const displayWidth = isExpanded
+		? Math.min(Math.max(normalWidth, minWidth, 320), maxWidth)
+		: Math.max(normalWidth, minWidth);
+
+	const baseHeight = 100;
+	const expandedBaseHeight = 160;
+
+	const titleLines = Math.ceil(title.length / 35);
+	const descriptionLines = description ? Math.ceil(description.length / 45) : 0;
+	const contentHeight = (titleLines + descriptionLines + 3) * 16;
+
+	const displayHeight = isExpanded
+		? Math.max(expandedBaseHeight, contentHeight + 60)
+		: baseHeight;
+
+	const rightPosition = leftPosition + normalWidth;
+	const adjustedLeftPosition = isExpanded
+		? rightPosition - displayWidth
+		: leftPosition;
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
+
 		console.log(
 			`Clicked event: ${title}, eventId: ${eventId}, isExpanded: ${isExpanded}`,
 		);
+
 		if (onExpand) {
 			onExpand(isExpanded ? null : eventId);
 		}
+
 		if (onClick) {
 			onClick();
 		}
@@ -448,7 +468,7 @@ export function ScheduleGridItem({
 		<Box
 			ref={itemRef}
 			position="absolute"
-			left={`${leftPosition}px`}
+			left={`${adjustedLeftPosition}px`}
 			width={`${displayWidth}px`}
 			top={`${(row - 1) * 110 + 16}px`}
 			height={`${displayHeight}px`}
@@ -462,25 +482,25 @@ export function ScheduleGridItem({
 			border="2px solid"
 			borderColor={colors.border}
 			transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
-			transformOrigin="bottom left"
-			transform={isExpanded ? "scale(1.02)" : "scale(1)"}
+			transformOrigin="bottom right"
+			transform={isExpanded ? "scale(1)" : "scale(1)"}
 			zIndex={isExpanded ? 35 : 15}
 			overflow="hidden"
 			_hover={{
-				transform: isExpanded ? "scale(1.02)" : "translateY(-2px) scale(1.02)",
+				transform: isExpanded ? "scale(1)" : "translateY(-2px) scale(1.02)",
 				boxShadow: isExpanded ? "2xl" : "xl",
 			}}
 		>
 			{isExpanded ? (
 				<VStack align="start" h="100%">
 					<VStack align="start" flexShrink={0}>
-						<Text fontWeight="bold" fontSize="sm">
+						<Text fontWeight="bold" fontSize="sm" lineHeight="1.3">
 							{title}
 						</Text>
-						<Text fontSize="xs" color="gray.200">
+						<Text fontSize="xs" color="gray.200" lineHeight="1.2">
 							{location}
 						</Text>
-						<Text fontSize="xs" color="gray.300">
+						<Text fontSize="xs" color="gray.300" lineHeight="1.2">
 							{format12HourTime(startTime)} - {format12HourTime(endTime)}
 						</Text>
 					</VStack>
@@ -490,7 +510,6 @@ export function ScheduleGridItem({
 							flex="1"
 							overflow="auto"
 							w="100%"
-							mt={1}
 							css={{
 								"&::-webkit-scrollbar": {
 									width: "4px",
@@ -504,11 +523,13 @@ export function ScheduleGridItem({
 								},
 							}}
 						>
-							<Text fontSize="xs">{description}</Text>
+							<Text fontSize="xs" lineHeight="1.4">
+								{description}
+							</Text>
 						</Box>
 					)}
 
-					<HStack flexShrink={0} mt={1}>
+					<HStack flexShrink={0} justify="flex-end" w="100%">
 						<Button
 							size="xs"
 							bg="orange.500"
