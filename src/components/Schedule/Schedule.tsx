@@ -92,7 +92,7 @@ interface ScheduleGridProps {
 }
 
 export function ScheduleGrid(props: ScheduleGridProps) {
-	const { timeRange, expandedEvent, onEventExpand } = props;
+	const { timeRange } = props;
 	const totalHours = timeRange.end - timeRange.start;
 	const timelineWidth = Math.max(800, totalHours * 120);
 
@@ -110,8 +110,8 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 
 	// row spacing: 110px, event height: 100px, starting position: 20px
 	// row 4 (bottom) = 20px + (3 * 110px) + 100px = 450px
-	// additional padding = 480px total content height
-	const contentHeight = 480;
+	// additional padding = 500px total content height
+	const contentHeight = 500;
 	const totalGridHeight = contentHeight + 60;
 
 	return (
@@ -236,7 +236,7 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 								zIndex={1}
 							/>
 
-							{Array.from({ length: 5 }, (_, i) => (
+							{Array.from({ length: 6 }, (_, i) => (
 								<Box
 									key={`horizontal-${i}`}
 									position="absolute"
@@ -255,19 +255,6 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 								timeRange={timeRange}
 								timelineWidth={timelineWidth}
 							/>
-
-							{expandedEvent && (
-								<Box
-									position="absolute"
-									top="0"
-									left="0"
-									right="0"
-									bottom="0"
-									bg="blackAlpha.600"
-									zIndex={25}
-									onClick={() => onEventExpand(null)}
-								/>
-							)}
 
 							<Box position="relative" zIndex={10}>
 								{props.children}
@@ -448,6 +435,16 @@ export function ScheduleGridItem({
 		? rightPosition - displayWidth
 		: leftPosition;
 
+	const containerHeight = 600;
+	const baseTop = (row - 1) * 110 + 16;
+
+	const wouldOverflowBottom =
+		isExpanded && baseTop + displayHeight > containerHeight - 20;
+
+	const adjustedTop = wouldOverflowBottom
+		? Math.max(20, containerHeight - displayHeight - 20)
+		: baseTop;
+
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
 
@@ -470,7 +467,7 @@ export function ScheduleGridItem({
 			position="absolute"
 			left={`${adjustedLeftPosition}px`}
 			width={`${displayWidth}px`}
-			top={`${(row - 1) * 110 + 16}px`}
+			top={`${adjustedTop}px`}
 			height={`${displayHeight}px`}
 			bg={colors.bg}
 			borderRadius="lg"
