@@ -383,13 +383,17 @@ export function ScheduleGridItem({
 	const endHour = scheduleColumnHelper(endTime);
 	const totalHours = timeRange.end - timeRange.start;
 
-	const colorMap: Record<string, { bg: string; border: string }> = {
-		teal: { bg: "teal.600", border: "teal.500" },
-		green: { bg: "green.600", border: "green.500" },
-		purple: { bg: "purple.600", border: "purple.500" },
-		red: { bg: "red.600", border: "red.500" },
-		blue: { bg: "blue.600", border: "blue.500" },
-		orange: { bg: "orange.600", border: "orange.500" },
+	const colorMap: Record<
+		string,
+		{ bg: string; border: string; hover: string }
+	> = {
+		finished: { bg: "#333147", border: "#333147", hover: "#666484" },
+		teal: { bg: "#496BC4", border: "#496BC4", hover: "#6180CF" },
+		green: { bg: "#496BC4", border: "#496BC4", hover: "#6180CF" },
+		purple: { bg: "#8C78C2", border: "#8C78C2", hover: "#A090CC" },
+		red: { bg: "#AC7F94", border: "#AC7F94", hover: "#B991A3" },
+		blue: { bg: "#496BC4", border: "#496BC4", hover: "#6180CF" },
+		orange: { bg: "#BA814F", border: "#BA814F", hover: "#D09C6D" },
 	};
 
 	const colors = colorMap[color] || colorMap.blue;
@@ -505,7 +509,7 @@ export function ScheduleGridItem({
 			color={isExpanded ? "black" : "white"}
 			boxShadow={isExpanded ? "2xl" : "lg"}
 			border="2px solid"
-			borderColor={colors.border}
+			borderColor={isExpanded ? colors.border : colors.border}
 			transition="all 0.4s cubic-bezier(0.4, 0, 0.2, 1)"
 			transformOrigin="bottom right"
 			transform={isExpanded ? "scale(1)" : "scale(1)"}
@@ -514,6 +518,7 @@ export function ScheduleGridItem({
 			_hover={{
 				transform: isExpanded ? "scale(1)" : "translateY(-2px) scale(1.02)",
 				boxShadow: isExpanded ? "2xl" : "xl",
+				bg: isExpanded ? "offwhite.primary" : colors.hover,
 			}}
 		>
 			{isExpanded ? (
