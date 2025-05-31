@@ -411,13 +411,36 @@ export function ScheduleGridItem({
 	const normalWidth = duration * (timelineWidth - 32);
 
 	const minWidth = 140;
-
-	// calculate max width : 3 hours of timeline width
 	const maxWidth = (3 / totalHours) * (timelineWidth - 32);
 
 	const displayWidth = isExpanded
 		? Math.min(Math.max(normalWidth, minWidth, 320), maxWidth)
 		: Math.max(normalWidth, minWidth);
+
+	let adjustedLeftPosition: number;
+
+	if (isExpanded) {
+		const rightPosition = leftPosition + normalWidth;
+		const idealLeftPosition = rightPosition - displayWidth;
+
+		const leftBoundary = 16;
+		const rightBoundary = timelineWidth - 16;
+
+		if (idealLeftPosition < leftBoundary) {
+			adjustedLeftPosition = leftBoundary;
+		} else if (idealLeftPosition + displayWidth > rightBoundary) {
+			adjustedLeftPosition = rightBoundary - displayWidth;
+		} else {
+			adjustedLeftPosition = idealLeftPosition;
+		}
+
+		adjustedLeftPosition = Math.max(
+			leftBoundary,
+			Math.min(adjustedLeftPosition, rightBoundary - displayWidth),
+		);
+	} else {
+		adjustedLeftPosition = leftPosition;
+	}
 
 	const baseHeight = 100;
 	const expandedBaseHeight = 160;
@@ -430,20 +453,25 @@ export function ScheduleGridItem({
 		? Math.max(expandedBaseHeight, contentHeight + 60)
 		: baseHeight;
 
-	const rightPosition = leftPosition + normalWidth;
-	const adjustedLeftPosition = isExpanded
-		? rightPosition - displayWidth
-		: leftPosition;
-
-	const containerHeight = 600;
+	const containerHeight = 500;
 	const baseTop = (row - 1) * 110 + 16;
 
-	const wouldOverflowBottom =
-		isExpanded && baseTop + displayHeight > containerHeight - 20;
+	let adjustedTop: number;
 
-	const adjustedTop = wouldOverflowBottom
-		? Math.max(20, containerHeight - displayHeight - 20)
-		: baseTop;
+	if (isExpanded) {
+		const topBoundary = 20;
+		const bottomBoundary = containerHeight - 20;
+
+		if (baseTop + displayHeight > bottomBoundary) {
+			adjustedTop = Math.max(topBoundary, bottomBoundary - displayHeight);
+		} else if (baseTop < topBoundary) {
+			adjustedTop = topBoundary;
+		} else {
+			adjustedTop = baseTop;
+		}
+	} else {
+		adjustedTop = baseTop;
+	}
 
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
