@@ -497,12 +497,12 @@ export function ScheduleGridItem({
 			width={`${displayWidth}px`}
 			top={`${adjustedTop}px`}
 			height={`${displayHeight}px`}
-			bg={colors.bg}
+			bg={isExpanded ? "offwhite.primary" : colors.bg}
 			borderRadius="lg"
 			p={isExpanded ? 3 : 2}
 			cursor="pointer"
 			onClick={handleClick}
-			color="white"
+			color={isExpanded ? "black" : "white"}
 			boxShadow={isExpanded ? "2xl" : "lg"}
 			border="2px solid"
 			borderColor={colors.border}
@@ -522,10 +522,18 @@ export function ScheduleGridItem({
 						<Text fontWeight="bold" fontSize="sm" lineHeight="1.3">
 							{title}
 						</Text>
-						<Text fontSize="xs" color="gray.200" lineHeight="1.2">
+						<Text
+							fontSize="xs"
+							color={isExpanded ? "gray.600" : "gray.200"}
+							lineHeight="1.2"
+						>
 							{location}
 						</Text>
-						<Text fontSize="xs" color="gray.300" lineHeight="1.2">
+						<Text
+							fontSize="xs"
+							color={isExpanded ? "gray.500" : "gray.300"}
+							lineHeight="1.2"
+						>
 							{format12HourTime(startTime)} - {format12HourTime(endTime)}
 						</Text>
 					</VStack>
@@ -543,8 +551,15 @@ export function ScheduleGridItem({
 									background: "rgba(0,0,0,0.1)",
 								},
 								"&::-webkit-scrollbar-thumb": {
-									background: "rgba(255,255,255,0.3)",
+									background: isExpanded
+										? "rgba(0,0,0,0.3)"
+										: "rgba(255,255,255,0.3)",
 									borderRadius: "2px",
+								},
+								"&::-webkit-scrollbar-thumb:hover": {
+									background: isExpanded
+										? "rgba(0,0,0,0.5)"
+										: "rgba(255,255,255,0.3)",
 								},
 							}}
 						>
@@ -564,6 +579,7 @@ export function ScheduleGridItem({
 							fontSize="xs"
 							h="24px"
 							_hover={{ bg: "orange.600" }}
+							boxShadow={isExpanded ? "sm" : "none"}
 							onClick={(e) => {
 								e.stopPropagation();
 								console.log("RSVP clicked for", title);
