@@ -447,15 +447,55 @@ export function ScheduleGridItem({
 	}
 
 	const baseHeight = 100;
-	const expandedBaseHeight = 160;
 
-	const titleLines = Math.ceil(title.length / 35);
-	const descriptionLines = description ? Math.ceil(description.length / 45) : 0;
-	const contentHeight = (titleLines + descriptionLines + 3) * 16;
+	const calculateExpandedHeight = () => {
+		if (!isExpanded) {
+			return baseHeight;
+		}
 
-	const displayHeight = isExpanded
-		? Math.max(expandedBaseHeight, contentHeight + 60)
-		: baseHeight;
+		const baseExpandedHeight = 160;
+		const headerPadding = 48;
+		const footerPadding = 40;
+		const containerPadding = 24;
+
+		const titleFontSize = 14;
+		const titleLineHeight = 1.3;
+		const titleCharPerLine = Math.floor(displayWidth / 8);
+		const titleLines = Math.max(1, Math.ceil(title.length / titleCharPerLine));
+		const titleHeight = titleLines * (titleFontSize * titleLineHeight);
+
+		let descriptionHeight = 0;
+
+		if (description) {
+			const descFontSize = 12;
+			const descLineHeight = 1.4;
+			const descCharPerLine = Math.floor((displayWidth - 16) / 7);
+			const descLines = Math.ceil(description.length / descCharPerLine);
+
+			descriptionHeight = descLines * (descFontSize * descLineHeight);
+
+			if (descLines > 3) {
+				descriptionHeight += 8;
+			}
+		}
+
+		const totalContentHeight =
+			headerPadding +
+			titleHeight +
+			descriptionHeight +
+			footerPadding +
+			containerPadding;
+
+		const minExpandedHeight = baseExpandedHeight;
+		const maxExpandedHeight = 400;
+
+		return Math.min(
+			Math.max(minExpandedHeight, totalContentHeight),
+			maxExpandedHeight,
+		);
+	};
+
+	const displayHeight = calculateExpandedHeight();
 
 	const containerHeight = 500;
 	const baseTop = (row - 1) * 110 + 16;
@@ -493,6 +533,9 @@ export function ScheduleGridItem({
 		}
 	};
 
+	const maxDescriptionHeight = displayHeight - 140;
+	const needsScroll = description && description.length > 300;
+
 	return (
 		<Box
 			ref={itemRef}
@@ -524,21 +567,18 @@ export function ScheduleGridItem({
 			{isExpanded ? (
 				<VStack align="start" h="100%">
 					<VStack align="start" flexShrink={0}>
-						<Text fontWeight="bold" fontSize="sm" lineHeight="1.3">
+						<Text
+							fontWeight="bold"
+							fontSize="sm"
+							lineHeight="1.3"
+							wordBreak="break-word"
+						>
 							{title}
 						</Text>
-						<Text
-							fontSize="xs"
-							color={isExpanded ? "gray.600" : "gray.200"}
-							lineHeight="1.2"
-						>
+						<Text fontSize="xs" color="gray.600" lineHeight="1.2">
 							{location}
 						</Text>
-						<Text
-							fontSize="xs"
-							color={isExpanded ? "gray.500" : "gray.300"}
-							lineHeight="1.2"
-						>
+						<Text fontSize="xs" color="gray.500" lineHeight="1.2">
 							{format12HourTime(startTime)} - {format12HourTime(endTime)}
 						</Text>
 					</VStack>
@@ -546,8 +586,9 @@ export function ScheduleGridItem({
 					{description && (
 						<Box
 							flex="1"
-							overflow="auto"
+							overflow={needsScroll ? "auto" : "visible"}
 							w="100%"
+							maxH={needsScroll ? `${maxDescriptionHeight}px` : "none"}
 							css={{
 								"&::-webkit-scrollbar": {
 									width: "4px",
@@ -556,19 +597,15 @@ export function ScheduleGridItem({
 									background: "rgba(0,0,0,0.1)",
 								},
 								"&::-webkit-scrollbar-thumb": {
-									background: isExpanded
-										? "rgba(0,0,0,0.3)"
-										: "rgba(255,255,255,0.3)",
+									background: "rgba(0,0,0,0.3)",
 									borderRadius: "2px",
 								},
 								"&::-webkit-scrollbar-thumb:hover": {
-									background: isExpanded
-										? "rgba(0,0,0,0.5)"
-										: "rgba(255,255,255,0.3)",
+									background: "rgba(0,0,0,0.5)",
 								},
 							}}
 						>
-							<Text fontSize="xs" lineHeight="1.4">
+							<Text fontSize="xs" lineHeight="1.4" wordBreak="break-word">
 								{description}
 							</Text>
 						</Box>
@@ -584,7 +621,7 @@ export function ScheduleGridItem({
 							fontSize="xs"
 							h="24px"
 							_hover={{ bg: "orange.600" }}
-							boxShadow={isExpanded ? "sm" : "none"}
+							boxShadow="sm"
 							onClick={(e) => {
 								e.stopPropagation();
 								console.log("RSVP clicked for", title);
