@@ -8,6 +8,7 @@ const config = defineConfig({
 					primary: { value: "#FFB65F" },
 					contrast: { value: "{colors.black}" },
 					subtle: { value: "#666484" },
+					error: { value: "#a73c4f" },
 					bg: { value: "#13151c" },
 				},
 				offwhite: {
