@@ -2,8 +2,10 @@ import DiscordLogo from "@/assets/discord.svg";
 import InstagramLogo from "@/assets/instagram.svg";
 import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
+import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
+import { verifyRSVP } from "@/services/firebase/rsvp";
 import {
 	Badge,
 	Box,
@@ -19,6 +21,7 @@ import {
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const importantInfo = [
@@ -34,8 +37,32 @@ const cardStyles = {
 };
 
 const HomePage = () => {
-	const { deadlines, current: currentApplication } = useApplications();
+	const {
+		deadlines,
+		current: currentApplication,
+		refreshApplications,
+	} = useApplications();
 	const navigate = useNavigate();
+	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
+
+	const handleRSVP = async () => {
+		try {
+			setIsRSVPLoading(true);
+			await verifyRSVP();
+			await refreshApplications();
+		} catch (error) {
+			console.error(error);
+			const msg =
+				(error as Error).message ??
+				"Oops, something went wrong when trying to RSVP. Please try again later. If problem persists, contact us in Discord.";
+			toaster.error({
+				title: "Failed to RSVP",
+				description: msg,
+			});
+		} finally {
+			setIsRSVPLoading(false);
+		}
+	};
 
 	return (
 		<PageWrapper>
@@ -103,9 +130,15 @@ const HomePage = () => {
 											</Icon>
 										</Flex>
 										<Text color="fg.muted">
-											{!!currentApplication
-												? "You’ll receive a confirmation on your application status in the email you provided."
-												: "Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
+											{!currentApplication &&
+												"Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
+											{!!currentApplication &&
+												currentApplication.applicationStatus !== "accepted" &&
+												"You’ll receive a confirmation on your application status in the email you provided."}
+											{!!currentApplication &&
+												currentApplication.applicationStatus === "accepted" &&
+												!currentApplication.rsvp &&
+												"Congrats, you’re in! Make sure to RSVP to claim your spot!"}
 										</Text>
 									</Box>
 								)}
@@ -163,14 +196,14 @@ const HomePage = () => {
 										Apply Now
 									</Button>
 								)}
-								{deadlines.afterClose &&
-									!!currentApplication &&
+								{!!currentApplication &&
 									currentApplication.applicationStatus === "accepted" &&
 									!currentApplication.rsvp && (
 										<Button
+											loading={isRSVPLoading}
 											color="black"
 											colorScheme="brand"
-											onClick={() => console.log("not implemented")}
+											onClick={handleRSVP}
 											marginLeft="auto"
 											size="lg"
 											rounded="full"
