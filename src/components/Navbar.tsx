@@ -360,7 +360,7 @@ const NavbarContent = ({
 									color="offwhite.primary"
 									textTransform="none"
 								>
-									{user.displayName}
+									{user.displayName ?? "Unknown"}
 								</Text>
 							</Flex>
 						</Flex>
