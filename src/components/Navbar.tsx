@@ -16,6 +16,7 @@ import {
 	Flex,
 	Image,
 	Portal,
+	Presence,
 	Text,
 } from "@chakra-ui/react";
 import {
@@ -28,7 +29,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
-import { FiLogOut, FiMapPin } from "react-icons/fi";
+import { FiLogOut, FiMapPin, FiChevronUp } from "react-icons/fi";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { RouterChakraLink } from "./RouterChakraLink";
@@ -150,6 +151,8 @@ const NavbarContent = ({
 	isMobile: boolean;
 }) => {
 	const { logout, currentUser: user } = useAuth();
+	const [showLogout, setShowLogout] = useState(false);
+
 	return (
 		<>
 			<Flex
@@ -271,15 +274,102 @@ const NavbarContent = ({
 				</ChakraLink>
 			</Flex>
 			{user && (
-				<Button
-					type="button"
+				<ChakraLink
+					position="relative"
+					w="full"
+					onClick={() => {
+						setShowLogout((prev) => !prev);
+					}}
+					textDecoration="none"
+					color="#666484"
 					rounded="full"
-					textTransform="uppercase"
-					onClick={logout}
+					bg="#1F1E2E"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
 				>
-					<FiLogOut size="1.5rem" color="black" />
-					Sign out
-				</Button>
+					{showLogout && (
+						<Presence
+							present={showLogout}
+							position="absolute"
+							top="-12"
+							right="0"
+							animationName={{
+								_open: "slide-from-bottom, fade-in",
+								_closed: "slide-to-bottom, fade-out",
+							}}
+							animationDuration="slow"
+						>
+							<Button
+								bg="#1F1E2E"
+								color="brand.error"
+								gap={4}
+								type="button"
+								rounded="full"
+								px={6}
+								py={5}
+								onClick={logout}
+							>
+								<FiLogOut size="1rem" />
+								Log out
+							</Button>
+						</Presence>
+					)}
+					<Flex
+						w="full"
+						justify="space-between"
+						alignItems="center"
+						padding="0.5rem"
+						px={6}
+						gap={2}
+					>
+						<Flex flex="1" justifyContent="start" alignItems="center" gap={4}>
+							<Image
+								src={user.photoURL ?? "/default-profile.png"}
+								alt="User photo"
+								width="2rem"
+								height="2rem"
+							/>
+							<Flex
+								flex="1"
+								justifyContent="start"
+								alignItems="start"
+								direction="column"
+							>
+								<Text
+									fontSize="xs"
+									color="offwhite.primary"
+									textTransform="none"
+								>
+									{}
+									team name fix
+								</Text>
+								<Text
+									fontSize="sm"
+									color="offwhite.primary"
+									textTransform="none"
+								>
+									{user.displayName}
+								</Text>
+							</Flex>
+						</Flex>
+						<Box
+							marginEnd="auto"
+							transition="transform 0.3s ease"
+							transform={showLogout ? "rotate(180deg)" : "rotate(0deg)"}
+						>
+							<FiChevronUp size="1rem" />
+						</Box>
+					</Flex>
+				</ChakraLink>
 			)}
 		</>
 	);
@@ -344,10 +434,10 @@ export const Navbar = () => {
 						background: `radial-gradient(
 							circle at top left,
 							#000000 -100%,
-							#191C26 80%,
-							#26252F 110%,
-							#332D38 130%,
-							#4D3E4A 150%,
+							#191C26 120%,
+							#26252F 130%,
+							#332D38 180%,
+							#4D3E4A 200%,
 							#6B5C6D 170%,
 							#897B90 180%,
 							#C5B8D6 250%
