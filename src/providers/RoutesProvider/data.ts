@@ -23,7 +23,6 @@ export const paths = {
 	joinTeam: "/join-team",
 	ticket: "/ticket/:ticketId",
 	perks: "/perks",
-	accountSettings: "/account",
 } as const;
 
 /**
@@ -80,9 +79,5 @@ export const titles: Record<string, HeaderInfo> = {
 		title: "Perks",
 		subTitle:
 			"Shoutout to our sponsors! Here’s how they’re contributing to SpurHacks 2025.",
-	},
-	[paths.accountSettings]: {
-		title: "My Account",
-		subTitle: "Manage your account details here.",
 	},
 };
