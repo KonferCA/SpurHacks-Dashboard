@@ -34,6 +34,7 @@ import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
+import { useUserStore } from "@/stores/user.store";
 
 const navItems = {
 	[paths.home]: {
@@ -152,6 +153,7 @@ const NavbarContent = ({
 }) => {
 	const { logout, currentUser: user } = useAuth();
 	const [showLogout, setShowLogout] = useState(false);
+	const team = useUserStore((state) => state.team);
 
 	return (
 		<>
@@ -335,6 +337,7 @@ const NavbarContent = ({
 							<Image
 								src={user.photoURL ?? "/default-profile.png"}
 								alt="User photo"
+								rounded="full"
 								width="2rem"
 								height="2rem"
 							/>
@@ -348,9 +351,9 @@ const NavbarContent = ({
 									fontSize="xs"
 									color="offwhite.primary"
 									textTransform="none"
+									lineClamp="1"
 								>
-									{}
-									team name fix
+									{team?.teamName}
 								</Text>
 								<Text
 									fontSize="sm"
