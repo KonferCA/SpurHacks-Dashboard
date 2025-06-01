@@ -1,7 +1,7 @@
 import { Box, Flex, Heading, Image, Text, Icon, Link } from "@chakra-ui/react";
 import { ArrowSquareOut } from "@phosphor-icons/react";
 import { useState } from "react";
-import { type PerksData } from "@/data/perks";
+import type { PerksData } from "@/data/perks";
 
 interface PerkProps {
 	data: PerksData;
