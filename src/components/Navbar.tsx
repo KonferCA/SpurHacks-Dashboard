@@ -353,14 +353,14 @@ const NavbarContent = ({
 									textTransform="none"
 									lineClamp="1"
 								>
-									{team?.teamName}
+									{team?.teamName ?? "No team"}
 								</Text>
 								<Text
 									fontSize="sm"
 									color="offwhite.primary"
 									textTransform="none"
 								>
-									{user.displayName ?? "Unknown"}
+									{user.displayName ?? "Unnamed hacker"}
 								</Text>
 							</Flex>
 						</Flex>
