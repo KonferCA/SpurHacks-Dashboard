@@ -25,7 +25,6 @@ import {
 	ShareIcon,
 	TicketIcon,
 	UserGroupIcon,
-	Cog8ToothIcon,
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
@@ -63,10 +62,6 @@ const navItems = {
 	[paths.perks]: {
 		label: "Perks",
 		Icon: RxStar,
-	},
-	[paths.accountSettings]: {
-		label: "Account",
-		Icon: Cog8ToothIcon,
 	},
 };
 
