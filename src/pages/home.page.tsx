@@ -4,6 +4,7 @@ import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
 import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import { paths } from "@/providers/RoutesProvider/data";
 import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
@@ -40,11 +41,8 @@ const cardStyles = {
 };
 
 const HomePage = () => {
-	const {
-		deadlines,
-		current: currentApplication,
-		refreshApplications,
-	} = useApplications();
+	const { current: currentApplication, refreshApplications } = useApplications();
+	const { deadlines } = useDeadlines();
 	const navigate = useNavigate();
 	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
 	const [openRevokeRSVPDialog, setOpenRevokeRSVPDialog] = useState(false);

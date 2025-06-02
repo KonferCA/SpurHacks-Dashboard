@@ -10,6 +10,7 @@ import {
 
 import { LoadingAnimation } from "@/components";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import { AccessControl } from "@/navigation/AccessControl/AccessControl";
 import { useAuth } from "@/providers";
 
@@ -127,6 +128,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 	// Get current user and application data
 	const { isLoading: loadingAuth } = useAuth();
 	const { isLoading: loadingApplications } = useApplications();
+	const { isLoading: loadingDeadlines } = useDeadlines();
 
 	// State for storing generated routes
 	const routes = useMemo(() => {
@@ -288,7 +290,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		// Clear any existing timeout
 		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 
-		if (routes.length && !loadingApplications && !loadingAuth) {
+		if (routes.length && !loadingApplications && !loadingAuth && !loadingDeadlines) {
 			// Prevent random flashes in the DOM due to updates
 			timeoutRef.current = window.setTimeout(
 				() => setLoadingRoutes(false),
@@ -301,7 +303,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		timeoutRef.current = window.setTimeout(() => setLoadingRoutes(false), 1500);
 
 		return cleanUp;
-	}, [loadingAuth, routes, loadingApplications]);
+	}, [loadingAuth, routes, loadingApplications, loadingDeadlines]);
 
 	return (
 		<RoutesContext.Provider

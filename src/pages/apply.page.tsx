@@ -34,6 +34,7 @@ import type {
 	ApplicationDataKey,
 } from "@/forms/hacker-form/types";
 import { validations } from "@/forms/hacker-form/validations";
+import { useApplicationDraft } from "@/hooks/use-application-draft";
 import { useApplications } from "@/hooks/use-applications";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/providers";
@@ -162,12 +163,8 @@ export const ApplyPage = () => {
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoadingResume, setIsLoadingResume] = useState(false);
-	const {
-		isLoading: loadingApplications,
-		drafts,
-		refreshApplications,
-		refreshDrafts,
-	} = useApplications();
+	const { isLoading: loadingApplications, refreshApplications } = useApplications();
+	const { draft, isLoading: loadingDraft, refreshDraft } = useApplicationDraft();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -182,22 +179,22 @@ export const ApplyPage = () => {
 	});
 
 	const draftId = useMemo(() => {
-		if (drafts.length) return drafts[0].__docId;
+		if (draft) return draft.__docId;
 		return undefined;
-	}, [drafts]);
+	}, [draft]);
 
 	useEffect(() => {
-		if (drafts.length) {
-			setApplication({ ...drafts[0] });
+		if (draft) {
+			setApplication({ ...draft });
 		}
-	}, [drafts]);
+	}, [draft]);
 
 	const autosave = useDebounce(
 		//@ts-ignore
 		async (application: ApplicationDataDoc, uid: string) => {
 			try {
 				await saveApplicationDraft(application, uid, application.__docId);
-				await refreshDrafts();
+				await refreshDraft();
 			} catch (error) {
 				console.error(error);
 				toaster.error({
@@ -420,7 +417,7 @@ export const ApplyPage = () => {
 		[],
 	);
 
-	if (loadingApplications)
+	if (loadingApplications || loadingDraft)
 		return (
 			<PageWrapper>
 				<LoadingAnimation />

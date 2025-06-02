@@ -35,6 +35,7 @@ import { Link } from "react-router-dom";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
 import { useUserStore } from "@/stores/user.store";
+import { useDeadlines } from "@/hooks/use-deadlines";
 
 const navItems = {
 	[paths.home]: {
@@ -382,6 +383,7 @@ export const Navbar = () => {
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 	const { user } = useUser();
 	const applicationsCtx = useApplications();
+	const deadlinesCtx = useDeadlines();
 	const routes = useRouteDefinitions();
 
 	const availableRoutes = useMemo(() => {
@@ -391,6 +393,7 @@ export const Navbar = () => {
 			const ctx: AccessControlContext = {
 				user,
 				applicationsCtx,
+				deadlinesCtx,
 			};
 			try {
 				if (typeof route.accessCheck === "function")
