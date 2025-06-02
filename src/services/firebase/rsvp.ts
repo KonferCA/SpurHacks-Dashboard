@@ -24,11 +24,9 @@ export async function withdrawRSVP() {
 		"withdrawRSVP",
 	);
 	try {
-		const res = await fn();
-		const data = res.data;
-		return data;
+		await fn();
 	} catch (error) {
-		logError(error as Error, "error_dismissing_rsvp");
+		logError(error as Error, "error_revoking_rsvp");
 		throw error;
 	}
 }

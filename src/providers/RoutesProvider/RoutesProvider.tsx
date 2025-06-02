@@ -34,13 +34,13 @@ import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
 import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
-import { VerifyRSVP } from "@/pages/miscellaneous/verify-rsvp.page";
 import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 import { Redirect } from "@/navigation/redirect";
 
 // Local imports
 import {
+	disable,
 	hasApplied,
 	hasRSVP,
 	hasVerifiedEmail,
@@ -170,17 +170,35 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.schedule,
 				element: <SchedulePage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.networking,
 				element: <NetworkingPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.myTicket,
 				element: <MyTicketPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.apply,
@@ -196,24 +214,37 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				],
 			},
 			{
-				path: paths.verifyRSVP,
-				element: <VerifyRSVP />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
-			},
-			{
 				path: paths.myTeam,
 				element: <MyTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.joinTeam,
 				element: <JoinTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.perks,
 				element: <PerksPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 		];
 

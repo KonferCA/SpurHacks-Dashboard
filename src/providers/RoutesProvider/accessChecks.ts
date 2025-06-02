@@ -68,3 +68,8 @@ export const hasRSVP: AccessControlFn = (ctx) => {
  */
 export const isAppOpen: AccessControlFn = (ctx) =>
 	ctx.applicationsCtx.deadlines.inRange;
+
+/**
+ * Checks that just returns false to disable the page.
+ */
+export const disable: AccessControlFn = () => false;

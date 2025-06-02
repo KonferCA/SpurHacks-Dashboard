@@ -1,7 +1,7 @@
 import { PageWrapper } from "@/components";
-import { Box, Grid } from "@chakra-ui/react";
-import { perksData } from "@/data/perks";
 import { Perk } from "@/components/Perk";
+import { perksData } from "@/data/perks";
+import { Box, Grid } from "@chakra-ui/react";
 
 const PerksPage = () => {
 	return (
