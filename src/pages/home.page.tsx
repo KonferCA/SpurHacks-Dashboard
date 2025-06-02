@@ -5,13 +5,15 @@ import TiktokLogo from "@/assets/tiktok.svg";
 import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
-import { verifyRSVP } from "@/services/firebase/rsvp";
+import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
 	Badge,
 	Box,
 	Button,
 	Card,
 	Link as ChakraLink,
+	CloseButton,
+	Dialog,
 	Flex,
 	Heading,
 	Icon,
@@ -44,6 +46,7 @@ const HomePage = () => {
 	} = useApplications();
 	const navigate = useNavigate();
 	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
+	const [openRevokeRSVPDialog, setOpenRevokeRSVPDialog] = useState(false);
 
 	const handleRSVP = async () => {
 		try {
@@ -64,10 +67,30 @@ const HomePage = () => {
 		}
 	};
 
+	const handleRevokeRSVP = async () => {
+		try {
+			setIsRSVPLoading(true);
+			await withdrawRSVP();
+			await refreshApplications();
+		} catch (error) {
+			console.error(error);
+			const msg =
+				(error as Error).message ??
+				"Oops, something went wrong when trying to revoke RSVP. Please try again later. If the problem persists, contact us in Discord.";
+			toaster.error({
+				title: "Failed to revoke RSVP",
+				description: msg,
+			});
+		} finally {
+			if (openRevokeRSVPDialog) setOpenRevokeRSVPDialog(false);
+			setIsRSVPLoading(false);
+		}
+	};
+
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
-				<Flex gap="1.5rem" flexWrap={{ base: "wrap", xl: "nowrap" }}>
+				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					{/* Only render if no submission or application status is not accepted and has not rsvp'd */}
 					{(!currentApplication ||
 						currentApplication.applicationStatus !== "accepted" ||
@@ -110,7 +133,7 @@ const HomePage = () => {
 							<Card.Body>
 								{deadlines.inRange && (
 									<Box spaceY="1rem">
-										<Flex alignItems="center" gapX="1rem">
+										<Flex alignItems="center" gapX={4}>
 											<Text color="fg.muted">
 												{!!currentApplication
 													? "Application submitted"
@@ -153,7 +176,7 @@ const HomePage = () => {
 											currentApplication.applicationStatus === "accepted" &&
 											!currentApplication.rsvp && (
 												<Box spaceY="1rem">
-													<Flex alignItems="center" gapX="1rem">
+													<Flex alignItems="center" gapX={4}>
 														<Text color="fg.muted">
 															Congrats, you’re in! Make sure to RSVP to claim
 															your spot!
@@ -217,6 +240,126 @@ const HomePage = () => {
 						</Card.Root>
 					)}
 
+					{currentApplication?.rsvp && (
+						<Card.Root {...cardStyles}>
+							<Card.Header>
+								<Card.Title>RSVP Status</Card.Title>
+							</Card.Header>
+							<Card.Body>
+								<Text color="fg.muted">
+									You've RSVP'd your spot!{" "}
+									<Icon size="md" color="green.400">
+										<CheckCircle />
+									</Icon>
+								</Text>
+								<div>
+									<Dialog.Root
+										role="alertdialog"
+										open={openRevokeRSVPDialog}
+										onOpenChange={(e) => setOpenRevokeRSVPDialog(e.open)}
+									>
+										<Dialog.Trigger asChild>
+											<Button
+												loading={isRSVPLoading}
+												mt={4}
+												ml="auto"
+												display="block"
+												textTransform="uppercase"
+												variant="outline"
+												rounded="full"
+												borderColor="fg.muted"
+												borderWidth="2px"
+												color="fg.muted"
+												bg="transparent"
+												_hover={{
+													borderColor: "red.500",
+													color: "red.500",
+													bg: "transparent",
+												}}
+											>
+												Revoke rsvp
+											</Button>
+										</Dialog.Trigger>
+										<Dialog.Backdrop />
+										<Dialog.Positioner>
+											<Dialog.Content>
+												<Dialog.Header>
+													<Dialog.Title>Are you sure you?</Dialog.Title>
+												</Dialog.Header>
+												<Dialog.Body>
+													<Text>
+														Are you sure you want to revoke RSVP? This will not
+														affect your application status.
+													</Text>
+												</Dialog.Body>
+												<Dialog.Footer>
+													<Dialog.ActionTrigger asChild>
+														<Button rounded="full">Cancel</Button>
+													</Dialog.ActionTrigger>
+													<Button
+														loading={isRSVPLoading}
+														mt={4}
+														ml="auto"
+														display="block"
+														textTransform="uppercase"
+														variant="outline"
+														rounded="full"
+														borderColor="fg.muted"
+														borderWidth="2px"
+														color="fg.muted"
+														_hover={{
+															borderColor: "red.500",
+															color: "red.500",
+															bg: "transparent",
+														}}
+														onClick={handleRevokeRSVP}
+													>
+														revoke rsvp
+													</Button>
+												</Dialog.Footer>
+												<Dialog.CloseTrigger asChild>
+													<CloseButton size="sm" />
+												</Dialog.CloseTrigger>
+											</Dialog.Content>
+										</Dialog.Positioner>
+									</Dialog.Root>
+								</div>
+							</Card.Body>
+						</Card.Root>
+					)}
+				</Flex>
+
+				<Card.Root maxWidth={{ base: "none", xl: "600px" }} rounded="4xl">
+					<Card.Header>
+						<Card.Title>Important Info</Card.Title>
+					</Card.Header>
+					<Card.Body>
+						<Flex direction="column" gap={4}>
+							{importantInfo.map(({ day, time, label }) => (
+								<Flex key={label} align="center" gap={6}>
+									<Flex
+										px={4}
+										py={2}
+										borderWidth={1}
+										borderColor="#FFA75F"
+										rounded="full"
+										fontSize="sm"
+										justify="space-between"
+										w="130px"
+									>
+										<Text>{day}</Text>
+										<Text>{time}</Text>
+									</Flex>
+									<Text color="gray.200" fontSize="sm">
+										{label}
+									</Text>
+								</Flex>
+							))}
+						</Flex>
+					</Card.Body>
+				</Card.Root>
+
+				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					<Card.Root
 						maxWidth={{ base: "none", xl: "600px" }}
 						width="full"
@@ -252,44 +395,6 @@ const HomePage = () => {
 						</Card.Footer>
 					</Card.Root>
 
-					{currentApplication?.rsvp && (
-						<Card.Root
-							maxWidth={{ base: "none", xl: "600px" }}
-							width={{ base: "full" }}
-							rounded="4xl"
-						>
-							<Card.Header>
-								<Card.Title>Important Info</Card.Title>
-							</Card.Header>
-							<Card.Body>
-								<Flex direction="column" gap={4}>
-									{importantInfo.map(({ day, time, label }) => (
-										<Flex key={label} align="center" gap={6}>
-											<Flex
-												px={4}
-												py={2}
-												borderWidth={1}
-												borderColor="#FFA75F"
-												rounded="full"
-												fontSize="sm"
-												justify="space-between"
-												w="130px"
-											>
-												<Text>{day}</Text>
-												<Text>{time}</Text>
-											</Flex>
-											<Text color="gray.200" fontSize="sm">
-												{label}
-											</Text>
-										</Flex>
-									))}
-								</Flex>
-							</Card.Body>
-						</Card.Root>
-					)}
-				</Flex>
-
-				<Flex gap="1.5rem" flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					<Card.Root
 						maxWidth={{ base: "none", xl: "600px" }}
 						width="full"
@@ -324,45 +429,51 @@ const HomePage = () => {
 							</ChakraLink>
 						</Card.Footer>
 					</Card.Root>
-
-					<Card.Root {...cardStyles}>
-						<Card.Header>
-							<Heading>Stay Connected</Heading>
-						</Card.Header>
-						<Card.Body>
-							<Flex alignItems="center" gap="1rem">
-								<Link
-									href="https://www.instagram.com/spurhacks/"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Image src={InstagramLogo} width="1.5rem" height="1.5rem" />
-								</Link>
-								<Link
-									href="https://www.linkedin.com/company/spurhacks"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Image src={LinkedinLogo} width="1.5rem" height="1.5rem" />
-								</Link>
-								<Link
-									href="https://www.tiktok.com/@spur_hacks"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Image src={TiktokLogo} width="1.5rem" height="1.5rem" />
-								</Link>
-								<Link
-									href="https://discord.gg/NpnSUrZJQy"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
-								</Link>
-							</Flex>
-						</Card.Body>
-					</Card.Root>
 				</Flex>
+
+				<Card.Root {...cardStyles}>
+					<Card.Header>
+						<Heading>Stay Connected</Heading>
+					</Card.Header>
+					<Card.Body>
+						<Text color="fg.muted">
+							Follow us on our socials! Get the latest updates about our current
+							and future events.
+						</Text>
+					</Card.Body>
+					<Card.Footer>
+						<Flex alignItems="center" gap="1rem">
+							<Link
+								href="https://www.instagram.com/spurhacks/"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image src={InstagramLogo} width="1.5rem" height="1.5rem" />
+							</Link>
+							<Link
+								href="https://www.linkedin.com/company/spurhacks"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image src={LinkedinLogo} width="1.5rem" height="1.5rem" />
+							</Link>
+							<Link
+								href="https://www.tiktok.com/@spur_hacks"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image src={TiktokLogo} width="1.5rem" height="1.5rem" />
+							</Link>
+							<Link
+								href="https://discord.gg/NpnSUrZJQy"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
+							</Link>
+						</Flex>
+					</Card.Footer>
+				</Card.Root>
 			</Box>
 		</PageWrapper>
 	);
