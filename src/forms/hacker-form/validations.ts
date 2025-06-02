@@ -236,7 +236,7 @@ export const validations: {
 
 	// Referral/Give Away
 	enterGiveAway: (v) =>
-		formatResult(z.enum(["Yes", "No"]).optional().safeParse(v)),
+		formatResult(z.enum(["Yes", "No", ""]).optional().safeParse(v)),
 	referredBy: (v) => formatResult(z.string().optional().safeParse(v)),
 
 	// Optionals or auto filled
