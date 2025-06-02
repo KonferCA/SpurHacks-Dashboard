@@ -1008,6 +1008,7 @@ export const ApplyPage = () => {
 
 								<GridItem colSpan={3}>
 									<TextInput
+										disabled={application.enterGiveAway !== "Yes"}
 										label="Referred by someone? Enter their Instagram handle below."
 										description="Both you and your referrer will receive an extra entry into the giveaway!"
 										value={application.referredBy}
