@@ -1,6 +1,6 @@
-import type { ApplicationData } from "./types";
-import { error as logError } from "firebase-functions/logger";
 import { getFirestore } from "firebase-admin/firestore";
+import { error as logError } from "firebase-functions/logger";
+import type { ApplicationData } from "./types";
 
 export enum HttpStatus {
 	OK = 200,

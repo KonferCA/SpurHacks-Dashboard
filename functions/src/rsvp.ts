@@ -6,7 +6,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Resend } from "resend";
 import { v4 as uuid } from "uuid";
 import type { Context } from "./types";
-import { getUserApplicationByYear, HttpStatus, response } from "./utils";
+import { HttpStatus, getUserApplicationByYear, response } from "./utils";
 
 const WAITLIST_COLLECTION = "waitlist";
 const SPOTS_COLLECTION = "spots";
