@@ -53,6 +53,7 @@ import {
 import { RoutesContext } from "./context";
 import { paths } from "./data";
 import type { RouteConfig } from "./types";
+import { AccountPage } from "@/pages/account.page";
 
 /**
  * Creates a wrapper component for routes with access control
@@ -247,6 +248,11 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 					hasRSVP,
 					disable,
 				],
+			},
+			{
+				path: paths.myAccount,
+				element: <AccountPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail], // make sure TO UPDATE !!!!!!!
 			},
 		];
 
