@@ -324,17 +324,15 @@ export const verifyGitHubEmail = onCall(async (data: any, res) => {
 	}
 });
 
-export const logEvent = onCall((data: any, res) => {
-	const context = res as Context;
-
-	const uid = context?.auth?.uid;
+export const logEvent = onCall((req) => {
+	const uid = req.auth?.uid;
 
 	const payloadValidation = z.object({
 		type: z.string().refine((val) => ["error", "info", "log"].includes(val)),
 		data: z.any(),
 	});
 
-	const result = payloadValidation.safeParse(data);
+	const result = payloadValidation.safeParse(req.data);
 	if (!result.success) logInfo("Invalid log payload");
 	else {
 		switch (result.data.type) {

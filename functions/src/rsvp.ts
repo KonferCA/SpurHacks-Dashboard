@@ -177,109 +177,37 @@ async function sendJoinedWaitlistEmail(name: string, email: string) {
 // 	});
 // }
 
-export const withdrawRSVP = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context?.auth)
-		return response(HttpStatus.UNAUTHORIZED, { message: "unauthorized" });
+export const withdrawRSVP = onCall(async (req) => {
+	if (!req.auth) throw new HttpsError("permission-denied", "Not authenticated");
+
+	logInfo("Withdraw RSVP called.", { uid: req.auth.uid });
 
 	try {
-		logInfo("Looking for user...", { uid: context.auth.uid });
-		const user = await getAuth().getUser(context.auth.uid);
-		logInfo("Dismissing RSVP...", { email: user.email });
-		await getAuth().setCustomUserClaims(user.uid, {
-			...user.customClaims,
-			rsvpVerified: false,
-		});
-		logInfo("RSVP dismissed.", { email: user.email });
-		// logout user / prevent old claims to exists in client's device
-		// which will allow it to browse all the pages
-		await getAuth().revokeRefreshTokens(user.uid);
+		const user = await getAuth().getUser(req.auth.uid);
 
-		// move next in waitlist to spots
-		// const snap = await admin
-		//     .firestore()
-		//     .collection(WAITLIST_COLLECTION)
-		//     .orderBy("joinAt", "asc")
-		//     .limit(1)
-		//     .get();
-		// if (snap.size) {
-		//     logInfo("Next user in waitlist found");
-		//     const doc = snap.docs[0];
-		//     const user = await admin.auth().getUser(doc.data().uid);
-		//     await admin.firestore().runTransaction(async (tx) => {
-		//         const expires = Timestamp.now().toDate();
-		//         // 24 hours in milliseconds
-		//         const oneDayInMs = 86400000;
-		//         expires.setTime(expires.getTime() + oneDayInMs);
-		//         const expiresAt = Timestamp.fromDate(expires);
-		//         tx.create(
-		//             admin.firestore().collection(SPOTS_COLLECTION).doc(doc.id),
-		//             {
-		//                 ...doc.data(),
-		//                 expiresAt,
-		//             }
-		//         );
-		//         tx.delete(
-		//             admin
-		//                 .firestore()
-		//                 .collection(WAITLIST_COLLECTION)
-		//                 .doc(doc.id)
-		//         );
-		//     });
-		//     const app = (
-		//         await admin
-		//             .firestore()
-		//             .collection("applications")
-		//             .where("applicantId", "==", user.uid)
-		//             .get()
-		//     ).docs[0]?.data();
-		//     await sendSpotAvailableEmail(
-		//         app?.firstName ?? user.displayName ?? "",
-		//         user.email
-		//     ).catch((error) =>
-		//         logError(
-		//             "Failed to send notification email about new available spot.",
-		//             { error }
-		//         )
-		//     );
-		// } else {
-		//     logInfo(
-		//         "No user in waitlist, adding empty spot to counter"
-		//     );
-		//     // record the number of spots that are available when no one is in the waitlist
-		//     const counterDoc = await admin
-		//         .firestore()
-		//         .collection(SPOTS_COLLECTION)
-		//         .doc(SPOTS_COUNTER_DOCUMENT)
-		//         .get();
-		//     const counterData = counterDoc.data();
-		//     if (counterDoc.exists && counterData) {
-		//         logInfo("Spot counter found");
-		//         await admin
-		//             .firestore()
-		//             .collection(SPOTS_COLLECTION)
-		//             .doc(SPOTS_COUNTER_DOCUMENT)
-		//             .update({
-		//                 count: counterData.count + 1,
-		//             });
-		//     } else {
-		//         logInfo("Spot counter not found, creating...");
-		//         await admin
-		//             .firestore()
-		//             .collection(SPOTS_COLLECTION)
-		//             .doc(SPOTS_COUNTER_DOCUMENT)
-		//             .set({ count: 1 });
-		//     }
-		// }
+		const [application, applicationDocId] = await getUserApplicationByYear(
+			user.uid,
+			"2025",
+		);
+		if (!application || !applicationDocId)
+			throw new HttpsError(
+				"failed-precondition",
+				"No application linked to requesting user",
+			);
+
+		if (!application.rsvp) return;
+
+		// revoke RSVP, update application
+		const docRef = getFirestore()
+			.collection("applications")
+			.doc(applicationDocId);
+		await docRef.update({ rsvp: false });
 	} catch (error) {
 		logError("Failed to unverified rsvp", { error });
-		return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-			message: "Failed to unverified rsvp",
-		});
+		throw new HttpsError("internal", "Failed to revoke rsvp");
 	}
 
-	// move next in waitlist to rsvp
-	return response(HttpStatus.OK);
+	return;
 });
 
 export const verifyRSVP = onCall(async (req) => {
