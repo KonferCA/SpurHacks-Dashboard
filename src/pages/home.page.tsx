@@ -7,6 +7,7 @@ import { useApplications } from "@/hooks/use-applications";
 import { paths } from "@/providers/RoutesProvider/data";
 import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
+	Alert,
 	Badge,
 	Box,
 	Button,
@@ -90,6 +91,19 @@ const HomePage = () => {
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
+				{/* TODO: this alert needs to be removed once all the features are implemented and released on June 13th. */}
+				{currentApplication?.rsvp &&
+					currentApplication.applicationStatus === "accepted" && (
+						<Alert.Root rounded="4xl">
+							<Alert.Indicator />
+							<Alert.Content>
+								<Alert.Title>
+									June 13th: Schedule drops, tickets go live, teams form! Don't
+									miss out - come back then!
+								</Alert.Title>
+							</Alert.Content>
+						</Alert.Root>
+					)}
 				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					{/* Only render if no submission or application status is not accepted and has not rsvp'd */}
 					{(!currentApplication ||
@@ -328,37 +342,37 @@ const HomePage = () => {
 						</Card.Root>
 					)}
 				</Flex>
-
-				<Card.Root maxWidth={{ base: "none", xl: "600px" }} rounded="4xl">
-					<Card.Header>
-						<Card.Title>Important Info</Card.Title>
-					</Card.Header>
-					<Card.Body>
-						<Flex direction="column" gap={4}>
-							{importantInfo.map(({ day, time, label }) => (
-								<Flex key={label} align="center" gap={6}>
-									<Flex
-										px={4}
-										py={2}
-										borderWidth={1}
-										borderColor="#FFA75F"
-										rounded="full"
-										fontSize="sm"
-										justify="space-between"
-										w="130px"
-									>
-										<Text>{day}</Text>
-										<Text>{time}</Text>
+				{currentApplication?.rsvp && (
+					<Card.Root maxWidth={{ base: "none", xl: "600px" }} rounded="4xl">
+						<Card.Header>
+							<Card.Title>Important Info</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Flex direction="column" gap={4}>
+								{importantInfo.map(({ day, time, label }) => (
+									<Flex key={label} align="center" gap={6}>
+										<Flex
+											px={4}
+											py={2}
+											borderWidth={1}
+											borderColor="#FFA75F"
+											rounded="full"
+											fontSize="sm"
+											justify="space-between"
+											w="130px"
+										>
+											<Text>{day}</Text>
+											<Text>{time}</Text>
+										</Flex>
+										<Text color="gray.200" fontSize="sm">
+											{label}
+										</Text>
 									</Flex>
-									<Text color="gray.200" fontSize="sm">
-										{label}
-									</Text>
-								</Flex>
-							))}
-						</Flex>
-					</Card.Body>
-				</Card.Root>
-
+								))}
+							</Flex>
+						</Card.Body>
+					</Card.Root>
+				)}
 				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					<Card.Root
 						maxWidth={{ base: "none", xl: "600px" }}
@@ -430,7 +444,6 @@ const HomePage = () => {
 						</Card.Footer>
 					</Card.Root>
 				</Flex>
-
 				<Card.Root {...cardStyles}>
 					<Card.Header>
 						<Heading>Stay Connected</Heading>
