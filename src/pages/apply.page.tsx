@@ -72,7 +72,8 @@ import {
 } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
-const giveAwayIgPostUrl = "https://instagram.com";
+const giveAwayIgPostUrl =
+	"https://www.instagram.com/p/DKavr2cNQNn/?igsh=MWNld2U0ZWFpb2k0OQ==";
 
 enum StepsEnum {
 	BasicInformation,
