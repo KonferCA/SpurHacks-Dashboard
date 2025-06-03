@@ -72,6 +72,9 @@ import {
 } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 
+const giveAwayIgPostUrl =
+	"https://www.instagram.com/p/DKavr2cNQNn/?igsh=MWNld2U0ZWFpb2k0OQ==";
+
 enum StepsEnum {
 	BasicInformation,
 	Interests,
@@ -138,6 +141,8 @@ const stepFields: ApplicationDataKey[][] = [
 	// Step: Final checks
 	[
 		"referralSources",
+		"enterGiveAway",
+		"referredBy",
 		"describeSalt",
 		"agreedToMLHCoC",
 		"agreedToMLHToCAndPrivacyPolicy",
@@ -163,8 +168,13 @@ export const ApplyPage = () => {
 	const { currentUser } = useAuth();
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isLoadingResume, setIsLoadingResume] = useState(false);
-	const { isLoading: loadingApplications, refreshApplications } = useApplications();
-	const { draft, isLoading: loadingDraft, refreshDraft } = useApplicationDraft();
+	const { isLoading: loadingApplications, refreshApplications } =
+		useApplications();
+	const {
+		draft,
+		isLoading: loadingDraft,
+		refreshDraft,
+	} = useApplicationDraft();
 	const navigate = useNavigate();
 
 	if (!currentUser) return <Navigate to={paths.login} />;
@@ -398,6 +408,8 @@ export const ApplyPage = () => {
 					"Advertisements from another Discord server",
 				],
 				describeSalt: "Salty",
+				enterGiveAway: "Yes",
+				referredBy: "@konfer",
 				agreedToMLHCoC: true,
 				agreedToMLHToCAndPrivacyPolicy: true,
 				agreedToReceiveEmailsFromKonferOrSpur: true,
@@ -966,6 +978,47 @@ export const ApplyPage = () => {
 										required
 									/>
 								</GridItem>
+
+								{/* Referral and give away */}
+								<GridItem colSpan={3}>
+									<Field.Root>
+										<Select
+											label="Would you like to enter our giveaway for 2x Coldplay concert tickets @ Rogers Stadium on July 11th?"
+											options={["Yes", "No"]}
+											value={mapOption(application.enterGiveAway)}
+											onChange={(opts) =>
+												handleChange("enterGiveAway", opts[0] ?? "")
+											}
+											error={errors.enterGiveAway}
+										/>
+										<Field.HelperText>
+											Check out our{" "}
+											<ChakraLink
+												color="skyblue"
+												textDecor="underline"
+												href={giveAwayIgPostUrl}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												Instagram post
+											</ChakraLink>{" "}
+											for more details.
+										</Field.HelperText>
+									</Field.Root>
+								</GridItem>
+
+								<GridItem colSpan={3}>
+									<TextInput
+										disabled={application.enterGiveAway !== "Yes"}
+										label="Referred by someone? Enter their Instagram handle below."
+										description="Both you and your referrer will receive an extra entry into the giveaway!"
+										value={application.referredBy}
+										onChange={(e) => handleChange("referredBy", e.target.value)}
+										error={errors.referredBy}
+										placeholder="@handle"
+									/>
+								</GridItem>
+
 								<GridItem colSpan={6} spaceY="1rem">
 									<Fieldset.Root
 										invalid={

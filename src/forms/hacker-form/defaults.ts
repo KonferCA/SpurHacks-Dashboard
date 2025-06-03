@@ -54,4 +54,7 @@ export const defaultApplication: ApplicationData = {
 	rsvp: false,
 	timestamp: Timestamp.now(),
 	applicationStatus: "draft",
+
+	enterGiveAway: "",
+	referredBy: "",
 };

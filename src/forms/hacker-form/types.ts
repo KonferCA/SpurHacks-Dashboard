@@ -43,6 +43,10 @@ export interface ApplicationData {
 	diets: string[];
 	allergies: string[];
 
+	// Referral/Give away
+	enterGiveAway: string;
+	referredBy: string;
+
 	// Final Checks
 	participateInHawkHacks: boolean;
 	agreedToSpurHacksCoc: boolean;
