@@ -29,9 +29,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const importantInfo = [
-	{ day: "FRI", time: "7:00PM", label: "Opening Ceremony" },
-	{ day: "SUN", time: "9:00AM", label: "Projects Due" },
-	{ day: "SUN", time: "5:00PM", label: "Closing Ceremony" },
+	{ day: "FRI", time: "5:00PM", label: "Registration" },
+	{ day: "FRI", time: "8:30PM", label: "Opening Ceremony" },
+	{ day: "SUN", time: "11:00AM", label: "Projects Due" },
+	{ day: "SUN", time: "5:30PM", label: "Closing Ceremony" },
 ];
 
 const cardStyles = {
@@ -41,7 +42,8 @@ const cardStyles = {
 };
 
 const HomePage = () => {
-	const { current: currentApplication, refreshApplications } = useApplications();
+	const { current: currentApplication, refreshApplications } =
+		useApplications();
 	const { deadlines } = useDeadlines();
 	const navigate = useNavigate();
 	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
