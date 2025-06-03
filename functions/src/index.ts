@@ -716,7 +716,4 @@ export { createPassClass, createPassObject } from "./google";
 export {
 	verifyRSVP,
 	withdrawRSVP,
-	joinWaitlist,
-	// expiredSpotCleanup,
-	// moveToSpots,
 } from "./rsvp";
