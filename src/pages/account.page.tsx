@@ -11,11 +11,12 @@ import type { ResumeVisibility, Socials } from "@/services/firebase/types";
 import { getSocials, updateSocials } from "@/services/firebase/user";
 import { useUserStore } from "@/stores/user.store";
 import { Button, Flex, Icon, Text } from "@chakra-ui/react";
-import { Cog6ToothIcon } from "@heroicons/react/24/outline";
+import { Cog6ToothIconm, CheckCircleIcon } from "@heroicons/react/24/outline";
 import {
 	type FormEventHandler,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -31,6 +32,12 @@ import type {
 } from "@/forms/hacker-form/types";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Eye, EyeClosed } from "@phosphor-icons/react";
+import { useDebounce } from "@/hooks/use-debounce";
+import {
+	DuplicateApplicationError,
+	saveApplicationDraft,
+	submitApplication,
+} from "@/services/firebase/application";
 
 const allowedFileTypes = [
 	"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
@@ -274,12 +281,18 @@ type FormErrors = { _hasErrors: boolean } & Partial<
 export const AccountPage = () => {
 	const { currentUser, resetPassword } = useAuth();
 	const { applications } = useApplications();
+	const userApp = applications[0] || null;
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
-
 	const [isSendingReset, setIsSendingReset] = useState(false);
 	const [resetStatus, setResetStatus] = useState<"idle" | "success" | "error">(
 		"idle",
 	);
+	const {
+		isLoading: loadingApplications,
+		drafts,
+		refreshApplications,
+		refreshDrafts,
+	} = useApplications();
 
 	// default user profile
 	const [application, setApplication] = useState<ApplicationData>(() => {
@@ -290,16 +303,41 @@ export const AccountPage = () => {
 		return app;
 	});
 
+	const draftId = useMemo(() => {
+		if (drafts.length) return drafts[0].__docId;
+		return undefined;
+	}, [drafts]);
+
+	const autosave = useDebounce(
+		//@ts-ignore
+		async (application: ApplicationDataDoc, uid: string) => {
+			try {
+				await saveApplicationDraft(application, uid, application.__docId);
+				await refreshDrafts();
+			} catch (error) {
+				console.error(error);
+				toaster.error({
+					title: "Oops, something went wrong when saving application draft.",
+					description: "",
+				});
+			}
+		},
+		500,
+		[],
+	);
+
 	const handleChange = useCallback(
 		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
 			setApplication((application) => {
 				const updatedApp = { ...application };
 				updatedApp[name] = data;
+				console.log(application);
+				autosave(updatedApp, currentUser?.uid, draftId);
 				return updatedApp;
 			});
 			clearErrors();
 		},
-		[],
+		[currentUser?.uid],
 	);
 
 	const clearErrors = () => setErrors({ _hasErrors: false });
@@ -334,10 +372,11 @@ export const AccountPage = () => {
 		}
 	};
 
+	const testing = true;
 	return (
 		<PageWrapper>
-			<Flex w="full">
-				<Flex w="full" maxW="30rem" direction="column" gap="5">
+			<Flex w="full" pl={5}>
+				<Flex w="full" maxW="30rem" direction="column" gap="10">
 					<Flex direction="column">
 						<TextInput
 							label="Email"
@@ -418,8 +457,46 @@ export const AccountPage = () => {
 							</Text>
 						)}
 					</Flex>
-					<Flex>
+					<Flex direction="column" gap={4}>
 						<Text color="offwhite.primary/30">CHANGE RSVP STATUS</Text>
+						{/* {currentUser?.rsvpVerified ? ( */}
+						{testing ? (
+							<Flex alignItems="start" direction="column" gap={4}>
+								<Flex gap={4}>
+									<Text color="offwhite.primary/30">
+										You are currently RSVP’d.
+									</Text>
+									<CheckCircleIcon width="20" color="green" />
+								</Flex>
+								<Text color="offwhite.primary/30">
+									We understand that life hands you unexpected events. You may
+									revoke your RSVP status, and allow someone else a chance to
+									experience SpurHacks 2025 instead. This action cannot be
+									undone!
+								</Text>
+								<Button
+									bg="transparent"
+									borderWidth={1}
+									borderColor="brand.error"
+									color="brand.error"
+									rounded="full"
+								>
+									REVOKE RSVP STATUS
+								</Button>
+							</Flex>
+						) : (
+							<Text>No</Text>
+						)}
+					</Flex>
+					<Flex alignItems="start" direction="column" gap={4}>
+						<Text color="offwhite.primary/30">DANGER ZONE</Text>
+						<Text color="offwhite.primary/30">
+							Deleting your account means revoking your acceptance to SpurHacks
+							2025. This action cannot be undone!
+						</Text>
+						<Button bg="brand.error" color="offwhite.primary" rounded="full">
+							DELETE ACCOUNT
+						</Button>
 					</Flex>
 				</Flex>
 			</Flex>
