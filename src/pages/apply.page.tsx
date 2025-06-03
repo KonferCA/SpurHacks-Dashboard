@@ -195,7 +195,7 @@ export const ApplyPage = () => {
 
 	useEffect(() => {
 		if (draft) {
-			setApplication({ ...draft });
+			setApplication((curr) => ({ ...curr, ...draft }));
 		}
 	}, [draft]);
 
