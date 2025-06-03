@@ -37,7 +37,6 @@ export const useApplications = () => {
 		return queryClient.invalidateQueries({ queryKey: ["applications"] });
 	}, [queryClient]);
 
-
 	const value = useMemo(() => {
 		return {
 			current: applications?.find((app) => app.hackathonYear === "2025"),

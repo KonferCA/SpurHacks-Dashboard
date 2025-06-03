@@ -1,5 +1,6 @@
 import { DiscordLogo, FullLogo, Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import type { AccessControlContext } from "@/navigation";
 import {
 	type RouteConfig,
@@ -8,6 +9,7 @@ import {
 	useUser,
 } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
+import { useUserStore } from "@/stores/user.store";
 import {
 	Box,
 	Link as ChakraLink,
@@ -29,13 +31,11 @@ import {
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
-import { FiLogOut, FiMapPin, FiChevronUp } from "react-icons/fi";
+import { FiChevronUp, FiLogOut, FiMapPin } from "react-icons/fi";
 import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
-import { useUserStore } from "@/stores/user.store";
-import { useDeadlines } from "@/hooks/use-deadlines";
 
 const navItems = {
 	[paths.home]: {

@@ -290,7 +290,12 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		// Clear any existing timeout
 		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 
-		if (routes.length && !loadingApplications && !loadingAuth && !loadingDeadlines) {
+		if (
+			routes.length &&
+			!loadingApplications &&
+			!loadingAuth &&
+			!loadingDeadlines
+		) {
 			// Prevent random flashes in the DOM due to updates
 			timeoutRef.current = window.setTimeout(
 				() => setLoadingRoutes(false),
