@@ -177,14 +177,60 @@ async function sendJoinedWaitlistEmail(name: string, email: string) {
 // 	});
 // }
 
-export const withdrawRSVP = onCall(async (req) => {
-	if (!req.auth) throw new HttpsError("permission-denied", "Not authenticated");
+export const withdrawRSVP = onCall(
+	{
+		cors: ["https://dashboard.spurhacks.com"],
+	},
+	async (req) => {
+		if (!req.auth)
+			throw new HttpsError("permission-denied", "Not authenticated");
 
-	logInfo("Withdraw RSVP called.", { uid: req.auth.uid });
+		logInfo("Withdraw RSVP called.", { uid: req.auth.uid });
 
-	try {
+		try {
+			const user = await getAuth().getUser(req.auth.uid);
+
+			const [application, applicationDocId] = await getUserApplicationByYear(
+				user.uid,
+				"2025",
+			);
+			if (!application || !applicationDocId)
+				throw new HttpsError(
+					"failed-precondition",
+					"No application linked to requesting user",
+				);
+
+			if (!application.rsvp) return;
+
+			// revoke RSVP, update application
+			const docRef = getFirestore()
+				.collection("applications")
+				.doc(applicationDocId);
+			await docRef.update({ rsvp: false });
+		} catch (error) {
+			logError("Failed to unverified rsvp", { error });
+			throw new HttpsError("internal", "Failed to revoke rsvp");
+		}
+
+		return;
+	},
+);
+
+export const verifyRSVP = onCall(
+	{
+		cors: ["https://dashboard.spurhacks.com"],
+	},
+	async (req) => {
+		if (!req.auth) {
+			throw new HttpsError("permission-denied", "Not authenticated");
+		}
+
+		logInfo("Verify RSVP called.", { uid: req.auth.uid });
+
+		// only verify once
 		const user = await getAuth().getUser(req.auth.uid);
 
+		// fetch application from firestore
 		const [application, applicationDocId] = await getUserApplicationByYear(
 			user.uid,
 			"2025",
@@ -195,65 +241,30 @@ export const withdrawRSVP = onCall(async (req) => {
 				"No application linked to requesting user",
 			);
 
-		if (!application.rsvp) return;
+		if (application.rsvp) {
+			return;
+		}
 
-		// revoke RSVP, update application
-		const docRef = getFirestore()
-			.collection("applications")
-			.doc(applicationDocId);
-		await docRef.update({ rsvp: false });
-	} catch (error) {
-		logError("Failed to unverified rsvp", { error });
-		throw new HttpsError("internal", "Failed to revoke rsvp");
-	}
+		try {
+			// RSVP user, update application
+			const docRef = getFirestore()
+				.collection("applications")
+				.doc(applicationDocId);
+			await docRef.update({ rsvp: true });
+		} catch (e) {
+			logError("Error verifying RSVP.", {
+				uid: user.uid,
+				error: (e as Error).message,
+			});
+			throw new HttpsError(
+				"internal",
+				"RSVP service down. Please contact support in our Discord.",
+			);
+		}
 
-	return;
-});
-
-export const verifyRSVP = onCall(async (req) => {
-	if (!req.auth) {
-		throw new HttpsError("permission-denied", "Not authenticated");
-	}
-
-	logInfo("Verify RSVP called.", { uid: req.auth.uid });
-
-	// only verify once
-	const user = await getAuth().getUser(req.auth.uid);
-
-	// fetch application from firestore
-	const [application, applicationDocId] = await getUserApplicationByYear(
-		user.uid,
-		"2025",
-	);
-	if (!application || !applicationDocId)
-		throw new HttpsError(
-			"failed-precondition",
-			"No application linked to requesting user",
-		);
-
-	if (application.rsvp) {
 		return;
-	}
-
-	try {
-		// RSVP user, update application
-		const docRef = getFirestore()
-			.collection("applications")
-			.doc(applicationDocId);
-		await docRef.update({ rsvp: true });
-	} catch (e) {
-		logError("Error verifying RSVP.", {
-			uid: user.uid,
-			error: (e as Error).message,
-		});
-		throw new HttpsError(
-			"internal",
-			"RSVP service down. Please contact support in our Discord.",
-		);
-	}
-
-	return;
-});
+	},
+);
 
 export const joinWaitlist = onCall(async (_, res) => {
 	const context = res as Context;

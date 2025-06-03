@@ -324,30 +324,35 @@ export const verifyGitHubEmail = onCall(async (data: any, res) => {
 	}
 });
 
-export const logEvent = onCall((req) => {
-	const uid = req.auth?.uid;
+export const logEvent = onCall(
+	{
+		cors: ["https://dashboard.spurhacks.com"],
+	},
+	(req) => {
+		const uid = req.auth?.uid;
 
-	const payloadValidation = z.object({
-		type: z.string().refine((val) => ["error", "info", "log"].includes(val)),
-		data: z.any(),
-	});
+		const payloadValidation = z.object({
+			type: z.string().refine((val) => ["error", "info", "log"].includes(val)),
+			data: z.any(),
+		});
 
-	const result = payloadValidation.safeParse(req.data);
-	if (!result.success) logInfo("Invalid log payload");
-	else {
-		switch (result.data.type) {
-			case "error":
-				logError({ data: result.data.data, uid });
-				break;
-			case "info":
-				logInfo({ data: result.data.data, uid });
-				break;
-			default:
-				log({ data: result.data.data, uid });
-				break;
+		const result = payloadValidation.safeParse(req.data);
+		if (!result.success) logInfo("Invalid log payload");
+		else {
+			switch (result.data.type) {
+				case "error":
+					logError({ data: result.data.data, uid });
+					break;
+				case "info":
+					logInfo({ data: result.data.data, uid });
+					break;
+				default:
+					log({ data: result.data.data, uid });
+					break;
+			}
 		}
-	}
-});
+	},
+);
 
 async function internalGetTicketData(id: string, extended = false) {
 	logInfo("Checking for ticket data...");
