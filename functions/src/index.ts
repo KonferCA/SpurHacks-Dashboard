@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
 import {
 	log,
 	error as logError,
@@ -11,7 +10,6 @@ import * as functions from "firebase-functions/v1";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Octokit } from "octokit";
-import * as QRCode from "qrcode";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -21,89 +19,6 @@ import { HttpStatus, response } from "./utils";
 initializeApp();
 
 const FE_URL = process.env.FE_URL;
-
-export const fetchOrGenerateTicket = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context || !context.auth) {
-		throw new HttpsError(
-			"permission-denied",
-			"User must be authenticated to initiate this operation.",
-		);
-	}
-
-	const userId = context.auth.uid;
-	const ticketsRef = getFirestore().collection("tickets");
-	const ticketQuery = await ticketsRef
-		.where("userId", "==", userId)
-		.limit(1)
-		.get();
-
-	if (ticketQuery.empty) {
-		let ticketId = "";
-		let createTicket = false;
-		const snap = await getFirestore()
-			.collection("tickets")
-			.where("userId", "==", context.auth.uid)
-			.get();
-		const data = snap.docs[0]?.data();
-		if (!data) {
-			ticketId = uuidv4();
-			createTicket = true;
-		} else {
-			ticketId = data.ticketId;
-		}
-		const qrCodeValue = `${process.env.FE_URL}/ticket/${ticketId}`;
-
-		try {
-			const qrCodeDataURL = await QRCode.toDataURL(qrCodeValue, {
-				width: 256,
-			});
-
-			const base64Data = qrCodeDataURL.split(",")[1];
-			const buffer = Buffer.from(base64Data, "base64");
-
-			const storageRef = getStorage().bucket();
-			const fileRef = storageRef.file(`qrCodes/${userId}/${ticketId}.png`);
-			await fileRef.save(buffer, {
-				metadata: {
-					contentType: "image/png",
-				},
-			});
-
-			await fileRef.makePublic();
-
-			const qrCodeUrl = fileRef.publicUrl();
-
-			if (createTicket) {
-				await ticketsRef.doc(ticketId).set({
-					userId: userId,
-					ticketId: ticketId,
-					qrCodeUrl: qrCodeUrl,
-					foods: [],
-					events: [],
-					timestamp: new Date(),
-				});
-			} else {
-				await getFirestore().collection("tickets").doc(ticketId).update({
-					qrCodeUrl: qrCodeUrl,
-					timestamp: new Date(),
-				});
-			}
-
-			return { qrCodeUrl };
-		} catch (error) {
-			logError("Error generating or uploading QR code:", error);
-			throw new HttpsError(
-				"internal",
-				"Failed to generate or upload QR code",
-				error instanceof Error ? error.message : "Unknown error",
-			);
-		}
-	} else {
-		const ticketData = ticketQuery.docs[0].data();
-		return { qrCodeUrl: ticketData.qrCodeUrl as string };
-	}
-});
 
 // Default on-sign-up Claims function
 export const addDefaultClaims = functions.auth.user().onCreate(async (user) => {
@@ -717,3 +632,5 @@ export {
 	verifyRSVP,
 	withdrawRSVP,
 } from "./rsvp";
+
+export { createTicketDoc } from "./ticket";
