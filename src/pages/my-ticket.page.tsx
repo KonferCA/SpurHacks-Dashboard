@@ -74,7 +74,7 @@ export const MyTicketPage = () => {
 		try {
 			const createTicket = httpsCallable(
 				functions,
-				service === "apple" ? "createTicket" : "createPassObject",
+				service === "apple" ? "createTicket" : "addToGoogleWallet",
 			);
 			const ticketResult = await createTicket({
 				email: email,
@@ -84,7 +84,7 @@ export const MyTicketPage = () => {
 			});
 			const ticketData = ticketResult.data as { url: string };
 			if (ticketData.url) {
-				window.location.href = ticketData.url;
+				window.open(ticketData.url, "_blank");
 			} else {
 				alert(
 					`Ticket has been issued but could not generate ${

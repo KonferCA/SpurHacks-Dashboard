@@ -711,7 +711,7 @@ export {
 
 export { createTicket } from "./apple";
 
-export { createPassClass, createPassObject } from "./google";
+export { addToGoogleWallet } from "./google";
 
 export {
 	verifyRSVP,
