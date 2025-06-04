@@ -386,9 +386,6 @@ export const AccountPage = () => {
 							disabled
 							required
 						/>
-						<Button alignSelf="end" rounded="full">
-							SEND VERIFICATION
-						</Button>
 					</Flex>
 					<PhoneInput
 						required
