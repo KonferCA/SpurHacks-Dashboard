@@ -1,328 +1,478 @@
-import { RiDiscordLine } from "react-icons/ri";
-import { FiLogOut, FiMapPin } from "react-icons/fi";
-import { RxStar } from "react-icons/rx";
-import { useState, useEffect, useMemo } from "react";
-import { useAuth } from "@/providers";
-import Hamburger from "hamburger-react";
-import { Link, useLocation } from "react-router-dom";
-import { Logo } from "@/assets";
-import { useUser, useRouteDefinitions } from "@/providers";
+import { DiscordLogo, FullLogo, Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
+import type { AccessControlContext } from "@/navigation";
 import {
-    CalendarDaysIcon,
-    CodeBracketIcon,
-    HomeIcon,
-    ShareIcon,
-    TicketIcon,
-    UserGroupIcon,
-} from "@heroicons/react/24/outline";
+	type RouteConfig,
+	useAuth,
+	useRouteDefinitions,
+	useUser,
+} from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
+import { useUserStore } from "@/stores/user.store";
+import {
+	Box,
+	Link as ChakraLink,
+	CloseButton,
+	Drawer,
+	Flex,
+	Image,
+	Portal,
+	Presence,
+	Text,
+} from "@chakra-ui/react";
+import {
+	CalendarDaysIcon,
+	CodeBracketIcon,
+	HomeIcon,
+	ShareIcon,
+	TicketIcon,
+	UserGroupIcon,
+} from "@heroicons/react/24/outline";
+import Hamburger from "hamburger-react";
+import { useEffect, useMemo, useState } from "react";
+import { FiChevronUp, FiLogOut, FiMapPin } from "react-icons/fi";
+import { RxStar } from "react-icons/rx";
+import { Link } from "react-router-dom";
+import { RouterChakraLink } from "./RouterChakraLink";
+import { Button } from "./ui/button";
+
+const navItems = {
+	[paths.home]: {
+		label: "Home",
+		Icon: HomeIcon,
+	},
+	[paths.schedule]: {
+		label: "Schedule",
+		Icon: CalendarDaysIcon,
+	},
+	[paths.networking]: {
+		label: "Networking",
+		Icon: ShareIcon,
+	},
+	[paths.myTicket]: {
+		label: "My Ticket",
+		Icon: TicketIcon,
+	},
+	[paths.apply]: {
+		label: "Application",
+		Icon: CodeBracketIcon,
+	},
+	[paths.myTeam]: {
+		label: "My Team",
+		Icon: UserGroupIcon,
+	},
+	[paths.perks]: {
+		label: "Perks",
+		Icon: RxStar,
+	},
+};
+
+const MobileNav = ({
+	availableRoutes,
+	isMobile,
+}: {
+	availableRoutes: RouteConfig[];
+	isMobile: boolean;
+}) => {
+	const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+	useEffect(() => {
+		setMobileMenuOpen(false);
+	}, [location]);
+
+	return (
+		<>
+			{/* Mobile: Navbar Closed */}
+			<Flex
+				as="nav"
+				alignItems="center"
+				justifyContent="space-between"
+				padding="1rem"
+			>
+				<Flex alignItems="center" justifyContent="start">
+					<Link to="/home">
+						<Image
+							width="3rem"
+							height="2.5rem"
+							src={Logo}
+							alt="SpurHacks Logo"
+						/>
+					</Link>
+				</Flex>
+				<Drawer.Root
+					open={isMobileMenuOpen}
+					onOpenChange={(e) => setMobileMenuOpen(e.open)}
+				>
+					<Drawer.Trigger asChild>
+						<Hamburger
+							toggled={isMobileMenuOpen}
+							toggle={setMobileMenuOpen}
+							size={24}
+							label="Show navigation menu"
+						/>
+					</Drawer.Trigger>
+					<Portal>
+						<Drawer.Backdrop />
+						<Drawer.Positioner>
+							<Drawer.Content bg="#181C2B">
+								<Drawer.Header>
+									<Drawer.Title />
+								</Drawer.Header>
+								<Drawer.Body>
+									<Flex
+										direction="column"
+										alignItems="center"
+										justifyContent="space-between"
+										height="full"
+										pb="10"
+									>
+										<NavbarContent
+											availableRoutes={availableRoutes}
+											isMobile={isMobile}
+										/>
+									</Flex>
+								</Drawer.Body>
+								<Drawer.CloseTrigger asChild>
+									<CloseButton size="sm" />
+								</Drawer.CloseTrigger>
+							</Drawer.Content>
+						</Drawer.Positioner>
+					</Portal>
+				</Drawer.Root>
+			</Flex>
+		</>
+	);
+};
+
+const NavbarContent = ({
+	availableRoutes,
+	isMobile,
+}: {
+	availableRoutes: RouteConfig[];
+	isMobile: boolean;
+}) => {
+	const { logout, currentUser: user } = useAuth();
+	const [showLogout, setShowLogout] = useState(false);
+	const team = useUserStore((state) => state.team);
+
+	return (
+		<>
+			<Flex
+				as="ul"
+				direction="column"
+				alignItems="start"
+				justifyContent="start"
+				gap="1rem"
+				w="full"
+				pt={5}
+				px={2}
+			>
+				<ChakraLink
+					w="full"
+					href="https://maps.app.goo.gl/NxPavuKXyiT6fhH87"
+					target="_blank"
+					rel="noopener noreferrer"
+					textDecoration="none"
+					color="#666484"
+					rounded="full"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
+				>
+					<Flex
+						padding="1rem"
+						alignItems="center"
+						justifyContent="start"
+						gap="0.5rem"
+						cursor="pointer"
+					>
+						<FiMapPin size="1.5rem" />
+						Location
+					</Flex>
+				</ChakraLink>
+				{availableRoutes
+					// @ts-ignore
+					.filter(({ path }) => path && !!navItems[path])
+					.map(({ path }) => {
+						// @ts-ignore
+						const { label, Icon } = navItems[path];
+						const isActive = location.pathname === path;
+						return (
+							// <Link to={path as string} className="w-full">
+							<RouterChakraLink
+								key={label}
+								as={Link}
+								to={path as string}
+								w="full"
+								textDecoration="none"
+								color="#666484"
+								rounded="full"
+								bg={isActive ? "#1F1E2E" : "transparent"}
+								_hover={{
+									bg: "#1F1E2E",
+								}}
+							>
+								<Flex
+									as="li"
+									padding="1rem"
+									w="full"
+									cursor="pointer"
+									gap="0.5rem"
+									alignItems="center"
+									justifyContent="start"
+								>
+									<Box width="1.5rem" height="1.5rem">
+										<Icon color={isActive ? "#FFA75F" : "#666483"} />
+									</Box>
+									<Text color={isActive ? "#DEEBFF" : "#666484"}>{label}</Text>
+								</Flex>
+							</RouterChakraLink>
+							// </Link>
+						);
+					})}
+				<ChakraLink
+					w="full"
+					href="https://discord.gg/NpnSUrZJQy"
+					target="_blank"
+					rel="noopener noreferrer"
+					textDecoration="none"
+					color="#666484"
+					rounded="full"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
+				>
+					<Flex
+						padding="1rem"
+						alignItems="center"
+						justifyContent="start"
+						gap="0.5rem"
+						cursor="pointer"
+					>
+						<Image
+							src={DiscordLogo}
+							filter="brightness(0) saturate(100%) invert(44%) sepia(6%) saturate(1804%) hue-rotate(205deg) brightness(89%) contrast(93%)"
+							width="1.5rem"
+							height="1.5rem"
+						/>
+						Discord Support
+					</Flex>
+				</ChakraLink>
+			</Flex>
+			{user && (
+				<ChakraLink
+					position="relative"
+					w="full"
+					onClick={() => {
+						setShowLogout((prev) => !prev);
+					}}
+					textDecoration="none"
+					color="#666484"
+					rounded="full"
+					bg="#1F1E2E"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
+				>
+					{showLogout && (
+						<Presence
+							present={showLogout}
+							position="absolute"
+							top="-12"
+							right="0"
+							animationName={{
+								_open: "slide-from-bottom, fade-in",
+								_closed: "slide-to-bottom, fade-out",
+							}}
+							animationDuration="slow"
+						>
+							<Button
+								bg="#1F1E2E"
+								color="brand.error"
+								gap={4}
+								type="button"
+								rounded="full"
+								px={6}
+								py={5}
+								onClick={logout}
+							>
+								<FiLogOut size="1rem" />
+								Log out
+							</Button>
+						</Presence>
+					)}
+					<Flex
+						w="full"
+						justify="space-between"
+						alignItems="center"
+						padding="0.5rem"
+						px={6}
+						gap={2}
+					>
+						<Flex flex="1" justifyContent="start" alignItems="center" gap={4}>
+							<Image
+								src={user.photoURL ?? "/default-profile.png"}
+								alt="User photo"
+								rounded="full"
+								width="2rem"
+								height="2rem"
+							/>
+							<Flex
+								flex="1"
+								justifyContent="start"
+								alignItems="start"
+								direction="column"
+							>
+								<Text
+									fontSize="xs"
+									color="offwhite.primary"
+									textTransform="none"
+									lineClamp="1"
+								>
+									{team?.teamName ?? "No team"}
+								</Text>
+								<Text
+									fontSize="sm"
+									color="offwhite.primary"
+									textTransform="none"
+								>
+									{user.displayName ?? "Unnamed hacker"}
+								</Text>
+							</Flex>
+						</Flex>
+						<Box
+							marginEnd="auto"
+							transition="transform 0.3s ease"
+							transform={showLogout ? "rotate(180deg)" : "rotate(0deg)"}
+						>
+							<FiChevronUp size="1rem" />
+						</Box>
+					</Flex>
+				</ChakraLink>
+			)}
+		</>
+	);
+};
 
 export const Navbar = () => {
-    const { logout } = useAuth();
+	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+	const { user } = useUser();
+	const applicationsCtx = useApplications();
+	const deadlinesCtx = useDeadlines();
+	const routes = useRouteDefinitions();
 
-    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const { user } = useUser();
-    const { applications } = useApplications();
-    const routes = useRouteDefinitions();
+	const availableRoutes = useMemo(() => {
+		return routes.filter((route) => {
+			// Default to include in navbar if no access check defined
+			if (typeof route.accessCheck === "undefined") return true;
+			const ctx: AccessControlContext = {
+				user,
+				applicationsCtx,
+				deadlinesCtx,
+			};
+			try {
+				if (typeof route.accessCheck === "function")
+					return route.accessCheck(ctx);
+				if (Array.isArray(route.accessCheck))
+					return route.accessCheck.every((check) => check(ctx));
+			} catch (e) {
+				// do nothing
+			}
 
-    const availableRoutes = useMemo(() => {
-        return routes.filter((route) => {
-            // Default to include in navbar if no access check defined
-            if (typeof route.accessCheck === "undefined") return true;
-            if (typeof route.accessCheck === "function")
-                return route.accessCheck({ user, applications });
-            if (Array.isArray(route.accessCheck))
-                return route.accessCheck.every((check) =>
-                    check({ user, applications })
-                );
-            // Default to exclude if access check type is not recognized
-            return false;
-        });
-    }, [routes, user, applications]);
+			// Default to exclude if access check type is not recognized
+			return false;
+		});
+	}, [routes, applicationsCtx]);
 
-    const navItems = {
-        [paths.home]: {
-            label: "Home",
-            Icon: HomeIcon,
-        },
-        [paths.schedule]: {
-            label: "Schedule",
-            Icon: CalendarDaysIcon,
-        },
-        [paths.networking]: {
-            label: "Networking",
-            Icon: ShareIcon,
-        },
-        [paths.myTicket]: {
-            label: "My Ticket",
-            Icon: TicketIcon,
-        },
-        [paths.application]: {
-            label: "Application",
-            Icon: CodeBracketIcon,
-        },
-        [paths.myTeam]: {
-            label: "My Team",
-            Icon: UserGroupIcon,
-        },
-        [paths.perks]: {
-            label: "Perks",
-            Icon: RxStar,
-        },
-    };
+	const updateNavbarState = () => {
+		setIsMobile(window.innerWidth <= 768);
+	};
 
-    const location = useLocation();
+	useEffect(() => {
+		window.addEventListener("resize", updateNavbarState);
+		return () => {
+			window.removeEventListener("resize", updateNavbarState);
+		};
+	}, []);
 
-    const updateNavbarState = () => {
-        setIsMobile(window.innerWidth <= 768);
-    };
+	return (
+		<>
+			{isMobile ? (
+				<MobileNav availableRoutes={availableRoutes} isMobile={isMobile} />
+			) : (
+				<Flex
+					as="nav"
+					height="vh"
+					position="fixed"
+					insetY="0"
+					width="18rem"
+					padding="1rem"
+					direction="column"
+					borderRightColor="#1F1E2E"
+					borderRightStyle="solid"
+					borderRightWidth={1}
+					style={{
+						background: `radial-gradient(
+							circle at top left,
+							#000000 -100%,
+							#191C26 120%,
+							#26252F 130%,
+							#332D38 180%,
+							#4D3E4A 200%,
+							#6B5C6D 170%,
+							#897B90 180%,
+							#C5B8D6 250%
+						)`,
+					}}
+				>
+					<Flex alignItems="center" justifyContent="center" padding="1rem">
+						<Link to={paths.home}>
+							<Box width="full" height="30px">
+								<img src={FullLogo} alt="SpurHacks Logo" />
+							</Box>
+						</Link>
+					</Flex>
 
-    const firstName =
-        applications[0]?.firstName ||
-        user?.displayName?.split(" ")[0] ||
-        "Unknown";
-
-    useEffect(() => {
-        window.addEventListener("resize", updateNavbarState);
-        return () => {
-            window.removeEventListener("resize", updateNavbarState);
-        };
-    }, []);
-
-    useEffect(() => {
-        setMobileMenuOpen(false);
-    }, [location]);
-
-    // TODO: groom routes rendering
-
-    const renderNavItems = (isMobile: boolean) => {
-        return availableRoutes
-            .filter(({ path }) => !!navItems[path as string])
-            .map(({ path }) => {
-                const { label, Icon } = navItems[path as string];
-                if (
-                    (path === paths.myTeam &&
-                        !window.localStorage.getItem(path)) ||
-                    (path === paths.myTicket &&
-                        !window.localStorage.getItem(path)) ||
-                    (path === paths.perks && !window.localStorage.getItem(path))
-                ) {
-                    return (
-                        <Link
-                            key={label}
-                            to={path as string}
-                            className="relative w-full"
-                        >
-                            <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                                {isMobile ? (
-                                    <>
-                                        <Icon className="w-4 h-4" />
-                                        <span className="relative">
-                                            {label}
-
-                                            <span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                            </span>
-                                        </span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Icon className="w-8 h-8" />
-                                        <span className="relative hidden md:flex">
-                                            {label}
-                                            <span className="absolute flex h-2 w-2 top-0 right-0 translate-x-full">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-                                            </span>
-                                        </span>
-                                    </>
-                                )}
-                            </li>
-                        </Link>
-                    );
-                }
-
-                return (
-                    <Link key={label} to={path as string} className="w-full">
-                        <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                            {isMobile ? (
-                                <>
-                                    <Icon className="w-4 h-4" />
-                                    <span>{label}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Icon className="w-8 h-8" />
-                                    <span className="hidden md:flex">
-                                        {label}
-                                    </span>
-                                </>
-                            )}
-                        </li>
-                    </Link>
-                );
-            });
-    };
-
-    return (
-        <>
-            {isMobile ? (
-                <>
-                    <nav className="flex items-center justify-between p-4 text-white border-b-2 border-b-gray-300">
-                        <div className="flex items-center justify-start">
-                            <Link
-                                className="flex gap-4 items-center z-10"
-                                to="/profile"
-                            >
-                                <img
-                                    className="h-10 w-10"
-                                    src={Logo}
-                                    alt="HawkHacks Logo"
-                                />
-                            </Link>
-                        </div>
-                        <div>
-                            <Hamburger
-                                toggled={isMobileMenuOpen}
-                                toggle={setMobileMenuOpen}
-                                size={24}
-                                color="black"
-                                label="Show navigation menu"
-                            />
-                        </div>
-                    </nav>
-
-                    <div
-                        className={`fixed z-20 right-0 top-0 h-full max-w-full p-10 py-24 bg-gray-200 backdrop-blur-xl transition-all duration-300 ease-in-out ${
-                            isMobileMenuOpen
-                                ? "translate-x-0 opacity-100"
-                                : "translate-x-full opacity-0"
-                        }`}
-                    >
-                        <div className="absolute right-2 top-2">
-                            <Hamburger
-                                toggled={isMobileMenuOpen}
-                                toggle={setMobileMenuOpen}
-                                size={24}
-                                color="black"
-                                label="Show navigation menu"
-                            />
-                        </div>
-                        <ul className="flex flex-col items-start justify-start divide-y divide-charcoalBlack">
-                            {user &&
-                                (user.type === "mentor" ||
-                                    user.type === "volunteer" ||
-                                    (user.type === "hacker" &&
-                                        user.rsvpVerified))}
-
-                            <a
-                                href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full"
-                            >
-                                <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                                    Location
-                                </li>
-                            </a>
-                            {user && renderNavItems(true)}
-                            <a
-                                href="https://discord.com/invite/GxwvFEn9TB"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full"
-                            >
-                                <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                                    Discord Support
-                                </li>
-                            </a>
-                        </ul>
-
-                        {user && (
-                            <button
-                                className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full flex items-center justify-start gap-2 hover:text-black"
-                                type="button"
-                                onClick={logout}
-                            >
-                                Sign out
-                            </button>
-                        )}
-                    </div>
-                </>
-            ) : (
-                <nav
-                    className={
-                        "h-screen p-4 bg-white transition-all duration-300 gap-12 flex-col w-[60px] font-medium text-cadetBlue hidden md:block md:fixed md:inset-y-0 md:z-10 md:w-72 border-r-2 border-r-gray-300"
-                    }
-                >
-                    <div className="flex items-start justify-start p-4">
-                        <Link
-                            className="flex gap-4 items-center justify-start"
-                            to={paths.home}
-                        >
-                            <img
-                                className="h-10 w-10"
-                                src={Logo}
-                                alt="HawkHacks Logo"
-                            />
-                            <span className="hidden md:flex text-2xl font-bold text-black">
-                                HawkHacks
-                            </span>
-                        </Link>
-                    </div>
-
-                    <div className="flex items-left justify-left p-4">
-                        Welcome,{" "}
-                        <span className="ml-1 font-bold"> {firstName} </span> !
-                    </div>
-
-                    <aside className="flex flex-col items-start justify-between h-[83%] overflow-y-auto">
-                        <ul className="flex flex-col items-start justify-start gap-4 w-full">
-                            {user &&
-                                (user.type === "mentor" ||
-                                    user.type === "volunteer" ||
-                                    (user.type === "hacker" &&
-                                        user.rsvpVerified))}
-                            <a
-                                href="https://maps.app.goo.gl/Fxic5XJBzZjHP4Yt5"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full"
-                            >
-                                <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                                    <FiMapPin size={32} />
-                                    Location
-                                </li>
-                            </a>
-                            {user && renderNavItems(false)}
-                            <a
-                                href="https://discord.com/invite/GxwvFEn9TB"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full"
-                            >
-                                <li className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full hover:text-black cursor-pointer flex items-center justify-start gap-2">
-                                    <RiDiscordLine size={32} />
-                                    Discord Support
-                                </li>
-                            </a>
-                        </ul>
-                        {user && (
-                            <button
-                                className="p-4 hover:bg-slate-100 duration-300 transition-colors rounded-md w-full flex items-center justify-start gap-2 hover:text-black"
-                                type="button"
-                                onClick={logout}
-                            >
-                                <FiLogOut size={32} />
-                                <span className="hidden md:flex">Sign out</span>
-                            </button>
-                        )}
-                    </aside>
-                </nav>
-            )}
-        </>
-    );
+					<Flex
+						as="aside"
+						direction="column"
+						alignItems="center"
+						justifyContent="space-between"
+						height="83%"
+						overflowY="auto"
+					>
+						<NavbarContent
+							availableRoutes={availableRoutes}
+							isMobile={isMobile}
+						/>
+					</Flex>
+				</Flex>
+			)}
+		</>
+	);
 };

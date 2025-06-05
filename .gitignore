@@ -33,8 +33,9 @@ env
 env.development
 env.production
 environment
+!.env.example
 
 .firebase
 .runtimeconfig.json
 hawkhacks-googleWallet-key.json
-tsconfig.tsbuildinfo
+*.tsbuildinfo

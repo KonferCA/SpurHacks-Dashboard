@@ -1,105 +1,119 @@
-import { useEffect, useMemo, useRef, useState, type FC } from "react";
 import type { ComponentProps } from "@/components/types";
-import { BrowserRouter, type RouteObject, useRoutes } from "react-router-dom";
-
-import { AccessControl } from "@/navigation/AccessControl/AccessControl";
-import { LoadingAnimation } from "@/components";
-import { useAuth } from "@/providers";
-import { useApplications } from "@/hooks/use-applications";
-
-// Pages
+import { type FC, useEffect, useMemo, useRef, useState } from "react";
 import {
-    AdminPage,
-    LoginPage,
-    NetworkingPage,
-    NotFoundPage,
-    TicketPage,
-    VerifyEmailPage,
-    HomePage,
-    PerksPage,
-    SchedulePage,
-} from "@/pages";
-import { PostSubmissionPage } from "@/pages/miscellaneous/PostSubmission.page";
-import { VerifyRSVP } from "@/pages/miscellaneous/VerifyRSVP.page";
-import { MyTeamPage } from "@/pages/MyTeam.page";
-import { ViewTicketPage } from "@/pages/miscellaneous/ViewTicket.page";
-import { JoinTeamPage } from "@/pages/JoinTeam.page";
-import { AdminViewTicketPage } from "@/pages/admin/ViewTicket.page";
-import { AdminManageEventsPage } from "@/pages/admin/ManageEvents.page";
-import { ApplicationPage } from "@/pages/Application/Application.page";
+	Outlet,
+	Route,
+	RouterProvider,
+	createBrowserRouter,
+	createRoutesFromElements,
+} from "react-router-dom";
+
+import { LoadingAnimation } from "@/components";
+import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
+import { AccessControl } from "@/navigation/AccessControl/AccessControl";
+import { useAuth } from "@/providers";
+
+// Public pages
+import { LoginPage } from "@/pages/login.page";
+
+import { ApplyPage } from "@/pages/apply.page";
+import { HomePage } from "@/pages/home.page";
+import { JoinTeamPage } from "@/pages/join-team.page";
+import { MyTeamPage } from "@/pages/my-team.page";
+import { MyTicketPage } from "@/pages/my-ticket.page";
+import { NetworkingPage } from "@/pages/networking.page";
+import { PerksPage } from "@/pages/perks.page";
+// Private pages
+import { SchedulePage } from "@/pages/schedule.page";
+
+// Admin pages
+import { AdminPage } from "@/pages/admin/Admin.page";
+import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
+import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
+
+// Miscellaneous pages
+import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
+import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
+import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
+
+import { Redirect } from "@/navigation/redirect";
 
 // Local imports
-import { isAdmin, isAuthenticated, hasVerifiedEmail } from "./accessChecks";
-import type { RouteConfig } from "./types";
-import { useRouter } from "./hooks";
-import { paths } from "./data";
+import {
+	disable,
+	hasApplied,
+	hasRSVP,
+	hasVerifiedEmail,
+	isAccepted,
+	isAdmin,
+	isAppOpen,
+	isAuthenticated,
+} from "./accessChecks";
 import { RoutesContext } from "./context";
+import { paths } from "./data";
+import type { RouteConfig } from "./types";
 
 /**
- * Converts RouteConfig to React Router's RouteObject with AccessControl wrapper
- * This handles applying access control to routes that require it
+ * Creates a wrapper component for routes with access control
  */
-const convertToRouteObjects = (routeConfigs: RouteConfig[]): RouteObject[] => {
-    return routeConfigs.map((config) => {
-        // If there's an access check, wrap the element with AccessControl
-        if (config.accessCheck || config.redirectTo) {
-            return {
-                path: config.path,
-                element: (
-                    <AccessControl
-                        accessCheck={config.accessCheck}
-                        redirectTo={config.redirectTo}
-                    />
-                ),
-                children: [
-                    {
-                        path: "",
-                        element: config.element,
-                        children: config.children
-                            ? convertToRouteObjects(config.children)
-                            : undefined,
-                    },
-                ],
-            };
-        }
+const createAccessControlWrapper = (config: RouteConfig) => {
+	const AccessControlWrapper = () => (
+		<AccessControl
+			accessCheck={config.accessCheck}
+			fallbackRedirect={config.fallbackRedirect}
+		>
+			<Outlet />
+		</AccessControl>
+	);
 
-        // No access check, return the route object directly
-        return {
-            path: config.path,
-            element: config.element,
-            children: config.children
-                ? convertToRouteObjects(config.children)
-                : undefined,
-        };
-    });
+	return AccessControlWrapper;
 };
 
 /**
- * Inner router component that uses React Router's useRoutes hook
- * Handles loading state while routes are being prepared
+ * Converts RouteConfig to React Router's Route elements for createRoutesFromElements
  */
-const InnerRouter = () => {
-    const { routes, loadingRoutes } = useRouter();
-    const routeObjs = useMemo(() => {
-        // Convert to React Router compatible objects
-        return convertToRouteObjects(routes);
-    }, [routes]);
-    const availableRoutes = useRoutes(routeObjs);
+const convertToRouteElements = (routeConfigs: RouteConfig[]) => {
+	return routeConfigs.map((config) => {
+		// If there's an access check, create a wrapper component with AccessControl
+		if (config.accessCheck) {
+			const AccessControlWrapper = createAccessControlWrapper(config);
 
-    if (loadingRoutes) return <LoadingAnimation />;
+			return (
+				<Route
+					key={config.path}
+					path={config.path}
+					element={<AccessControlWrapper />}
+				>
+					<Route index element={config.element} />
+					{config.children && convertToRouteElements(config.children)}
+				</Route>
+			);
+		}
 
-    return availableRoutes;
+		// No access check, return the route element directly
+		return (
+			<Route key={config.path} path={config.path} element={config.element}>
+				{config.children && convertToRouteElements(config.children)}
+			</Route>
+		);
+	});
 };
 
 /**
- * Router component that wraps InnerRouter with BrowserRouter
+ * Router component that creates data router from route configurations
  */
-const Router = () => {
-    return (
-        <BrowserRouter>
-            <InnerRouter />
-        </BrowserRouter>
-    );
+const Router = ({ routes }: { routes: RouteConfig[] }) => {
+	// Convert route configs to route elements
+	const routeElements = useMemo(() => convertToRouteElements(routes), [routes]);
+
+	// Create the data router using createRoutesFromElements
+	const router = useMemo(
+		() => createBrowserRouter(createRoutesFromElements(<>{routeElements}</>)),
+		[routeElements],
+	);
+
+	return <RouterProvider router={router} />;
 };
 
 /**
@@ -107,175 +121,203 @@ const Router = () => {
  * Manages route generation, access control, and loading states
  */
 export const RoutesProvider: FC<ComponentProps> = () => {
-    // State for triggering route refresh
-    const [refresh, setRefresh] = useState(false);
-    // State for tracking loading state
-    const [loadingRoutes, setLoadingRoutes] = useState(true);
-    // Ref for timeout to manage loading state
-    const timeoutRef = useRef<number | null>(null);
-    // Get current user and application data
-    const { currentUser } = useAuth();
-    const { applications } = useApplications();
+	// State for tracking loading state
+	const [loadingRoutes, setLoadingRoutes] = useState(true);
+	// Ref for timeout to manage loading state
+	const timeoutRef = useRef<number | null>(null);
+	// Get current user and application data
+	const { isLoading: loadingAuth } = useAuth();
+	const { isLoading: loadingApplications } = useApplications();
+	const { isLoading: loadingDeadlines } = useDeadlines();
 
-    // State for storing generated routes
-    const routes = useMemo(() => {
-        // Public routes that don't require authentication
-        const publicRoutes: RouteConfig[] = [
-            {
-                path: paths.login,
-                element: <LoginPage />,
-            },
-            {
-                path: paths.notFound,
-                element: <NotFoundPage />,
-            },
-        ];
+	// State for storing generated routes
+	const routes = useMemo(() => {
+		// Public routes that don't require authentication
+		const publicRoutes: RouteConfig[] = [
+			{
+				path: paths.login,
+				element: <LoginPage />,
+			},
+			{
+				path: paths.notFound,
+				element: <NotFoundPage />,
+			},
+			{
+				path: paths.ticket,
+				element: <ViewTicketPage />,
+			},
+		];
 
-        // Routes requiring basic authentication
-        const authenticatedRoutes: RouteConfig[] = [
-            {
-                path: paths.verifyEmail,
-                element: <VerifyEmailPage />,
-                accessCheck: isAuthenticated,
-                redirectTo: paths.login,
-            },
-        ];
+		// Routes requiring basic authentication
+		const authenticatedRoutes: RouteConfig[] = [
+			{
+				path: paths.verifyEmail,
+				element: <VerifyEmailPage />,
+				accessCheck: isAuthenticated,
+			},
+		];
 
-        // Routes requiring email verification
-        const verifiedEmailRoutes: RouteConfig[] = [
-            {
-                path: paths.home,
-                element: <HomePage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.schedule,
-                element: <SchedulePage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.networking,
-                element: <NetworkingPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.myTicket,
-                element: <TicketPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.application,
-                element: <ApplicationPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.submitted,
-                element: <PostSubmissionPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.verifyRSVP,
-                element: <VerifyRSVP />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.myTeam,
-                element: <MyTeamPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.joinTeam,
-                element: <JoinTeamPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.ticket,
-                element: <ViewTicketPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-            {
-                path: paths.perks,
-                element: <PerksPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail],
-                redirectTo: paths.verifyEmail,
-            },
-        ];
+		// Routes requiring email verification
+		const verifiedEmailRoutes: RouteConfig[] = [
+			{
+				path: paths.root,
+				element: <HomePage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail],
+			},
+			{
+				path: paths.home,
+				element: <HomePage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail],
+			},
+			{
+				path: paths.schedule,
+				element: <SchedulePage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.networking,
+				element: <NetworkingPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.myTicket,
+				element: <MyTicketPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.apply,
+				element: <ApplyPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					(ctx) => {
+						if (hasApplied(ctx)) throw new Redirect(paths.home);
+						return true;
+					},
+					isAppOpen,
+				],
+			},
+			{
+				path: paths.myTeam,
+				element: <MyTeamPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.joinTeam,
+				element: <JoinTeamPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.perks,
+				element: <PerksPage />,
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+		];
 
-        // Admin-only routes
-        const adminRoutes: RouteConfig[] = [
-            {
-                path: paths.admin,
-                element: <AdminPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-                redirectTo: paths.home,
-            },
-            {
-                path: paths.adminViewTicket,
-                element: <AdminViewTicketPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-                redirectTo: paths.home,
-            },
-            {
-                path: paths.adminManageEvents,
-                element: <AdminManageEventsPage />,
-                accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
-                redirectTo: paths.home,
-            },
-        ];
+		// Admin-only routes
+		const adminRoutes: RouteConfig[] = [
+			{
+				path: paths.admin,
+				element: <AdminPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+			},
+			{
+				path: paths.adminViewTicket,
+				element: <AdminViewTicketPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+			},
+			{
+				path: paths.adminManageEvents,
+				element: <AdminManageEventsPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+			},
+		];
 
-        // Combine all route groups
-        return [
-            ...publicRoutes,
-            ...authenticatedRoutes,
-            ...verifiedEmailRoutes,
-            ...adminRoutes,
-        ];
-    }, []);
+		// Combine all route groups
+		return [
+			...publicRoutes,
+			...authenticatedRoutes,
+			...verifiedEmailRoutes,
+			...adminRoutes,
+		];
+	}, []);
 
-    // Manage loading state with delay to prevent flashing
-    useEffect(() => {
-        setLoadingRoutes(true);
+	// Manage loading state with delay to prevent flashing
+	useEffect(() => {
+		setLoadingRoutes(true);
 
-        // Cleanup function to clear timeout
-        const cleanUp = () => {
-            if (timeoutRef.current !== null)
-                window.clearTimeout(timeoutRef.current);
-        };
+		// Cleanup function to clear timeout
+		const cleanUp = () => {
+			if (timeoutRef.current !== null) window.clearTimeout(timeoutRef.current);
+		};
 
-        // Clear any existing timeout
-        if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+		// Clear any existing timeout
+		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 
-        // Set timeout to turn off loading state after delay
-        timeoutRef.current = window.setTimeout(
-            () => setLoadingRoutes(false),
-            1500
-        );
+		if (
+			routes.length &&
+			!loadingApplications &&
+			!loadingAuth &&
+			!loadingDeadlines
+		) {
+			// Prevent random flashes in the DOM due to updates
+			timeoutRef.current = window.setTimeout(
+				() => setLoadingRoutes(false),
+				250,
+			);
+			return cleanUp;
+		}
 
-        return cleanUp;
-    }, [refresh, currentUser, applications]);
+		// Set timeout to turn off loading state after delay
+		timeoutRef.current = window.setTimeout(() => setLoadingRoutes(false), 1500);
 
-    // Function to trigger route refresh
-    const refreshRoutes = () => setRefresh((r) => !r);
+		return cleanUp;
+	}, [loadingAuth, routes, loadingApplications, loadingDeadlines]);
 
-    return (
-        <RoutesContext.Provider
-            value={{
-                routes,
-                loadingRoutes,
-                refreshRoutes,
-            }}
-        >
-            <Router />
-        </RoutesContext.Provider>
-    );
+	return (
+		<RoutesContext.Provider
+			value={{
+				routes,
+				loadingRoutes,
+			}}
+		>
+			{loadingRoutes ? <LoadingAnimation /> : <Router routes={routes} />}
+		</RoutesContext.Provider>
+	);
 };

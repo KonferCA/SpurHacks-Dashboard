@@ -1,49 +1,64 @@
-import { FC } from "react";
-import { Navbar } from "@components";
 import type { ComponentProps } from "@/components/types";
 import { useHeaderInfo } from "@/providers";
+import { Box, Link as ChakraLink, Heading, Text } from "@chakra-ui/react";
+import { Navbar } from "@components";
+import type { FC } from "react";
 
-export const PageWrapper: FC<ComponentProps> = ({ children }) => {
-    let headerInfo = useHeaderInfo() ?? {
-        title: "Wow!",
-        subTitle: "How did you end up here?",
-    };
+interface PageWrapperProps extends ComponentProps {
+	noPadding?: boolean;
+}
 
-    if (location.pathname.startsWith("/ticket")) {
-        headerInfo = {
-            title: "Networking",
-            subTitle: "A quick way to connect with new people at HawkHacks!",
-        };
-    }
+export const PageWrapper: FC<PageWrapperProps> = ({ children, noPadding }) => {
+	let headerInfo = useHeaderInfo() ?? {
+		title: "Wow!",
+		subTitle: "How did you end up here?",
+	};
 
-    return (
-        <div>
-            <Navbar />
+	if (location.pathname.startsWith("/ticket")) {
+		headerInfo = {
+			title: "Networking",
+			subTitle: "A quick way to connect with new people at SpurHacks!",
+		};
+	}
 
-            {/* right hand side */}
-            <div className="md:pl-72">
-                <div className="md:sticky top-0 z-10 shrink-0 px-6 md:py-8 py-2 border-b-2 border-b-gray-300 bg-white">
-                    <h1 className="text-xl md:text-4xl text-gray-800 font-bold font-sans">
-                        {headerInfo.title}
-                    </h1>
-                    <p className="text-md md:text-xl text-gray-500 md:mt-4 font-sans whitespace-pre-line">
-                        {headerInfo.subTitle}
-                    </p>
-                    <p className="text-gray-800 mt-2">
-                        Having trouble? Get help in our{" "}
-                        <a
-                            href="https://discord.com/invite/GxwvFEn9TB"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sky-600 font-bold underline"
-                        >
-                            Discord
-                        </a>{" "}
-                        support channel.
-                    </p>
-                </div>
-                <div className="px-6 py-6">{children}</div>
-            </div>
-        </div>
-    );
+	return (
+		<Box>
+			<Navbar />
+
+			{/* right hand side */}
+			<Box paddingLeft={{ md: "18rem" }}>
+				<Box
+					position="sticky"
+					top={0}
+					zIndex={10}
+					paddingX="1.5rem"
+					paddingY={{ base: "0.5rem", md: "2rem" }}
+					width="full"
+					borderBottomWidth={1}
+					borderBottomColor="#1F1E2E"
+					borderBottomStyle="solid"
+					bg="brand.bg"
+				>
+					<Heading size={{ base: "lg", md: "3xl" }}>{headerInfo.title}</Heading>
+					<Text marginTop={{ base: "0", md: "1rem" }}>
+						{headerInfo.subTitle}
+					</Text>
+					<Text className="text-gray-800 mt-2">
+						Having trouble? Get help in our{" "}
+						<ChakraLink
+							href="https://discord.gg/NpnSUrZJQy"
+							target="_blank"
+							rel="noopener noreferrer"
+							color="skyblue"
+							textDecor="underline"
+						>
+							Discord
+						</ChakraLink>{" "}
+						support channel.
+					</Text>
+				</Box>
+				<Box padding={!noPadding ? "1.5rem" : ""}>{children}</Box>
+			</Box>
+		</Box>
+	);
 };

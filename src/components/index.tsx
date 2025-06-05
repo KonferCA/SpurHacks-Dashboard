@@ -1,4 +1,3 @@
-
 /*
  *
  * @component TextInput
@@ -19,13 +18,6 @@ export { ErrorAlert } from "./ErrorAlert/ErrorAlert";
  *
  */
 export { Select } from "./Select/Select";
-
-/*
- *
- * @component MultiSelect
- *
- */
-export { MultiSelect } from "./MultiSelect/MultiSelect";
 
 /*
  *
@@ -53,8 +45,6 @@ export { Steps } from "./Steps/Steps";
  *
  */
 export { LoadingAnimation } from "./LoadingAnimation";
-
-export { PhoneInput } from "./PhoneInput/PhoneInput";
 
 /*
  *
@@ -90,3 +80,10 @@ export { ProductCard } from "./ProductCard/ProductCard";
  *
  */
 export { Modal } from "./Modal";
+
+/*
+ *
+ * @component RouterChakraLink
+ *
+ */
+export { RouterChakraLink } from "./RouterChakraLink";

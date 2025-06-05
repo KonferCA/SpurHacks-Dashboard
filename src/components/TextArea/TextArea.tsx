@@ -1,73 +1,55 @@
-import {
-    type TextInputStylesProps,
-    getTextInputLabelStyles,
-    getTextInputStyles,
-    getTextInputDescriptionStyles,
-} from "@/components/TextInput/TextInput.styles";
-import { Textarea } from "@chakra-ui/react";
+import { Field, Textarea, type TextareaProps } from "@chakra-ui/react";
 
-export interface TextAreaProps
-    extends TextInputStylesProps,
-        React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-    /**
-     * Label text of the input. For accessibility reasons, all inputs should have a label.
-     */
-    label: string;
+interface Props extends TextareaProps {
+	/**
+	 * Label text of the input. For accessibility reasons, all inputs should have a label.
+	 */
+	label: string;
 
-    /**
-     * Make input label screen-reader only. Default false.
-     */
-    srLabel?: boolean;
+	/**
+	 * Make input label screen-reader only. Default false.
+	 */
+	srLabel?: boolean;
 
-    /**
-     * Force the usage of id to match label to input.
-     * This avoids dynamically generating a new id in runtime.
-     */
-    id: string;
+	/**
+	 * Description of the input field.
+	 */
+	description?: string;
 
-    /**
-     * Description of the input field.
-     */
-    description?: string;
+	error?: string;
 }
 
+export type TextAreaProps = Props & TextareaProps;
+
 export const TextArea: React.FC<TextAreaProps> = ({
-    label,
-    className,
-    invalid,
-    description,
-    srLabel = false,
-    required,
-    ...textAreaProps
+	label,
+	className,
+	description,
+	required,
+	error,
+	...props
 }) => {
-    const describedby = `text-input-description-${textAreaProps.id}`;
-    return (
-        <div>
-            <label
-                htmlFor={textAreaProps.id}
-                className={getTextInputLabelStyles({ srLabel })}
-            >
-                {label}
-                {required ? <span className="text-red-600 ml-1">*</span> : null}
-            </label>
-            <div className="mt-2">
-                <Textarea
-                    {...textAreaProps}
-                    aria-describedby={[
-                        textAreaProps["aria-describedby"] ?? "",
-                        describedby,
-                    ].join(" ")}
-                    className={getTextInputStyles({ invalid, className })}
-                />
-            </div>
-            {description && (
-                <p
-                    className={getTextInputDescriptionStyles({ invalid })}
-                    id={describedby}
-                >
-                    {description}
-                </p>
-            )}
-        </div>
-    );
+	return (
+		<Field.Root required={required} invalid={!!error}>
+			<Field.Label color="offwhite.primary">
+				{label}
+				{required && <Field.RequiredIndicator />}
+			</Field.Label>
+			<Textarea
+				color="offwhite.primary"
+				focusRing="none"
+				bg="#1f1e2e"
+				borderColor="transparent"
+				_selection={{
+					background: "#666484",
+				}}
+				_placeholder={{ color: "#666484" }}
+				size="xl"
+				rounded="1.5rem"
+				{...props}
+			/>
+			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
+		</Field.Root>
+	);
 };

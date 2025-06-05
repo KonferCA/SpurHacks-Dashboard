@@ -1,13 +1,16 @@
-import type { ApplicationData } from "@/components/forms/types";
+import type { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import type { UserWithClaims } from "@/providers";
+import { ReactNode } from "react";
 
 /**
  * Context object provided to access control functions
  * Contains current user and their application data
  */
 export interface AccessControlContext {
-    user: UserWithClaims | null;
-    applications: ApplicationData[];
+	user: UserWithClaims | null;
+	applicationsCtx: ReturnType<typeof useApplications>;
+	deadlinesCtx: ReturnType<typeof useDeadlines>;
 }
 
 /**
@@ -18,10 +21,11 @@ export type AccessControlFn = (context: AccessControlContext) => boolean;
 
 /**
  * Props for AccessControl component
- * @property redirectTo - Path to redirect to if access check fails
  * @property accessCheck - Single function or array of functions to determine if access should be granted
+ * @property fallbackRedirect - Path to redirect to if access check fails but doesn't specify a redirect
  */
 export interface AccessControlProps {
-    redirectTo?: string;
-    accessCheck?: AccessControlFn | AccessControlFn[];
+	accessCheck?: AccessControlFn | AccessControlFn[];
+	fallbackRedirect?: string;
+	children?: ReactNode;
 }

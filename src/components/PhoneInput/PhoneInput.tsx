@@ -1,118 +1,109 @@
-import { FC, useEffect, useRef, useState, Fragment } from "react";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { Combobox, Transition } from "@headlessui/react";
-import { getOptionStyles } from "../MultiSelect/MultiSelect";
+import { Select } from "@/components/Select/Select";
+import { TextInput } from "@/components/TextInput/TextInput";
 import { countryCodes } from "@/data/countryPhoneCodes";
-import {
-    getTextInputLabelStyles,
-    getTextInputStyles,
-} from "../TextInput/TextInput.styles";
+import { Fieldset, GridItem, SimpleGrid } from "@chakra-ui/react";
+import { type FC } from "react";
+
+// Function to format phone number to 123-444-5555 format
+const formatPhoneNumber = (value: string) => {
+	// Remove all non-digit characters
+	const digits = value.replace(/\D/g, "");
+
+	// Apply the format based on the number of digits
+	if (digits.length <= 3) {
+		return digits;
+	} else if (digits.length <= 6) {
+		return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+	} else {
+		return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
+	}
+};
+
+// Parse initial value or controlled value
+const parsePhoneValue = (phoneValue?: string) => {
+	if (!phoneValue) return { country: "Canada (+1)", number: "" };
+
+	const match = phoneValue.match(/\(\+(\d+[-\d]*)\)\s*(.*)/);
+	if (match) {
+		const countryCode = match[1];
+		const phone = match[2];
+		// Find the country by code
+		const foundCountry = countryCodes.find((c) =>
+			c.includes(`(+${countryCode})`),
+		);
+		return {
+			country: foundCountry || "Canada (+1)",
+			number: phone || "",
+		};
+	}
+	return { country: "Canada (+1)", number: "" };
+};
 
 export interface PhoneInputProps {
-    onChange: (phone: string) => void; // concat the country code + phone number
-    required?: boolean;
+	onChange: (phone: { country: string; number: string }) => void; // concat the country code + phone number
+	required?: boolean;
+	error?: string;
+	description?: string;
+	value:
+		| {
+				country: string;
+				number: string;
+		  }
+		| string; // Controlled component value
 }
 
-export const PhoneInput: FC<PhoneInputProps> = ({ onChange, required }) => {
-    const [randomId] = useState(Math.random().toString(32));
-    const [country, setCountry] = useState("");
-    const [query, setQuery] = useState("");
-    const [phone, setPhone] = useState("");
-    const countryCodeInputRef = useRef<HTMLInputElement | null>(null);
-    const countryCodeBtnRef = useRef<HTMLButtonElement | null>(null);
+export const PhoneInput: FC<PhoneInputProps> = ({
+	onChange,
+	required,
+	error,
+	description,
+	value,
+}) => {
+	const { country, number } =
+		typeof value === "string" ? parsePhoneValue(value) : value;
 
-    const filteredCountries =
-        query === ""
-            ? countryCodes
-            : countryCodes.filter((opt) =>
-                  opt.toLowerCase().trim().includes(query.toLowerCase().trim())
-              );
+	const handleCountryChange = (value: string) => {
+		onChange({ country: value, number: formatPhoneNumber(number) });
+	};
 
-    useEffect(() => {
-        const code = country.replace(/\D/g, ""); // remove all non digit
-        if (onChange) onChange(`+${code}${phone}`);
-    }, [country, phone]);
+	const handlePhoneChange = (value: string) => {
+		// Remove all non-digits first
+		const digitsOnly = value.replace(/\D/g, "");
 
-    return (
-        <div className="grid grid-cols-6 space-y-2">
-            <label
-                className={getTextInputLabelStyles({
-                    className: "col-span-full",
-                })}
-                htmlFor={`phone-${randomId}`}
-            >
-                Phone Number
-                {required && <span className="text-red-600 ml-1">*</span>}
-            </label>
-            <div className="col-span-full sm:col-span-1">
-                <label className="sr-only" htmlFor={`country-code-${randomId}`}>
-                    Country Code
-                </label>
-                <Combobox onChange={setCountry} value={country}>
-                    <div className="relative">
-                        <div className="relative w-full cursor-default overflow-hidden bg-gray-50 text-left border border-charcoalBlack">
-                            <Combobox.Input
-                                ref={countryCodeInputRef}
-                                className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 bg-gray-50 focus:ring-0 hover:cursor-pointer"
-                                displayValue={(opt: string) =>
-                                    (opt && "+" + opt.replace(/\D/g, "")) || ""
-                                }
-                                onChange={(event) =>
-                                    setQuery(event.target.value)
-                                }
-                                id={`country-code-${randomId}`}
-                                onClick={() =>
-                                    countryCodeBtnRef.current?.click()
-                                }
-                                placeholder="+1"
-                            />
-                            <Combobox.Button
-                                ref={countryCodeBtnRef}
-                                className="absolute inset-y-0 right-0 flex items-center pr-2"
-                            >
-                                <ChevronDownIcon
-                                    className="h-5 w-5 text-gray-400"
-                                    aria-hidden="true"
-                                />
-                            </Combobox.Button>
-                        </div>
-                        <Transition
-                            as={Fragment}
-                            leave="transition ease-in duration-100"
-                            leaveFrom="opacity-100"
-                            leaveTo="opacity-0"
-                            afterLeave={() => setQuery("")}
-                        >
-                            <Combobox.Options className="absolute border border-charcoalBlack mt-1 max-h-60 z-50 w-full overflow-auto bg-gray-50 py-1 text-base">
-                                {filteredCountries.map((opt) => (
-                                    <Combobox.Option
-                                        key={opt}
-                                        className={({ active }) =>
-                                            getOptionStyles({
-                                                active,
-                                                className: "py-2 px-1",
-                                            })
-                                        }
-                                        value={opt}
-                                    >
-                                        {opt}
-                                    </Combobox.Option>
-                                ))}
-                            </Combobox.Options>
-                        </Transition>
-                    </div>
-                </Combobox>
-            </div>
-            <div className="col-span-full sm:ml-2 sm:col-span-5">
-                <input
-                    id={`phone-${randomId}`}
-                    className={getTextInputStyles({
-                        className: "py-2 leading-5",
-                    })}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="999-999-9999"
-                />
-            </div>
-        </div>
-    );
+		// Limit to 10 digits
+		if (digitsOnly.length <= 10) {
+			// Format the input
+			const formatted = formatPhoneNumber(digitsOnly);
+			onChange({ country, number: formatted });
+		}
+	};
+
+	return (
+		<Fieldset.Root invalid={!!error}>
+			<SimpleGrid columns={12} gap={4}>
+				<GridItem colSpan={{ base: 12, md: 4 }}>
+					<Select
+						value={{ value: country, label: country }}
+						label="Country Code"
+						placeholder="Select country code"
+						required={required}
+						options={countryCodes}
+						onChange={(v) => handleCountryChange(v[0] ?? countryCodes[0])}
+					/>
+				</GridItem>
+				<GridItem colSpan={{ base: 12, md: 8 }}>
+					<TextInput
+						required={required}
+						value={number}
+						onChange={(e) => handlePhoneChange(e.target.value)}
+						placeholder="123-456-7890"
+						label="Phone Number"
+						maxLength={12} // 10 digits + 2 hyphens
+					/>
+				</GridItem>
+			</SimpleGrid>
+			{description && <Fieldset.HelperText>{description}</Fieldset.HelperText>}
+			{error && <Fieldset.ErrorText>{error}</Fieldset.ErrorText>}
+		</Fieldset.Root>
+	);
 };

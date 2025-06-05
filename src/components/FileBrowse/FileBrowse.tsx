@@ -1,82 +1,89 @@
-import React, { useEffect, useState } from "react";
+import {
+	Field,
+	FileUpload,
+	FileUploadRootProps,
+	Spinner,
+} from "@chakra-ui/react";
+import { Button } from "@chakra-ui/react";
+import type React from "react";
 
-export interface FileBrowserProps {
-    allowedFileTypes?: string[];
-    description?: string;
-    subdescription?: string;
-    onChange: (file: File | null) => void;
+export interface FileBrowserProps
+	extends Omit<FileUploadRootProps, "onChange"> {
+	label: string;
+	inputId?: string;
+	description?: string;
+	required?: boolean;
+	error?: string;
+	loading?: boolean; // if true, shows a spinning circle instead of "x"
+	disabled?: boolean; // Locks adding/removing files
+	onChange?: (files: File[]) => void;
 }
 
 export const FileBrowser: React.FC<FileBrowserProps> = ({
-    allowedFileTypes = ["image/*", "video/*"],
-    description,
-    subdescription = "PDF is highly recommended, but all image and document file formats are accepted!",
-    onChange,
+	label,
+	maxFiles = 1,
+	accept = ["image/*", "video/*"],
+	required,
+	error,
+	disabled,
+	loading,
+	description,
+	onChange,
 }) => {
-    const [file, setFile] = useState<File | null>(null);
-    const [isDragging, setIsDragging] = useState(false);
-    const [randomId] = useState(Math.random().toString(32));
-
-    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = () => {
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        setIsDragging(false);
-        const droppedFiles = Array.from(e.dataTransfer.files);
-        const validFiles = droppedFiles.filter((file) =>
-            allowedFileTypes.some((type) => file.type.startsWith(type))
-        );
-        setFile(validFiles[0]);
-    };
-
-    const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const selectedFiles = Array.from(e.target.files || []);
-        setFile(selectedFiles[0] ?? null);
-    };
-
-    useEffect(() => {
-        onChange(file);
-    }, [file]);
-
-    return (
-        <>
-            <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`hover:cursor-pointer hover:brightness-75 transition duration-300 ease-in-out border ${
-                    isDragging
-                        ? "bg-tbrand border-charcoalBlack"
-                        : "border-charcoalBlack bg-gray-50"
-                } p-4 my-2 text-center`}
-            >
-                <input
-                    type="file"
-                    accept={allowedFileTypes.join(", ")}
-                    onChange={handleFileInput}
-                    className="hidden"
-                    id={`file-${randomId}`}
-                />
-                <label htmlFor={`file-${randomId}`} className="cursor-pointer">
-                    <span>
-                        Click to browse or drag and drop file here (max 10MB)
-                    </span>
-                </label>
-                <div>{description}</div>
-                <ul className="italic text-sageGray text-sm">
-                    {file && <li>{file.name}</li>}
-                </ul>
-            </div>
-            {subdescription && (
-                <p className="mt-2 text-sageGray">{subdescription}</p>
-            )}
-        </>
-    );
+	return (
+		<Field.Root required={required} invalid={!!error} disabled={disabled}>
+			<FileUpload.Root
+				required={required}
+				maxFiles={maxFiles}
+				accept={accept}
+				onFileChange={(details) => {
+					if (onChange) onChange(details.acceptedFiles);
+				}}
+			>
+				<Field.Label color="offwhite.primary">
+					{label}
+					{required && <Field.RequiredIndicator />}
+				</Field.Label>
+				<FileUpload.HiddenInput />
+				<FileUpload.Trigger asChild>
+					<Button
+						variant="outline"
+						size="xl"
+						width="full"
+						color="offwhite.primary"
+						border="none"
+						background="#1f1e2e"
+						rounded="full"
+						_hover={{
+							background: "#333147",
+						}}
+					>
+						Select File(s)
+					</Button>
+				</FileUpload.Trigger>
+				<FileUpload.ItemGroup>
+					<FileUpload.Context>
+						{({ acceptedFiles }) =>
+							acceptedFiles.map((file) => (
+								<FileUpload.Item
+									key={file.name}
+									file={file}
+									background="#333147"
+									rounded="full"
+								>
+									<FileUpload.ItemPreview />
+									<FileUpload.ItemName color="offwhite.primary" />
+									<FileUpload.ItemSizeText />
+									{!disabled && !loading && <FileUpload.ItemDeleteTrigger />}
+									{loading && <Spinner />}
+								</FileUpload.Item>
+							))
+						}
+					</FileUpload.Context>
+				</FileUpload.ItemGroup>
+			</FileUpload.Root>
+			<Field.HelperText>{description}</Field.HelperText>
+			<Field.ErrorText>{error}</Field.ErrorText>
+		</Field.Root>
+	);
 };
