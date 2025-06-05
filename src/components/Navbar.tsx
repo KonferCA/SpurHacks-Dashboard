@@ -230,7 +230,7 @@ const NavbarContent = ({
 									alignItems="center"
 									justifyContent="start"
 								>
-									<Box asChild width="1.5rem" height="1.5rem">
+									<Box width="1.5rem" height="1.5rem">
 										<Icon color={isActive ? "#FFA75F" : "#666483"} />
 									</Box>
 									<Text color={isActive ? "#DEEBFF" : "#666484"}>{label}</Text>

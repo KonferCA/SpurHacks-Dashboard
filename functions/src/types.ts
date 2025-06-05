@@ -12,6 +12,15 @@ export type Context =
 	  }
 	| undefined;
 
+export interface TicketData {
+	userId: string;
+	ticketId: string;
+	qrCodeUrl?: string;
+	events: string[];
+	foods: string[];
+	createdAt: Timestamp;
+}
+
 export interface ApplicationData {
 	// Basic information
 	firstName: string;
