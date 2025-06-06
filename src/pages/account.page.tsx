@@ -62,14 +62,55 @@ export const AccountPage = () => {
 		"idle",
 	);
 
+	useEffect(() => {
+		const ensureDraftExists = async () => {
+			if (!currentUser?.uid) return;
+			if (drafts.length === 0) {
+				// Create a new draft
+				try {
+					await saveApplicationDraft(
+						{
+							...defaultApplication,
+							email: currentUser.email ?? "",
+						},
+						currentUser.uid,
+						undefined, // let backend generate docId
+					);
+					await refreshDrafts();
+				} catch (error) {
+					console.error("Failed to create draft application:", error);
+					toaster.error({
+						title: "Draft creation error",
+						description:
+							"Could not create a draft application. Try again later.",
+					});
+				}
+			}
+		};
+		ensureDraftExists();
+		// Only run when user or drafts change
+	}, [currentUser?.uid, drafts.length]);
+
 	// default user profile
+
 	const [application, setApplication] = useState<ApplicationData>(() => {
-		const app: ApplicationData = {
+		if (drafts.length > 0) {
+			// Use the first draft as the initial state
+			const { __docId, ...draftData } = drafts[0];
+			return { ...defaultApplication, ...draftData };
+		}
+		return {
 			...defaultApplication,
 			email: currentUser?.email ?? "",
 		};
-		return app;
 	});
+
+	useEffect(() => {
+		if (drafts.length > 0) {
+			const { __docId, ...draftData } = drafts[0];
+			setApplication({ ...defaultApplication, ...draftData });
+		}
+	}, [drafts]);
 
 	const draftId = useMemo(() => {
 		if (drafts.length) return drafts[0].__docId;
@@ -215,7 +256,6 @@ export const AccountPage = () => {
 		}
 	};
 
-	const testing = true;
 	return (
 		<PageWrapper>
 			<Flex w="full" pl={5}>
