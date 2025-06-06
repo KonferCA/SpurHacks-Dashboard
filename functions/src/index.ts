@@ -186,6 +186,40 @@ export const updateSocials = onCall(async (data: any, res) => {
 	}
 });
 
+export const updatePhoneNumber = onCall(async (req) => {
+	if (!req.auth) {
+		logInfo("Authentication required.");
+		throw new HttpsError("permission-denied", "Not authenticated");
+	}
+
+	try {
+		const applicationSnap = await getFirestore()
+			.collection("applications")
+			.where("applicantId", "==", req.auth.uid)
+			.get();
+		if (applicationSnap.empty)
+			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+
+		const applicationDoc = applicationSnap.docs[0];
+		const db = getFirestore();
+		db.settings({ ignoreUndefinedProperties: true });
+		await db
+			.collection("applications")
+			.doc(applicationDoc.id)
+			.update({
+				phone: {
+					country: req.data.phone.country,
+					number: req.data.phone.number,
+				},
+			});
+		logInfo("Phone number updated successfully:", req.data.phone);
+		return response(HttpStatus.OK, { message: "ok" });
+	} catch (error) {
+		logError("Failed to update phone number", { error });
+		throw new HttpsError("internal", "Failed to update phone number", error);
+	}
+});
+
 /**
  * This cloud function is use as a solution to the work around
  * when signing in with github would lead to unverified email
@@ -556,18 +590,18 @@ export const applicationCreated = onDocumentCreated(
   <div class="container">
 
       <img src="${FE_URL}/spurhacks-full-logo-white.png" alt="SpurHacks Logo" class="logo" />
-  
+
       <h1>
         <span>We’ve received</span>
         <span>your application! 💌</span>
       </h1>
-  
+
       <div class="message">
         <strong>Thanks for applying to SpurHacks 2025!</strong><br /><br />
         This email is a confirmation that your application submission was successful. Sit tight—you can expect a status update <strong>early June.</strong><br /><br />
         If you highlighted travel accommodations or reimbursements in your application, we’ll be sure to contact you with further details.
       </div>
-  
+
       <div class="social">
         In the meantime, stay updated with the latest news on our socials:
         <div class="social-icon">

@@ -43,7 +43,7 @@ export async function submitApplication(data: ApplicationData, uid: string) {
 		if (apps.length) throw new DuplicateApplicationError();
 	} catch (e) {
 		logEvent("error", {
-			event: "duplicatE_app_check_error",
+			event: "duplicate_app_check_error",
 			message: (e as Error).message,
 			name: (e as Error).name,
 			stack: (e as Error).stack,
