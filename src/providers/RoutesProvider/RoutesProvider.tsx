@@ -254,6 +254,11 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				element: <AccountPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail], // make sure TO UPDATE !!!!!!!
 			},
+			{
+				path: paths.myAccount,
+				element: <AccountPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail], // make sure TO UPDATE !!!!!!!
+			},
 		];
 
 		// Admin-only routes
