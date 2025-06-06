@@ -1,43 +1,28 @@
-import { Modal, PageWrapper, Select, TextInput } from "@/components";
-import { LoadingAnimation } from "@/components/LoadingAnimation";
+import { PageWrapper, TextInput } from "@/components";
 import { toaster } from "@/components/ui/toaster";
 import { Field } from "@/components/ui/field";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 import { useApplications } from "@/hooks/use-applications";
-import { useAuth, useUser } from "@/providers";
+import { useAuth } from "@/providers";
 import { defaultApplication } from "@/forms/hacker-form/defaults";
-import { getResumeURL, uploadGeneralResume } from "@/services/firebase/files";
-import type { ResumeVisibility, Socials } from "@/services/firebase/types";
-import { getSocials, updateSocials } from "@/services/firebase/user";
-import { useUserStore } from "@/stores/user.store";
-import { Button, Flex, Icon, Text } from "@chakra-ui/react";
-import { Cog6ToothIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { Button, Flex, Text } from "@chakra-ui/react";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { deleteUser } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { verifyRSVP } from "@/services/firebase/rsvp";
-import { doc, deleteDoc } from "firebase/firestore";
-import { withdrawRSVP } from "@/services/firebase/rsvp";
-import {
-	type FormEventHandler,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+// import { verifyRSVP } from "@/services/firebase/rsvp";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type {
 	ApplicationData,
 	ApplicationDataKey,
 } from "@/forms/hacker-form/types";
 import { PasswordInput } from "@/components/ui/password-input";
-import { Eye, EyeClosed } from "@phosphor-icons/react";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
-	DuplicateApplicationError,
 	saveApplicationDraft,
-	submitApplication,
+	updateApplication,
 } from "@/services/firebase/application";
-import { auth, firestore } from "@/services/firebase";
+import { auth } from "@/services/firebase";
+import { withdrawRSVP } from "@/services/firebase/rsvp";
 
 // if (isLoading) return <LoadingAnimation />;
 type FormErrors = { _hasErrors: boolean } & Partial<
@@ -47,14 +32,8 @@ type FormErrors = { _hasErrors: boolean } & Partial<
 export const AccountPage = () => {
 	const navigate = useNavigate();
 	const { currentUser, resetPassword } = useAuth();
-	const {
-		applications,
-		isLoading: loadingApplications,
-		drafts,
-		current: currentApplication,
-		refreshApplications,
-		refreshDrafts,
-	} = useApplications();
+	const { applications, drafts, refreshApplications, refreshDrafts } =
+		useApplications();
 	const userApp = applications[0] || null;
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const [isSendingReset, setIsSendingReset] = useState(false);
@@ -62,11 +41,11 @@ export const AccountPage = () => {
 		"idle",
 	);
 
+	// Only create a draft if neither an application nor a draft exists
 	useEffect(() => {
 		const ensureDraftExists = async () => {
 			if (!currentUser?.uid) return;
-			if (drafts.length === 0) {
-				// Create a new draft
+			if (applications.length === 0 && drafts.length === 0) {
 				try {
 					await saveApplicationDraft(
 						{
@@ -74,7 +53,7 @@ export const AccountPage = () => {
 							email: currentUser.email ?? "",
 						},
 						currentUser.uid,
-						undefined, // let backend generate docId
+						undefined,
 					);
 					await refreshDrafts();
 				} catch (error) {
@@ -88,14 +67,14 @@ export const AccountPage = () => {
 			}
 		};
 		ensureDraftExists();
-		// Only run when user or drafts change
-	}, [currentUser?.uid, drafts.length]);
+	}, [currentUser?.uid, applications.length, drafts.length, refreshDrafts]);
 
-	// default user profile
-
+	// Use application if it exists, otherwise use draft, otherwise default
 	const [application, setApplication] = useState<ApplicationData>(() => {
+		if (userApp) {
+			return { ...defaultApplication, ...userApp };
+		}
 		if (drafts.length > 0) {
-			// Use the first draft as the initial state
 			const { __docId, ...draftData } = drafts[0];
 			return { ...defaultApplication, ...draftData };
 		}
@@ -105,12 +84,15 @@ export const AccountPage = () => {
 		};
 	});
 
+	// Keep application state in sync with Firestore
 	useEffect(() => {
-		if (drafts.length > 0) {
+		if (userApp) {
+			setApplication({ ...defaultApplication, ...userApp });
+		} else if (drafts.length > 0) {
 			const { __docId, ...draftData } = drafts[0];
 			setApplication({ ...defaultApplication, ...draftData });
 		}
-	}, [drafts]);
+	}, [userApp, drafts]);
 
 	const draftId = useMemo(() => {
 		if (drafts.length) return drafts[0].__docId;
@@ -119,15 +101,25 @@ export const AccountPage = () => {
 
 	const autosave = useDebounce(
 		//@ts-ignore
-		async (application: ApplicationDataDoc, uid?: string, docId?: string) => {
-			if (!uid || !docId) {
-				// DEBUGGING (REMOVE CONSOLE LOGS IN PRODUCTION)
-				console.warn("Skipping autosave: Missing UID or docId", { uid, docId });
+		async (application: ApplicationData, uid?: string, docId?: string) => {
+			if (!uid) {
+				console.warn("Skipping autosave: Missing UID", { uid });
 				return;
 			}
 			try {
-				await saveApplicationDraft(application, uid, docId);
-				await refreshDrafts();
+				if (appDocId) {
+					// Save to application document
+					await updateApplication(application, uid, appDocId);
+					await refreshApplications();
+				} else if (draftDocId) {
+					// Save to draft document
+					await saveApplicationDraft(application, uid, draftDocId);
+					await refreshDrafts();
+				} else {
+					// No draft exists, create one
+					await saveApplicationDraft(application, uid, undefined);
+					await refreshDrafts();
+				}
 			} catch (error) {
 				console.error("Autosave failed:", error);
 				toaster.error({
@@ -140,17 +132,27 @@ export const AccountPage = () => {
 		[],
 	);
 
+	const appDocId = useMemo(() => {
+		if (applications.length) return applications[0].__docId;
+		return undefined;
+	}, [applications]);
+
+	const draftDocId = useMemo(() => {
+		if (drafts.length) return drafts[0].__docId;
+		return undefined;
+	}, [drafts]);
+
 	const handleChange = useCallback(
 		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
 			setApplication((application) => {
 				const updatedApp = { ...application };
 				updatedApp[name] = data;
-				autosave(updatedApp, currentUser?.uid, draftId);
+				autosave(updatedApp, currentUser?.uid, appDocId, draftDocId);
 				return updatedApp;
 			});
 			clearErrors();
 		},
-		[currentUser?.uid],
+		[currentUser?.uid, appDocId, draftDocId, autosave],
 	);
 
 	const clearErrors = () => setErrors({ _hasErrors: false });
@@ -162,24 +164,9 @@ export const AccountPage = () => {
 		try {
 			await resetPassword(currentUser.email);
 			setResetStatus("success");
-			// toast({
-			// 	title: "Reset email sent.",
-			// 	description:
-			// 		"Check your inbox for instructions to reset your password.",
-			// 	status: "success",
-			// 	duration: 5000,
-			// 	isClosable: true,
-			// });
 		} catch (err) {
 			console.error("Password reset failed:", err);
 			setResetStatus("error");
-			// toast({
-			// 	title: "Failed to send reset link.",
-			// 	description: "Please try again later.",
-			// 	status: "error",
-			// 	duration: 5000,
-			// 	isClosable: true,
-			// });
 		} finally {
 			setIsSendingReset(false);
 		}
@@ -205,27 +192,6 @@ export const AccountPage = () => {
 			});
 		} finally {
 			setIsRevokingRSVP(false);
-		}
-	};
-	// RSVP Loading
-	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
-
-	const handleRSVP = async () => {
-		try {
-			setIsRSVPLoading(true);
-			await verifyRSVP();
-			await refreshApplications();
-		} catch (error) {
-			console.error(error);
-			const msg =
-				(error as Error).message ??
-				"Oops, something went wrong when trying to RSVP. Please try again later. If problem persists, contact us in Discord.";
-			toaster.error({
-				title: "Failed to RSVP",
-				description: msg,
-			});
-		} finally {
-			setIsRSVPLoading(false);
 		}
 	};
 
@@ -301,6 +267,7 @@ export const AccountPage = () => {
 							borderRadius="full"
 							w="fit-content"
 							alignSelf="start"
+							loading={isSendingReset}
 						>
 							CHANGE PASSWORD
 						</Button>
