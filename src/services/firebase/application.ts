@@ -155,3 +155,24 @@ export async function saveApplicationDraft(
 		throw e;
 	}
 }
+
+/**
+ * Updates an existing application document in Firestore
+ */
+export async function updateApplication(
+	data: ApplicationData,
+	uid: string,
+	docId: string,
+) {
+	const payload = Object.fromEntries(
+		Object.entries({
+			...data,
+			applicantId: uid,
+			timestamp: Timestamp.now(),
+			hackathonYear: "2025",
+		}).filter(([_, value]) => value !== undefined),
+	);
+
+	const ref = doc(firestore, APPLICATIONS_COLLECTION, docId);
+	await updateDoc(ref, payload);
+}
