@@ -11,7 +11,12 @@ import type { ResumeVisibility, Socials } from "@/services/firebase/types";
 import { getSocials, updateSocials } from "@/services/firebase/user";
 import { useUserStore } from "@/stores/user.store";
 import { Button, Flex, Icon, Text } from "@chakra-ui/react";
-import { Cog6ToothIconm, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { Cog6ToothIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { deleteUser } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { verifyRSVP } from "@/services/firebase/rsvp";
+import { doc, deleteDoc } from "firebase/firestore";
+import { withdrawRSVP } from "@/services/firebase/rsvp";
 import {
 	type FormEventHandler,
 	useCallback,
@@ -20,12 +25,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import {
-	MdOpenInNew,
-	MdOutlineEdit,
-	MdOutlineRemoveCircleOutline,
-	MdWarning,
-} from "react-icons/md";
 import type {
 	ApplicationData,
 	ApplicationDataKey,
@@ -38,240 +37,7 @@ import {
 	saveApplicationDraft,
 	submitApplication,
 } from "@/services/firebase/application";
-
-const allowedFileTypes = [
-	"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
-	"application/pdf", //pdf
-	"application/msword", //doc, dot, wiz
-	"application/vnd.openxmlformats-officedocument.wordprocessingml.document", //docx
-	"application/rtf", //rtf
-	"application/oda", //oda
-	"text/markdown", //md, markdown, mdown, markdn
-	"text/plain", //txt, text, conf, def, list, log, in, ini
-	"application/vnd.oasis.opendocument.text", //odt
-];
-
-const mediaTypes: { name: string; key: keyof Socials }[] = [
-	{ name: "Instagram", key: "instagram" },
-	{ name: "LinkedIn", key: "linkedin" },
-	{ name: "GitHub", key: "github" },
-	{ name: "Discord", key: "discord" },
-];
-
-const visibilityOptions: ResumeVisibility[] = [
-	"Public",
-	"Sponsors Only",
-	"Private",
-];
-
-const visibilityDescription = {
-	Public:
-		"Your resume will be visible to anyone who scans your ticket QR code.",
-	Private: "Your resume will only be visible to you.",
-	"Sponsors Only": "Your resume will only be visible to our sponsors.",
-};
-// const userApp = applications[0] || null;
-// const [isLoading, setIsLoading] = useState(true);
-// const [editMode, setEditMode] = useState("");
-// const timeoutRef = useRef<number | null>(null);
-// const gettinSocialsRef = useRef<boolean>(false);
-// const socials = useUserStore((state) => state.socials);
-// const setSocials = useUserStore((state) => state.setSocials);
-// const [isResumeSettingsOpened, setIsResumeSettingsOpened] = useState(false);
-// const [newVisibility, setNewVisibility] = useState<ResumeVisibility>(
-// 	socials?.resumeVisibility ?? "Public",
-// );
-
-// const [file, setFile] = useState<File | null>(null);
-
-// // State to keep track of each media account value
-// const [mediaValues, setMediaValues] = useState<Socials>({
-// 	instagram: "",
-// 	linkedin: "",
-// 	github: "",
-// 	discord: "",
-// 	resumeRef: "",
-// 	docId: "",
-// 	uid: "",
-// 	resumeVisibility: "Public",
-// });
-
-// const firstName =
-// 	userApp?.firstName || currentUser?.displayName?.split(" ")[0] || "Unknown";
-// const lastName =
-// 	userApp?.lastName || currentUser?.displayName?.split(" ")[1] || "Unknown";
-
-// useEffect(() => {
-// 	if (socials) {
-// 		setIsLoading(false);
-// 		setMediaValues({ ...socials });
-// 		return;
-// 	}
-
-// 	if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-// 	timeoutRef.current = window.setTimeout(() => setIsLoading(false), 5000);
-
-// 	(async () => {
-// 		// avoid calling the function twice
-// 		if (gettinSocialsRef.current) return;
-// 		gettinSocialsRef.current = true;
-// 		try {
-// 			const res = await getSocials();
-// 			const data = res.data;
-// 			if (!data.resumeVisibility) data.resumeVisibility = "Public";
-// 			setSocials(res.data);
-// 			setMediaValues(res.data);
-// 		} catch (e) {
-// 			toaster.error({
-// 				title: "Error Getting Socials",
-// 				description: (e as Error).message,
-// 			});
-// 		} finally {
-// 			if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-// 			setIsLoading(false);
-// 		}
-// 	})();
-
-// 	return () => {
-// 		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-// 	};
-// }, [userApp]);
-
-// const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-// 	const selectedFiles = Array.from(e.target.files || []);
-// 	setFile(selectedFiles[0] ?? null);
-// 	setEditMode("resume");
-// };
-
-// const submitFile = async () => {
-// 	if (!file || !currentUser || !userApp) return;
-
-// 	const ref = await uploadGeneralResume(file, currentUser.uid);
-
-// 	try {
-// 		await updateSocials({ ...mediaValues, resumeRef: ref });
-// 		setSocials(
-// 			socials
-// 				? {
-// 						...socials,
-// 						resumeRef: ref,
-// 					}
-// 				: null,
-// 		);
-// 		setMediaValues({
-// 			...mediaValues,
-// 			resumeRef: ref,
-// 		});
-// 		setEditMode("");
-// 	} catch (e) {
-// 		toaster.error({
-// 			title: "Failed to upload resume",
-// 			description: (e as Error).message,
-// 		});
-// 	}
-// };
-
-// const handleInputChange = (key: keyof Socials, value: string) => {
-// 	setMediaValues((prev) => ({ ...prev, [key]: value }));
-// 	setEditMode(key);
-// };
-
-// const handleSubmit: FormEventHandler = async (e) => {
-// 	e.preventDefault();
-// 	try {
-// 		await updateSocials(mediaValues);
-// 		setSocials({ ...mediaValues });
-// 		setEditMode("");
-// 	} catch (e) {
-// 		toaster.error({
-// 			title: "Failed to update socials",
-// 			description: (e as Error).message,
-// 		});
-// 	}
-// };
-
-// const handleCancel = () => {
-// 	setMediaValues({
-// 		instagram: socials?.instagram ?? "",
-// 		github: socials?.github ?? "",
-// 		linkedin: socials?.linkedin ?? "",
-// 		discord: socials?.discord ?? "",
-// 		resumeRef: socials?.resumeRef ?? "",
-// 		docId: socials?.docId ?? "",
-// 		uid: socials?.uid ?? "",
-// 	});
-// 	setEditMode("");
-// };
-
-// const removeResume = async () => {
-// 	if (mediaValues.resumeRef) {
-// 		try {
-// 			await updateSocials({
-// 				...mediaValues,
-// 				resumeRef: "",
-// 				resumeVisibility: "Public",
-// 			});
-// 			setSocials({
-// 				...mediaValues,
-// 				resumeRef: "",
-// 				resumeVisibility: "Public",
-// 			});
-// 			setMediaValues({
-// 				...mediaValues,
-// 				resumeRef: "",
-// 				resumeVisibility: "Public",
-// 			});
-// 			setFile(null);
-// 			setIsResumeSettingsOpened(false);
-// 		} catch (error) {
-// 			toaster.error({
-// 				title: "Error",
-// 				description: "Failed to remove resume. Please try again.",
-// 			});
-// 		}
-// 	} else {
-// 		toaster.error({
-// 			title: "Error",
-// 			description: "No resume found to remove.",
-// 		});
-// 	}
-// };
-
-// const openResumeSettings = () => {
-// 	setIsResumeSettingsOpened(true);
-// };
-
-// const closeResumeSettings = () => {
-// 	setIsResumeSettingsOpened(false);
-// };
-
-// const saveResumeSettings = async () => {
-// 	try {
-// 		await updateSocials({
-// 			...mediaValues,
-// 			resumeVisibility: newVisibility,
-// 		});
-// 		setSocials({
-// 			...mediaValues,
-// 			resumeVisibility: newVisibility,
-// 		});
-// 		setMediaValues({
-// 			...mediaValues,
-// 			resumeVisibility: newVisibility,
-// 		});
-// 		toaster.success({
-// 			title: "Resume Settings Saved",
-// 			description: "",
-// 		});
-// 		setIsResumeSettingsOpened(false);
-// 		setEditMode("");
-// 	} catch (error) {
-// 		toaster.error({
-// 			title: "Error",
-// 			description: "Failed to save resume settings. Please try again.",
-// 		});
-// 	}
-// };
+import { auth, firestore } from "@/services/firebase";
 
 // if (isLoading) return <LoadingAnimation />;
 type FormErrors = { _hasErrors: boolean } & Partial<
@@ -279,20 +45,22 @@ type FormErrors = { _hasErrors: boolean } & Partial<
 >;
 
 export const AccountPage = () => {
+	const navigate = useNavigate();
 	const { currentUser, resetPassword } = useAuth();
-	const { applications } = useApplications();
+	const {
+		applications,
+		isLoading: loadingApplications,
+		drafts,
+		current: currentApplication,
+		refreshApplications,
+		refreshDrafts,
+	} = useApplications();
 	const userApp = applications[0] || null;
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const [isSendingReset, setIsSendingReset] = useState(false);
 	const [resetStatus, setResetStatus] = useState<"idle" | "success" | "error">(
 		"idle",
 	);
-	const {
-		isLoading: loadingApplications,
-		drafts,
-		refreshApplications,
-		refreshDrafts,
-	} = useApplications();
 
 	// default user profile
 	const [application, setApplication] = useState<ApplicationData>(() => {
@@ -310,15 +78,20 @@ export const AccountPage = () => {
 
 	const autosave = useDebounce(
 		//@ts-ignore
-		async (application: ApplicationDataDoc, uid: string) => {
+		async (application: ApplicationDataDoc, uid?: string, docId?: string) => {
+			if (!uid || !docId) {
+				// DEBUGGING (REMOVE CONSOLE LOGS IN PRODUCTION)
+				console.warn("Skipping autosave: Missing UID or docId", { uid, docId });
+				return;
+			}
 			try {
-				await saveApplicationDraft(application, uid, application.__docId);
+				await saveApplicationDraft(application, uid, docId);
 				await refreshDrafts();
 			} catch (error) {
-				console.error(error);
+				console.error("Autosave failed:", error);
 				toaster.error({
-					title: "Oops, something went wrong when saving application draft.",
-					description: "",
+					title: "Autosave error",
+					description: "Could not save your progress. Try again later.",
 				});
 			}
 		},
@@ -331,7 +104,6 @@ export const AccountPage = () => {
 			setApplication((application) => {
 				const updatedApp = { ...application };
 				updatedApp[name] = data;
-				console.log(application);
 				autosave(updatedApp, currentUser?.uid, draftId);
 				return updatedApp;
 			});
@@ -372,6 +144,77 @@ export const AccountPage = () => {
 		}
 	};
 
+	// Revoke RSVP
+	const [isRevokingRSVP, setIsRevokingRSVP] = useState(false);
+	const handleRevokeRSVP = async () => {
+		try {
+			setIsRevokingRSVP(true);
+			await withdrawRSVP();
+			await refreshApplications(); // re-fetch updates, e.g., rsvpVerified now false
+
+			toaster.success({
+				title: "RSVP Revoked",
+				description: "You've successfully withdrawn your RSVP.",
+			});
+		} catch (error) {
+			console.error("Failed to revoke RSVP:", error);
+			toaster.error({
+				title: "Failed to revoke RSVP",
+				description: "Please try again later or contact support.",
+			});
+		} finally {
+			setIsRevokingRSVP(false);
+		}
+	};
+	// RSVP Loading
+	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
+
+	const handleRSVP = async () => {
+		try {
+			setIsRSVPLoading(true);
+			await verifyRSVP();
+			await refreshApplications();
+		} catch (error) {
+			console.error(error);
+			const msg =
+				(error as Error).message ??
+				"Oops, something went wrong when trying to RSVP. Please try again later. If problem persists, contact us in Discord.";
+			toaster.error({
+				title: "Failed to RSVP",
+				description: msg,
+			});
+		} finally {
+			setIsRSVPLoading(false);
+		}
+	};
+
+	// Confirm Delete button
+	const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+	const handleDeleteClick = () => {
+		setShowConfirmDelete((prev) => !prev);
+	};
+	const handleDeleteAccountConfirmed = async () => {
+		if (!currentUser) return;
+
+		try {
+			const user = auth.currentUser;
+			if (!user) {
+				console.error("No authenticated user found.");
+				return;
+			}
+
+			await deleteUser(user);
+
+			navigate("/", { replace: true });
+		} catch (error) {
+			console.error("Error deleting account:", error);
+			toaster.error({
+				title: "Account deletion failed",
+				description: "Please try again later or re-authenticate.",
+			});
+		}
+	};
+
 	const testing = true;
 	return (
 		<PageWrapper>
@@ -384,7 +227,6 @@ export const AccountPage = () => {
 							defaultValue={currentUser?.email ?? ""}
 							description=""
 							disabled
-							required
 						/>
 					</Flex>
 					<PhoneInput
@@ -410,28 +252,7 @@ export const AccountPage = () => {
 									WebkitTextFillColor: "var(--chakra-colors-offwhite-primary)",
 								}}
 								size="lg"
-								// visibilityIcon={{
-								// 	on: (
-								// 		<Icon
-								// 			size="md"
-								// 			color="#666484"
-								// 			transition="colors"
-								// 			_hover={{ color: "offwhite.primary" }}
-								// 		>
-								// 			<Eye />
-								// 		</Icon>
-								// 	),
-								// 	off: (
-								// 		<Icon
-								// 			size="md"
-								// 			color="#666484"
-								// 			transition="colors"
-								// 			_hover={{ color: "offwhite.primary" }}
-								// 		>
-								// 			<EyeClosed />
-								// 		</Icon>
-								// 	),
-								// }}
+								disabled
 							/>
 						</Field>
 						<Button
@@ -439,7 +260,7 @@ export const AccountPage = () => {
 							size="md"
 							borderRadius="full"
 							w="fit-content"
-							alignSelf="end"
+							alignSelf="start"
 						>
 							CHANGE PASSWORD
 						</Button>
@@ -454,11 +275,11 @@ export const AccountPage = () => {
 							</Text>
 						)}
 					</Flex>
-					<Flex direction="column" gap={4}>
-						<Text color="offwhite.primary/30">CHANGE RSVP STATUS</Text>
-						{/* {currentUser?.rsvpVerified ? ( */}
-						{testing ? (
+					{/* NEEDS TO BE FIXED */}
+					{userApp?.rsvp ? (
+						<Flex direction="column" gap={4}>
 							<Flex alignItems="start" direction="column" gap={4}>
+								<Text color="offwhite.primary/30">CHANGE RSVP STATUS</Text>
 								<Flex gap={4}>
 									<Text color="offwhite.primary/30">
 										You are currently RSVP’d.
@@ -477,23 +298,55 @@ export const AccountPage = () => {
 									borderColor="brand.error"
 									color="brand.error"
 									rounded="full"
+									onClick={handleRevokeRSVP}
+									loading={isRevokingRSVP}
 								>
 									REVOKE RSVP STATUS
 								</Button>
 							</Flex>
-						) : (
-							<Text>No</Text>
-						)}
-					</Flex>
+						</Flex>
+					) : (
+						<></>
+						// <Flex alignItems="start" direction="column" gap={4}>
+						// 	<Flex gap={4}>
+						// 		<Text color="offwhite.primary/30">
+						// 			You have not RSVP'd yet.
+						// 		</Text>
+						// 	</Flex>
+						// 	<Button rounded="full" px={8} onClick={handleRSVP}>
+						// 		RSVP
+						// 	</Button>
+						// </Flex>
+					)}
 					<Flex alignItems="start" direction="column" gap={4}>
 						<Text color="offwhite.primary/30">DANGER ZONE</Text>
 						<Text color="offwhite.primary/30">
 							Deleting your account means revoking your acceptance to SpurHacks
 							2025. This action cannot be undone!
 						</Text>
-						<Button bg="brand.error" color="offwhite.primary" rounded="full">
+						<Button
+							bg="brand.error"
+							color="offwhite.primary"
+							rounded="full"
+							onClick={handleDeleteClick}
+						>
 							DELETE ACCOUNT
 						</Button>
+
+						{showConfirmDelete && (
+							<Button
+								bg="#1f1e2e"
+								color="brand.error"
+								rounded="full"
+								onClick={handleDeleteAccountConfirmed}
+								mt={-2}
+							>
+								<Text color="offwhite.primary/30" pr={2}>
+									Are you sure?
+								</Text>{" "}
+								Yes, delete my account.
+							</Button>
+						)}
 					</Flex>
 				</Flex>
 			</Flex>
