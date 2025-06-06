@@ -4,6 +4,13 @@ import { Field } from "@/components/ui/field";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
+import { useQuery } from "@tanstack/react-query";
+import {
+	getEmergencyContact,
+	type EmergencyContact,
+} from "@/services/firebase/emergency-contact";
+import { saveEmergencyContact } from "@/services/firebase/emergency-contact";
+import { useMutation } from "@tanstack/react-query";
 import { defaultApplication } from "@/forms/hacker-form/defaults";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
@@ -23,7 +30,6 @@ import {
 } from "@/services/firebase/application";
 import { auth } from "@/services/firebase";
 import { withdrawRSVP } from "@/services/firebase/rsvp";
-
 // if (isLoading) return <LoadingAnimation />;
 type FormErrors = { _hasErrors: boolean } & Partial<
 	Record<ApplicationDataKey, string>
@@ -32,130 +38,71 @@ type FormErrors = { _hasErrors: boolean } & Partial<
 export const AccountPage = () => {
 	const navigate = useNavigate();
 	const { currentUser, resetPassword } = useAuth();
-	const { applications, drafts, refreshApplications, refreshDrafts } =
-		useApplications();
+	const { applications, refreshApplications } = useApplications();
 	const userApp = applications[0] || null;
 	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
 	const [isSendingReset, setIsSendingReset] = useState(false);
 	const [resetStatus, setResetStatus] = useState<"idle" | "success" | "error">(
 		"idle",
 	);
+	const [phone, setPhone] = useState(
+		userApp?.phone ?? {
+			country: "Canada (+1)",
+			number: "",
+		},
+	);
 
-	// Only create a draft if neither an application nor a draft exists
-	useEffect(() => {
-		const ensureDraftExists = async () => {
-			if (!currentUser?.uid) return;
-			if (applications.length === 0 && drafts.length === 0) {
-				try {
-					await saveApplicationDraft(
-						{
-							...defaultApplication,
-							email: currentUser.email ?? "",
-						},
-						currentUser.uid,
-						undefined,
-					);
-					await refreshDrafts();
-				} catch (error) {
-					console.error("Failed to create draft application:", error);
-					toaster.error({
-						title: "Draft creation error",
-						description:
-							"Could not create a draft application. Try again later.",
-					});
-				}
-			}
-		};
-		ensureDraftExists();
-	}, [currentUser?.uid, applications.length, drafts.length, refreshDrafts]);
+	// Emergency Contact functionality
+	const { data: emergencyContact, isLoading: isLoadingEmergencyContact } =
+		useQuery<EmergencyContact | null>({
+			queryKey: ["emergency-contact", currentUser?.uid],
+			enabled: !!currentUser?.uid,
+			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			queryFn: () => getEmergencyContact(currentUser!.uid),
+		});
 
-	// Use application if it exists, otherwise use draft, otherwise default
-	const [application, setApplication] = useState<ApplicationData>(() => {
-		if (userApp) {
-			return { ...defaultApplication, ...userApp };
-		}
-		if (drafts.length > 0) {
-			const { __docId, ...draftData } = drafts[0];
-			return { ...defaultApplication, ...draftData };
-		}
-		return {
-			...defaultApplication,
-			email: currentUser?.email ?? "",
-		};
+	const [isEditingEmergency, setIsEditingEmergency] = useState(false);
+	const [emergencyForm, setEmergencyForm] = useState<EmergencyContact>({
+		name: "",
+		phone: "",
+		relation: "",
 	});
 
-	// Keep application state in sync with Firestore
 	useEffect(() => {
-		if (userApp) {
-			setApplication({ ...defaultApplication, ...userApp });
-		} else if (drafts.length > 0) {
-			const { __docId, ...draftData } = drafts[0];
-			setApplication({ ...defaultApplication, ...draftData });
+		if (emergencyContact) {
+			setEmergencyForm(emergencyContact);
 		}
-	}, [userApp, drafts]);
+	}, [emergencyContact]);
 
-	const draftId = useMemo(() => {
-		if (drafts.length) return drafts[0].__docId;
-		return undefined;
-	}, [drafts]);
-
-	const autosave = useDebounce(
-		//@ts-ignore
-		async (application: ApplicationData, uid?: string, docId?: string) => {
-			if (!uid) {
-				console.warn("Skipping autosave: Missing UID", { uid });
-				return;
-			}
-			try {
-				if (appDocId) {
-					// Save to application document
-					await updateApplication(application, uid, appDocId);
-					await refreshApplications();
-				} else if (draftDocId) {
-					// Save to draft document
-					await saveApplicationDraft(application, uid, draftDocId);
-					await refreshDrafts();
-				} else {
-					// No draft exists, create one
-					await saveApplicationDraft(application, uid, undefined);
-					await refreshDrafts();
-				}
-			} catch (error) {
-				console.error("Autosave failed:", error);
-				toaster.error({
-					title: "Autosave error",
-					description: "Could not save your progress. Try again later.",
-				});
-			}
-		},
-		500,
-		[],
-	);
-
-	const appDocId = useMemo(() => {
-		if (applications.length) return applications[0].__docId;
-		return undefined;
-	}, [applications]);
-
-	const draftDocId = useMemo(() => {
-		if (drafts.length) return drafts[0].__docId;
-		return undefined;
-	}, [drafts]);
-
-	const handleChange = useCallback(
-		<K extends ApplicationDataKey>(name: K, data: ApplicationData[K]) => {
-			setApplication((application) => {
-				const updatedApp = { ...application };
-				updatedApp[name] = data;
-				autosave(updatedApp, currentUser?.uid, appDocId, draftDocId);
-				return updatedApp;
+	const emergencyMutation = useMutation({
+		mutationFn: (data: EmergencyContact) =>
+			// biome-ignore lint/style/noNonNullAssertion: <explanation>
+			saveEmergencyContact(currentUser!.uid, data),
+		onSuccess: () => {
+			toaster.success({
+				title: "Saved emergency contact",
+				description: "Your emergency contact has been updated.",
 			});
-			clearErrors();
+			setIsEditingEmergency(false);
 		},
-		[currentUser?.uid, appDocId, draftDocId, autosave],
-	);
+		onError: () => {
+			toaster.error({
+				title: "Error",
+				description: "Could not save emergency contact. Try again later.",
+			});
+		},
+	});
 
-	const clearErrors = () => setErrors({ _hasErrors: false });
+	const handleRequestPhoneChange = async () => {
+		// call cloud function from here...
+		// await updateApplication(userApp, currentUser?.uid, userApp.__docId);
+		// await requestPhoneChange({ uid: currentUser.uid, newPhone: ... });
+		toaster.info({
+			title: "Phone Change Request",
+			description:
+				"To change your phone number, please contact support or use the official process.",
+		});
+	};
 
 	const handlePasswordReset = async () => {
 		if (!currentUser?.email) return;
@@ -226,6 +173,7 @@ export const AccountPage = () => {
 		<PageWrapper>
 			<Flex w="full" pl={5}>
 				<Flex w="full" maxW="30rem" direction="column" gap="10">
+					{/* User email */}
 					<Flex direction="column">
 						<TextInput
 							label="Email"
@@ -235,12 +183,114 @@ export const AccountPage = () => {
 							disabled
 						/>
 					</Flex>
-					<PhoneInput
-						required
-						value={application.phone}
-						onChange={(v) => handleChange("phone", v)}
-						error={errors.phone}
-					/>
+					{/* User phone input */}
+					<Flex direction="column" gap={2}>
+						<PhoneInput
+							required
+							value={phone}
+							onChange={setPhone}
+							error={errors.phone}
+							disabled={!userApp}
+						/>
+						{userApp ? (
+							<Button
+								size="md"
+								borderRadius="full"
+								w="fit-content"
+								alignSelf="start"
+								onClick={handleRequestPhoneChange}
+							>
+								UPDATE PHONE NUMBER
+							</Button>
+						) : (
+							<Text color="offwhite.primary/30">
+								Updating the phone input is disabled until an application has
+								been submitted.
+							</Text>
+						)}
+					</Flex>
+					{/* Emergency Contact */}
+					<Flex direction="column" gap={4}>
+						<Text color="offwhite.primary/30">EMERGENCY CONTACT</Text>
+
+						{isLoadingEmergencyContact ? (
+							<Text>Loading...</Text>
+						) : (
+							<>
+								<TextInput
+									label="Full Name"
+									value={emergencyForm.name}
+									onChange={(e) =>
+										setEmergencyForm((prev) => ({
+											...prev,
+											name: e.target.value,
+										}))
+									}
+									disabled={!isEditingEmergency}
+								/>
+								<TextInput
+									label="Phone Number"
+									value={emergencyForm.phone}
+									onChange={(e) =>
+										setEmergencyForm((prev) => ({
+											...prev,
+											phone: e.target.value,
+										}))
+									}
+									disabled={!isEditingEmergency}
+								/>
+								<TextInput
+									label="Relationship"
+									value={emergencyForm.relation}
+									onChange={(e) =>
+										setEmergencyForm((prev) => ({
+											...prev,
+											relation: e.target.value,
+										}))
+									}
+									disabled={!isEditingEmergency}
+								/>
+
+								{isEditingEmergency ? (
+									<Flex gap={2}>
+										<Button
+											onClick={() => emergencyMutation.mutate(emergencyForm)}
+											loading={emergencyMutation.isPending}
+											rounded="full"
+										>
+											Save
+										</Button>
+										<Button
+											onClick={() => {
+												setIsEditingEmergency(false);
+												setEmergencyForm(
+													emergencyContact ?? {
+														name: "",
+														phone: "",
+														relation: "",
+													},
+												);
+											}}
+											variant="outline"
+											rounded="full"
+										>
+											Cancel
+										</Button>
+									</Flex>
+								) : (
+									<Button
+										onClick={() => setIsEditingEmergency(true)}
+										variant="outline"
+										rounded="full"
+										alignSelf="start"
+									>
+										Edit
+									</Button>
+								)}
+							</>
+						)}
+					</Flex>
+					{/* User password */}
 					<Flex direction="column" gap={2}>
 						<Text color="offwhite.primary/30">CHANGE PASSWORD</Text>
 						<Field label="Current Password">
@@ -314,16 +364,6 @@ export const AccountPage = () => {
 						</Flex>
 					) : (
 						<></>
-						// <Flex alignItems="start" direction="column" gap={4}>
-						// 	<Flex gap={4}>
-						// 		<Text color="offwhite.primary/30">
-						// 			You have not RSVP'd yet.
-						// 		</Text>
-						// 	</Flex>
-						// 	<Button rounded="full" px={8} onClick={handleRSVP}>
-						// 		RSVP
-						// 	</Button>
-						// </Flex>
 					)}
 					<Flex alignItems="start" direction="column" gap={4}>
 						<Text color="offwhite.primary/30">DANGER ZONE</Text>
