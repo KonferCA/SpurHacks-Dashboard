@@ -3,11 +3,13 @@ import InstagramLogo from "@/assets/instagram.svg";
 import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
 import { toaster } from "@/components/ui/toaster";
+import { faqs } from "@/data";
 import { useApplications } from "@/hooks/use-applications";
 import { useDeadlines } from "@/hooks/use-deadlines";
 import { paths } from "@/providers/RoutesProvider/data";
 import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
+	Accordion,
 	Alert,
 	Badge,
 	Box,
@@ -341,6 +343,38 @@ const HomePage = () => {
 							</Card.Body>
 						</Card.Root>
 					)}
+					
+					<Card.Root
+						maxWidth={{ base: "none", xl: "450px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>FAQ</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem" fontSize="sm">
+								Quick answers to common questions.
+							</Text>
+							<Box maxHeight="290px" overflowY="auto">
+								<Accordion.Root collapsible multiple>
+									{faqs.map((faq, index) => (
+										<Accordion.Item key={index} value={`item-${index}`}>
+											<Accordion.ItemTrigger>
+												<Text fontWeight="medium" fontSize="sm">{faq.question}</Text>
+												<Accordion.ItemIndicator />
+											</Accordion.ItemTrigger>
+											<Accordion.ItemContent>
+												<Accordion.ItemBody>
+													<Text color="fg.muted" fontSize="sm">{faq.answer}</Text>
+												</Accordion.ItemBody>
+											</Accordion.ItemContent>
+										</Accordion.Item>
+									))}
+								</Accordion.Root>
+							</Box>
+						</Card.Body>
+					</Card.Root>
 				</Flex>
 				{currentApplication?.rsvp && (
 					<Card.Root maxWidth={{ base: "none", xl: "600px" }} rounded="4xl">
@@ -444,6 +478,7 @@ const HomePage = () => {
 						</Card.Footer>
 					</Card.Root>
 				</Flex>
+
 				<Card.Root {...cardStyles}>
 					<Card.Header>
 						<Heading>Stay Connected</Heading>
