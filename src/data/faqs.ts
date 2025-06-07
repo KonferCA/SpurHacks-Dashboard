@@ -9,7 +9,7 @@ const faqs = [
     },
     {
         question: "What cool things are happening at SpurHacks?",
-        answer: "SpurHacks will feature a variety of workshops, mentorship opportunities, and networking events with industry professionals. Alongside this, we'll have a tonne of games, tournaments, and arcade-esque activities to keep you entertained throughout the event. We will also have a variety of food and drinks available for all participants."
+        answer: "SpurHacks will feature a variety of workshops, mentorship opportunities, and networking events with industry professionals. Alongside this, we'll have a ton of games, tournaments, and arcade-esque activities to keep you entertained throughout the event. We will also have a variety of food and drinks available for all participants."
     },
     {
         question: "When and where is the event?",
@@ -25,7 +25,7 @@ const faqs = [
     },
     {
         question: "What prizes are available?",
-        answer: "We have over $100k in cash prizes available for participants! Prizes will be awarded for various categories, targetted towards people who are just starting out in tech, and people who are well versed in the industry. Stay tuned for more details!"
+        answer: "We have over $100k in cash prizes available for participants! Prizes will be awarded for various categories, targeted towards people who are just starting out in tech, and people who are well versed in the industry. Stay tuned for more details!"
     },
     {
         question: "Who can participate?",
