@@ -1,7 +1,7 @@
 import { getDoc, doc, setDoc } from "firebase/firestore";
 import { firestore } from "@/services/firebase";
 
-const EMERGENCY_CONTACT_COLLECTION = "emergency_contacts";
+const EMERGENCY_CONTACT_COLLECTION = "emergency-contacts";
 
 export type EmergencyContact = {
 	name: string;
