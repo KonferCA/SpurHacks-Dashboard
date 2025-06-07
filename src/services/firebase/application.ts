@@ -165,12 +165,5 @@ export async function updatePhoneNumber(phoneData: {
 	number: string;
 }) {
 	const fn = httpsCallable(functions, "updatePhoneNumber");
-	try {
-		await fn({ phone: phoneData });
-	} catch (e) {
-		console.error(e);
-		return false;
-	}
-
-	return true;
+	await fn({ phone: phoneData });
 }

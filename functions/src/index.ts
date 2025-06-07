@@ -193,6 +193,18 @@ export const updatePhoneNumber = onCall(async (req) => {
 	}
 
 	try {
+		const phoneSchema = z.object({
+			country: z.string().min(1, "Country code is required"),
+			number: z
+				.string()
+				.regex(/^\d{3}-\d{3}-\d{4}$/, "Invalid phone number format"),
+		});
+
+		const result = phoneSchema.safeParse(req.data.phone);
+		if (!result.success) {
+			throw new HttpsError("invalid-argument", "Invalid phone number format");
+		}
+
 		const applicationSnap = await getFirestore()
 			.collection("applications")
 			.where("applicantId", "==", req.auth.uid)
@@ -201,9 +213,8 @@ export const updatePhoneNumber = onCall(async (req) => {
 			return response(HttpStatus.NOT_FOUND, { message: "not found" });
 
 		const applicationDoc = applicationSnap.docs[0];
-		const db = getFirestore();
-		db.settings({ ignoreUndefinedProperties: true });
-		await db
+		console.log("Updating phone number for application:", req.data);
+		await getFirestore()
 			.collection("applications")
 			.doc(applicationDoc.id)
 			.update({
@@ -211,6 +222,7 @@ export const updatePhoneNumber = onCall(async (req) => {
 					country: req.data.phone.country,
 					number: req.data.phone.number,
 				},
+				timestamp: new Date(),
 			});
 		logInfo("Phone number updated successfully:", req.data.phone);
 		return response(HttpStatus.OK, { message: "ok" });

@@ -11,24 +11,15 @@ import {
 } from "@/services/firebase/emergency-contact";
 import { saveEmergencyContact } from "@/services/firebase/emergency-contact";
 import { useMutation } from "@tanstack/react-query";
-import { defaultApplication } from "@/forms/hacker-form/defaults";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { deleteUser } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 // import { verifyRSVP } from "@/services/firebase/rsvp";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type {
-	ApplicationData,
-	ApplicationDataKey,
-} from "@/forms/hacker-form/types";
+import { useEffect, useState } from "react";
+import type { ApplicationDataKey } from "@/forms/hacker-form/types";
 import { PasswordInput } from "@/components/ui/password-input";
-import { useDebounce } from "@/hooks/use-debounce";
-import {
-	saveApplicationDraft,
-	updateApplication,
-	updatePhoneNumber,
-} from "@/services/firebase/application";
+import { updatePhoneNumber } from "@/services/firebase/application";
 import { auth } from "@/services/firebase";
 import { withdrawRSVP } from "@/services/firebase/rsvp";
 // if (isLoading) return <LoadingAnimation />;
@@ -95,13 +86,18 @@ export const AccountPage = () => {
 	});
 
 	const handleRequestPhoneChange = async () => {
-		// call cloud function from here...
-		await updatePhoneNumber({ country: phone.country, number: phone.number });
-		toaster.info({
-			title: "Phone Change Request",
-			description:
-				"To change your phone number, please contact support or use the official process.",
-		});
+		try {
+			await updatePhoneNumber({ country: phone.country, number: phone.number });
+			toaster.success({
+				title: "Phone number updated",
+				description: "Your phone number has been updated successfully.",
+			});
+		} catch (error) {
+			toaster.error({
+				title: "Error updating phone number",
+				description: "Make sure the phone number is valid.",
+			});
+		}
 	};
 
 	const handlePasswordReset = async () => {
@@ -258,7 +254,7 @@ export const AccountPage = () => {
 											loading={emergencyMutation.isPending}
 											rounded="full"
 										>
-											Save
+											SAVE
 										</Button>
 										<Button
 											onClick={() => {
@@ -274,17 +270,16 @@ export const AccountPage = () => {
 											variant="outline"
 											rounded="full"
 										>
-											Cancel
+											CANCEL
 										</Button>
 									</Flex>
 								) : (
 									<Button
 										onClick={() => setIsEditingEmergency(true)}
-										variant="outline"
 										rounded="full"
 										alignSelf="start"
 									>
-										Edit
+										EDIT
 									</Button>
 								)}
 							</>
