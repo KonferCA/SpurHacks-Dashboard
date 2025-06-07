@@ -1,58 +1,52 @@
 const faqs = [
     {
-        question: "🤔 What is a Hackathon?",
-        answer: "A hackathon consists of two “parts” - a social coding event where teams of programmers, designers, and developers collaborate to solve a problem. You can either create a software-based project that falls under a category hack or make whatever your heart desires as a general hack.\\nThe second section involves networking events, seminars, and presentations conducted by industry and academic professionals. These mini-events are scheduled throughout the hackathon - they're completely optional, but are great ways to take a break from your hacking, and to even learn a new skill!",
+        question: "What is SpurHacks?",
+        answer: "SpurHacks is Spur's premiere hackathon, poised to be Canada's largest hackathon hosted at SPUR Campus - a venue with a rich history in Canadian history. This 3-day overnight event, running from June 20th to June 22nd, will welcome over 2,000 students from all across the Canadian tech sphere."
     },
     {
-        question:
-            "🏆 Why should I come to HawkHacks? What types of things can I expect?",
-        answer: "Picture this: over $35,000 worth of prizes, including cool stuff like iPads and Nintendo Switches just waiting to be won!\\nBut hey, it's not all about the prizes (although they're pretty awesome). We've lined up a bunch of events throughout the weekend that are all about boosting your career, soft skills, and tech skills. You'll get to hang out with industry professionals from academia, business, entrepreneurship - you name it. They're here to share their wisdom and insights, and maybe even teach you a thing or two.\\nAnd let's not forget the fun stuff! We've got tons of mini-games and tournaments lined up, each with its own crazy prizes. Think of a spicy ramen challenge, a fast-typing tournament, and even a pizza-eating competition! It's all about having a blast while learning and connecting with awesome people.",
+        question: "What's unique about SpurHacks compared to a regular hackathon or case competition?",
+        answer: "SpurHacks isn't just a hackathon - it's a launchpad for real-world impact. With the scale to host up to 2,000 participants, SpurHacks gives you 48 hours to design, build, and pitch innovative solutions with the chance to secure actual investment from a leading venture firm. Whether you're starting from scratch, bringing an existing idea, or looking for collaborators, SpurHacks provides the resources, mentorship, and funding opportunities to take your project beyond the weekend. Build at SpurHacks - and build the future you're aiming for."
     },
     {
-        question: "💰 How much does it cost?",
-        answer: "$0.00! Due to our amazing sponsors and support systems, attending and participating at HawkHacks is completely free!",
+        question: "What cool things are happening at SpurHacks?",
+        answer: "SpurHacks will feature a variety of workshops, mentorship opportunities, and networking events with industry professionals. Alongside this, we'll have a tonne of games, tournaments, and arcade-esque activities to keep you entertained throughout the event. We will also have a variety of food and drinks available for all participants."
     },
     {
-        question: "📧 This is a cool FAQ section, but I still have a question!",
-        answer: 'No worries! Reach out to us via email at <a href="mailto:hello@hawkhacks.ca">hello@hawkhacks.ca</a> or on any of <a href="https://linktr.ee/hawkhacks">our socials</a>, and we\'ll get back to you as soon as our social media person wakes up!',
-    },
-
-    {
-        question:
-            "🔑 Do I need to know how to code like some sort of crazy hacker?",
-        answer: "Anybody can attend HawkHacks! From someone who doesn't know what a computer is, to someone who makes computers - everyone's welcome!\\nYou can either create a piece of software in 36 hours, attend the workshops and seminars, or do a bit of both - all up to you!",
+        question: "When and where is the event?",
+        answer: "The event will take place from June 20th to June 22nd, 2025 and will be an overnight event. The event will be held in-person at the SPUR Campus in Waterloo, Ontario. The address is 2240 University Ave, Waterloo, ON N2K 0A9, Canada."
     },
     {
-        question: "📅 When can I apply?",
-        answer: "Hacker, mentor, and volunteer applications open on April 7th, 2024 and are closing on May 3rd, 2024 at 11:59 PM!",
+        question: "How much does it cost to attend?",
+        answer: "The event is completely free to attend! We will provide food, drinks, and swag for all participants. However, spots are limited and on a first-come, first-served basis."
     },
     {
-        question: "🎓 Am I eligible to participate?",
-        answer: "As long as you're over the age of 13, and are either a high-schooler, a post-secondary student (i.e. university or college), or a recent graduate, you are eligible to participate.",
+        question: "What food will be provided?",
+        answer: "We're leveling up the hackathon food game - no cold pizza here. Expect a rotating menu of fresh meals for breakfast, lunch, and dinner, plus snacks and drinks to keep you fueled all weekend. Have dietary restrictions? We've got you covered - just let us know in your application. Come for the innovation but you might just stay for the food!"
     },
     {
-        question: "👫 Do I need a team?",
-        answer: 'You can work alone, or up to a team of 4 people, but we strongly encourage working with a team! \\nIf you\'re looking for a team, check out our #looking-for-team <a href="https://discord.com/invite/GxwvFEn9TB">Discord channel</a> OR during our in-person team-building event.',
-    },
-
-    {
-        question: "📜 What should I bring to HawkHacks?",
-        answer: "At a minimum, you should have a device to code on (ideally a laptop), a charger (for your phone and laptop), and a piece of student or government ID. We also recommend bringing stuff to stay comfy, such as a blanket, pillow, and an oversized hoodie.\\nKeep in mind that this is an overnight event - you may want to consider hygiene products as well!",
+        question: "What prizes are available?",
+        answer: "We have over $100k in cash prizes available for participants! Prizes will be awarded for various categories, targetted towards people who are just starting out in tech, and people who are well versed in the industry. Stay tuned for more details!"
     },
     {
-        question: "🔎 I'm lost! How do I find the HawkHacks building?",
-        answer: 'HawkHacks is being hosted at the Lazaridis School of Business and Economics, which is located in Waterloo, Ontario, at Wilfrid Laurier University\'s main campus. Google Map directions can be <a href="https://google.com/maps/dir//Lazaridis+School+of+Business+and+Economics,+64+University+Ave+W,+Waterloo,+ON+N2L+3C7/@43.4750664,-80.6118487,12z/data=!4m8!4m7!1m0!1m5!1m1!1s0x882bf3f62c12347f:0x100f39a182234b30!2m2!1d-80.529448!2d43.475096?entry=ttu">found here</a>.',
+        question: "Who can participate?",
+        answer: "SpurHacks is open to everyone - no matter your background or experience level. Whether you're a business student with big ideas, a designer with an eye for detail, or a programmer ready to build, there's a place for you here. We believe the best ideas come from diverse teams, so we welcome participants from all disciplines to collaborate, create, and pitch the future together."
     },
     {
-        question:
-            "🚗 I'll be commuting - do you guys cover transportation costs? How can I get to Waterloo?",
-        answer: "Unfortunately, we're unable to cover transportation costs. There are many ways to commute - GO Bus, GO Train, VIA Rail, and Flixbus!\\nIf those options aren't feasible, we also have a #rideshare channel on our <a href=\"https://discord.com/invite/GxwvFEn9TB\">Discord server</a> where people can coordinate carpools!",
+        question: "How many people can be on a team?",
+        answer: "Teams can consist of up to 4 members. You can form a team with your friends or join one at the event. If you don't have a team, don't worry! We'll help you find one."
     },
-
     {
-        question: "😷 What are your COVID-19 regulations?",
-        answer: "At this time, HawkHacks does not have a COVID-19 policy in effect and won't be enforcing any COVID-related rules or restrictions. We recommend you do your due diligence when it comes to your health, and take precautions as necessary. We will have a small amount of hygiene products, such as hand sanitizers, available at the event.\\nWe ask that if you are feeling sick or unwell, to not attend the event for the respect and safety of everyone else at the event.",
+        question: "What if I have no experience in tech or business?",
+        answer: "No problem! SpurHacks is designed to be inclusive and welcoming to all participants, regardless of their level of experience. We will have workshops, mentors, and resources available to help you learn and grow throughout the event. Don't hesitate to apply!"
     },
+    {
+        question: "What should I bring?",
+        answer: "We recommend bringing your laptop, charger, and any specific tools or software you like to use. We also recommend packing comfortable clothes, toiletries (toothbrush, deodorant, etc.), and anything else you need to feel your best over the weekend. We'll handle the rest - meals, workspace, and all the resources you'll need."
+    },
+    {
+        question: "Are there any accommodations?",
+        answer: "Yes! The venue will be open 24-hours, and has ample space to work in and sleep! Feel free to bring sleeping bags, pillows, and blankets. If you have any specific requests or needs, please let us know in your application."
+    }
 ];
 
 export { faqs };
