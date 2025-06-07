@@ -2,7 +2,7 @@ import { Select } from "@/components/Select/Select";
 import { TextInput } from "@/components/TextInput/TextInput";
 import { countryCodes } from "@/data/countryPhoneCodes";
 import { Fieldset, GridItem, SimpleGrid } from "@chakra-ui/react";
-import { type FC } from "react";
+import type { FC } from "react";
 
 // Function to format phone number to 123-444-5555 format
 const formatPhoneNumber = (value: string) => {
@@ -44,6 +44,7 @@ export interface PhoneInputProps {
 	required?: boolean;
 	error?: string;
 	description?: string;
+	disabled?: boolean;
 	value:
 		| {
 				country: string;
@@ -57,6 +58,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 	required,
 	error,
 	description,
+	disabled,
 	value,
 }) => {
 	const { country, number } =
@@ -89,6 +91,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 						required={required}
 						options={countryCodes}
 						onChange={(v) => handleCountryChange(v[0] ?? countryCodes[0])}
+						disabled={disabled}
 					/>
 				</GridItem>
 				<GridItem colSpan={{ base: 12, md: 8 }}>
@@ -99,6 +102,7 @@ export const PhoneInput: FC<PhoneInputProps> = ({
 						placeholder="123-456-7890"
 						label="Phone Number"
 						maxLength={12} // 10 digits + 2 hyphens
+						disabled={disabled}
 					/>
 				</GridItem>
 			</SimpleGrid>
