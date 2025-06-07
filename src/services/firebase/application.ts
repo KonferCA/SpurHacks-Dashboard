@@ -1,4 +1,4 @@
-import { firestore } from "@/services/firebase";
+import { firestore, functions } from "@/services/firebase";
 import {
 	APPLICATIONS_COLLECTION,
 	APPLICATION_DRAFTS_COLLECTION,
@@ -17,6 +17,7 @@ import {
 
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import type { ApplicationDataDoc } from "./types";
+import { httpsCallable } from "firebase/functions";
 
 export class DuplicateApplicationError extends Error {
 	constructor() {
@@ -159,20 +160,17 @@ export async function saveApplicationDraft(
 /**
  * Updates an existing application document in Firestore
  */
-export async function updateApplication(
-	data: ApplicationData,
-	uid: string,
-	docId: string,
-) {
-	const payload = Object.fromEntries(
-		Object.entries({
-			...data,
-			applicantId: uid,
-			timestamp: Timestamp.now(),
-			hackathonYear: "2025",
-		}).filter(([_, value]) => value !== undefined),
-	);
+export async function updatePhoneNumber(phoneData: {
+	country: string;
+	number: string;
+}) {
+	const fn = httpsCallable(functions, "updatePhoneNumber");
+	try {
+		await fn({ phone: phoneData });
+	} catch (e) {
+		console.error(e);
+		return false;
+	}
 
-	const ref = doc(firestore, APPLICATIONS_COLLECTION, docId);
-	await updateDoc(ref, payload);
+	return true;
 }

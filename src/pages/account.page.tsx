@@ -14,7 +14,7 @@ import { useMutation } from "@tanstack/react-query";
 import { defaultApplication } from "@/forms/hacker-form/defaults";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
-import { deleteUser, updatePhoneNumber } from "firebase/auth";
+import { deleteUser } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 // import { verifyRSVP } from "@/services/firebase/rsvp";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -27,6 +27,7 @@ import { useDebounce } from "@/hooks/use-debounce";
 import {
 	saveApplicationDraft,
 	updateApplication,
+	updatePhoneNumber,
 } from "@/services/firebase/application";
 import { auth } from "@/services/firebase";
 import { withdrawRSVP } from "@/services/firebase/rsvp";
@@ -95,10 +96,7 @@ export const AccountPage = () => {
 
 	const handleRequestPhoneChange = async () => {
 		// call cloud function from here...
-		await updatePhoneNumber({
-			phone: phone.number,
-			country: phone.country,
-		});
+		await updatePhoneNumber({ country: phone.country, number: phone.number });
 		toaster.info({
 			title: "Phone Change Request",
 			description:
