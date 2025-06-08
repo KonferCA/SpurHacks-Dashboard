@@ -1,4 +1,4 @@
-import { firestore } from "@/services/firebase";
+import { firestore, functions } from "@/services/firebase";
 import {
 	APPLICATIONS_COLLECTION,
 	APPLICATION_DRAFTS_COLLECTION,
@@ -17,6 +17,7 @@ import {
 
 import type { ApplicationData } from "@/forms/hacker-form/types";
 import type { ApplicationDataDoc } from "./types";
+import { httpsCallable } from "firebase/functions";
 
 export class DuplicateApplicationError extends Error {
 	constructor() {
@@ -43,7 +44,7 @@ export async function submitApplication(data: ApplicationData, uid: string) {
 		if (apps.length) throw new DuplicateApplicationError();
 	} catch (e) {
 		logEvent("error", {
-			event: "duplicatE_app_check_error",
+			event: "duplicate_app_check_error",
 			message: (e as Error).message,
 			name: (e as Error).name,
 			stack: (e as Error).stack,
@@ -154,4 +155,15 @@ export async function saveApplicationDraft(
 		// pass this along so that the application page handles the error
 		throw e;
 	}
+}
+
+/**
+ * Updates an existing application document in Firestore
+ */
+export async function updatePhoneNumber(phoneData: {
+	country: string;
+	number: string;
+}) {
+	const fn = httpsCallable(functions, "updatePhoneNumber");
+	await fn({ phone: phoneData });
 }
