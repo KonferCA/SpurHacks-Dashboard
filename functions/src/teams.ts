@@ -3,12 +3,14 @@ import type { UserRecord } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { Timestamp } from "firebase-admin/firestore";
 import { error as logError, info as logInfo } from "firebase-functions/logger";
-import { onCall } from "firebase-functions/v2/https";
+import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import type { Context } from "./types";
-import { HttpStatus, response } from "./utils";
+import type { Context, Profile } from "./types";
+import { createUserProfile, HttpStatus, response } from "./utils";
+
+const MAX_TEAM_MEMBERS = 4;
 
 // Define interfaces for request data types
 interface TeamNameRequest {
@@ -50,7 +52,12 @@ interface Team {
 	id: string;
 	name: string;
 	owner: string;
+	// list of user id
+	members: string[];
+	memberCount: number;
+	maxMembers: number;
 	createdAt: Timestamp;
+	updatedAt: Timestamp;
 }
 
 interface Invitation {
@@ -196,188 +203,92 @@ export const isTeamNameAvailable = onCall<TeamNameRequest, any, any>(
 	},
 );
 
+async function existsTeamWithName(name: string): Promise<boolean> {
+	const team = await getFirestore()
+		.collection("teams")
+		.where("name", "==", name)
+		.get();
+	return !team.empty;
+}
+
 /**
  * Creates a new team and adds the requesting user to the team doc
  */
-export const createTeam = onCall<TeamNameRequest, any, any>(
-	async ({ data }, res) => {
-		const context = res as Context;
-		if (!context?.auth) {
-			return response(HttpStatus.UNAUTHORIZED, {
-				message: "Unauthorized",
-			});
+export const createTeam = onCall<TeamNameRequest, any, any>(async (req) => {
+	const auth = req.auth;
+	if (!auth) {
+		throw new HttpsError("permission-denied", "not authenticated");
+	}
+
+	const data = req.data;
+	const teamsRef = getFirestore().collection("teams");
+
+	// Check if team with name already exists or not
+	try {
+		const exists = await existsTeamWithName(data.name);
+		if (exists) {
+			return response(HttpStatus.BAD_REQUEST, { message: "Team name taken." });
 		}
+	} catch (error) {
+		logError("Error checking team name", error);
+		throw new HttpsError("internal", "Error checking team name");
+	}
 
-		if (process.env.TEAMS_ALLOW_CREATE_TEAM !== "true") {
-			return response(HttpStatus.BAD_REQUEST, {
-				message: "Team creation is not available.",
-			});
+	// Get user profile
+	const profilesRef = getFirestore().collection("profiles");
+	const profileID = `profile_${auth.uid}`;
+	let profile: Profile | null = null;
+	try {
+		const profileSnap = await profilesRef.doc(profileID).get();
+		if (!profileSnap.exists) {
+			// create the profile for the user
+			profile = await createUserProfile(auth.uid);
+		} else {
+			profile = profileSnap.data() as Profile;
 		}
+	} catch (error) {
+		logError("Error creating user profile", error);
+		throw new HttpsError("internal", "Error creating user profile");
+	}
 
-		if (!z.string().min(1).safeParse(data.name).success) {
-			return response(HttpStatus.BAD_REQUEST, {
-				message: "Invalid payload.",
-			});
-		}
+	if (profile.teamID) {
+		return response(HttpStatus.BAD_REQUEST, {
+			message:
+				"User part of an existing team. Leave team before creating a new one.",
+		});
+	}
 
-		const func = "createTeam";
+	const teamID = uuidv4();
+	const teamData: Team = {
+		id: teamID,
+		name: data.name,
+		owner: auth.uid,
+		members: [auth.uid],
+		memberCount: 1,
+		maxMembers: MAX_TEAM_MEMBERS,
+		createdAt: Timestamp.now(),
+		updatedAt: Timestamp.now(),
+	};
+	try {
+		const batch = getFirestore().batch();
+		const teamDocRef = teamsRef.doc(teamID);
+		batch.set(teamDocRef, teamData);
 
-		let firstName = "";
-		let lastName = "";
-		try {
-			logInfo("Checking if user has been accepted or not", {
-				func,
-			});
-			const snap = await getFirestore()
-				.collection("applications")
-				.where("applicantId", "==", context.auth.uid)
-				.where("accepted", "==", true)
-				.get();
-			if (snap.size < 1) {
-				// user either did not apply or not accepted
-				logInfo("Requesting user either did not apply or not accepted", {
-					func,
-				});
-				return response(HttpStatus.BAD_REQUEST, {
-					message: "Not accepted into the hackathon.",
-				});
-			}
+		// Update profile
+		const profileDocRef = profilesRef.doc(profile.id);
+		batch.update(profileDocRef, { teamID, updateAt: Timestamp.now() });
 
-			const data = snap.docs[0].data();
-			firstName = data.firstName;
-			lastName = data.lastName;
-		} catch (error) {
-			logError("Failed to check if user has been accepted", {
-				error,
-				func,
-			});
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Service down 1205",
-			});
-		}
+		await batch.commit();
+	} catch (error) {
+		logError("Error creating team", error);
+		throw new HttpsError("internal", "Error creating team");
+	}
 
-		// we need to get the user email so we are getting it from the firebase auth records
-		let email = "";
-		try {
-			logInfo("Getting user auth records for email access...", {
-				func,
-			});
-			const userRecord = await getAuth().getUser(context.auth.uid);
-			email = userRecord.email ?? "";
-		} catch (error) {
-			logError("Failed to get user records", { func, error });
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Servicde down 1206",
-			});
-		}
-
-		try {
-			logInfo("Checking if requesting user owns/belongs to a team already", {
-				func,
-			});
-			const team = await internalGetTeamByUser(context.auth.uid);
-			if (team) {
-				logInfo("Requesting user owns/belongs to a team already", {
-					func,
-					team,
-				});
-				return response(HttpStatus.BAD_REQUEST, {
-					message: "Requesting user owns/belongs to a team already",
-				});
-			}
-		} catch (e) {
-			logError(
-				"Failed to check if requesting user owns/belongs to a team already.",
-				{ func, error: e },
-			);
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Service down 1202",
-			});
-		}
-
-		// create a team
-		const teamId = uuidv4();
-		try {
-			logInfo("Creating team for requesting user...", { func });
-			await getFirestore()
-				.collection(TEAMS_COLLECTION)
-				.doc(teamId)
-				.set({
-					id: teamId,
-					name: data.name,
-					owner: context.auth.uid,
-					createdAt: Timestamp.now(),
-				} as Team);
-		} catch (e) {
-			logError("Failed to create a team", { error: e, func });
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Service dwon 1203",
-			});
-		}
-
-		logInfo("New team created.", { name: data.name, func });
-		// find user profile or create one
-		try {
-			logInfo("Looking for user profile", { func });
-			const snap = await getFirestore()
-				.collection(USER_PROFILES_COLLECTION)
-				.where("uid", "==", context.auth.uid)
-				.where("teamId", "==", "")
-				.get();
-			const doc = snap.docs[0];
-			if (!doc) {
-				logInfo("User profile not found, creating one...", {
-					func,
-				});
-				await getFirestore()
-					.collection(USER_PROFILES_COLLECTION)
-					.add({
-						firstName,
-						lastName,
-						email,
-						teamId,
-						uid: context.auth.uid,
-					} as UserProfile);
-				logInfo("User profile created.", { func });
-			} else {
-				logInfo("User profile found, updating...", { func });
-				await getFirestore()
-					.collection(USER_PROFILES_COLLECTION)
-					.doc(doc.id)
-					.update({ teamId });
-			}
-		} catch (error) {
-			logError("Failed to check user profile", { error, func });
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Failed to create team. (3)",
-			});
-		}
-
-		// now we need to add the user as part of the team
-		try {
-			// return the team data for the FE to render
-			const teamData: TeamData = {
-				teamName: data.name,
-				id: teamId,
-				isOwner: true,
-				members: [],
-			};
-
-			return response<TeamData>(HttpStatus.CREATED, {
-				message: "Team created.",
-				data: teamData,
-			});
-		} catch (error) {
-			logError(
-				"Failed to add requesting user as a member of newly created team...",
-				{ func, error },
-			);
-			return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-				message: "Service down 1204",
-			});
-		}
-	},
-);
+	return response(HttpStatus.CREATED, {
+		message: "New team created",
+		data: teamData,
+	});
+});
 
 /**
  * Gets the team that the requesting user belongs to

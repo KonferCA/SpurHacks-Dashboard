@@ -1,6 +1,6 @@
-import { getFirestore } from "firebase-admin/firestore";
+import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { error as logError } from "firebase-functions/logger";
-import type { ApplicationData } from "./types";
+import type { ApplicationData, Profile } from "./types";
 
 export enum HttpStatus {
 	OK = 200,
@@ -47,4 +47,21 @@ export async function getUserApplicationByYear(
 	}
 
 	return application;
+}
+
+export async function createUserProfile(uid: string) {
+	const [app] = await getUserApplicationByYear(uid, "2025"); // The year thingy kinda sucks, but not a problem once we whitelabel
+	if (!app) throw new Error("Can't create profile if there is no application");
+	const profileID = `profile_${uid}`;
+	const profile: Profile = {
+		id: profileID,
+		firstName: app.firstName,
+		lastName: app.lastName,
+		networking: null,
+		teamID: null,
+		createdAt: Timestamp.now(),
+		updatedAt: Timestamp.now(),
+	};
+	await getFirestore().collection("profiles").doc(profileID).set(profile);
+	return profile;
 }

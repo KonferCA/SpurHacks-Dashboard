@@ -82,3 +82,34 @@ export interface ApplicationData {
 	rsvp: boolean;
 	applicationStatus: "draft" | "pending" | "rejected" | "accepted";
 }
+
+export interface Networking {
+	discord: string | null;
+	github: string | null;
+	instagram: string | null;
+	linkedin: string | null;
+	publicResumeRef: string | null;
+	sponsorsOnlyResumeRef: string | null;
+}
+
+export interface Profile {
+	id: string;
+	firstName: string;
+	lastName: string;
+	networking: Networking | null;
+	teamID: string | null;
+	createdAt: Timestamp;
+	updatedAt: Timestamp;
+}
+
+export interface Team {
+	name: string;
+	teamID: string;
+	ownerID: string;
+	// list of user id
+	members: string[];
+	memberCount: number;
+	maxMembers: number;
+	createdAt: Timestamp;
+	updatedAt: Timestamp;
+}
