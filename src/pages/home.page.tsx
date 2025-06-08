@@ -207,7 +207,20 @@ const HomePage = () => {
 												</Box>
 											)}
 										{!!currentApplication &&
-											currentApplication.applicationStatus !== "accepted" && (
+											currentApplication.applicationStatus === "pending" && (
+												<Box spaceY="1rem">
+													<Text color="fg.muted">
+														Thank you for applying to SpurHacks 2025! Your
+														application is currently under review.
+													</Text>
+													<Text color="fg.muted">
+														We'll notify you as soon as decisions are released.
+														Stay tuned!
+													</Text>
+												</Box>
+											)}
+										{!!currentApplication &&
+											currentApplication.applicationStatus === "rejected" && (
 												<Box spaceY="1rem">
 													<Text color="fg.muted">
 														Thank you for applying to SpurHacks 2025. We were
@@ -215,6 +228,15 @@ const HomePage = () => {
 														to offer a hacker acceptance at this time.
 													</Text>
 													<Text color="fg.muted">We wish you the best!</Text>
+												</Box>
+											)}
+										{!!currentApplication &&
+											currentApplication.applicationStatus === "draft" && (
+												<Box spaceY="1rem">
+													<Text color="fg.muted">
+														Your application is saved as a draft. Don't forget
+														to submit it before the deadline!
+													</Text>
 												</Box>
 											)}
 									</Box>
