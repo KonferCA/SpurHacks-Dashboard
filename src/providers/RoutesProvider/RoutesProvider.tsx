@@ -252,7 +252,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.myAccount,
 				element: <AccountPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [isAuthenticated, hasVerifiedEmail],
 			},
 		];
 
