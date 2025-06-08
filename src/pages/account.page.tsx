@@ -32,7 +32,7 @@ export const AccountPage = () => {
 	const { currentUser, resetPassword } = useAuth();
 	const { applications, refreshApplications } = useApplications();
 	const userApp = applications[0] || null;
-	const [errors, setErrors] = useState<FormErrors>({ _hasErrors: false });
+	const [errors] = useState<FormErrors>({ _hasErrors: false });
 	const [isSendingReset, setIsSendingReset] = useState(false);
 	const [resetStatus, setResetStatus] = useState<"idle" | "success" | "error">(
 		"idle",
