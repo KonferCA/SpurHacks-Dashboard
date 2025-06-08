@@ -7,7 +7,9 @@
 		"sourceMap": true,
 		"strict": true,
 		"target": "es2017",
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true
 	},
 	"compileOnSave": true,
 	"include": ["src", "src/**/*.ts", "src/*.ts"],
