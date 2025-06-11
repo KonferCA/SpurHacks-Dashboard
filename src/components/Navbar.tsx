@@ -29,47 +29,56 @@ import {
 	TicketIcon,
 	UserGroupIcon,
 	Cog8ToothIcon,
+	StarIcon,
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
 import { FiChevronUp, FiLogOut, FiMapPin } from "react-icons/fi";
-import { RxStar } from "react-icons/rx";
 import { Link } from "react-router-dom";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
 
+// Order matters
 const navItems = {
 	[paths.home]: {
 		label: "Home",
 		Icon: HomeIcon,
+		category: "MAIN",
 	},
 	[paths.schedule]: {
 		label: "Schedule",
 		Icon: CalendarDaysIcon,
+		category: "MAIN",
 	},
-	[paths.networking]: {
-		label: "Networking",
-		Icon: ShareIcon,
-	},
-	[paths.myTicket]: {
-		label: "My Ticket",
-		Icon: TicketIcon,
-	},
-	[paths.apply]: {
-		label: "Application",
-		Icon: CodeBracketIcon,
+	[paths.perks]: {
+		label: "Perks",
+		Icon: StarIcon,
+		category: "MAIN",
 	},
 	[paths.myTeam]: {
 		label: "My Team",
 		Icon: UserGroupIcon,
+		category: "SOCIAL",
 	},
-	[paths.perks]: {
-		label: "Perks",
-		Icon: RxStar,
+	[paths.networking]: {
+		label: "Networking",
+		Icon: ShareIcon,
+		category: "SOCIAL",
+	},
+	[paths.myTicket]: {
+		label: "My Ticket",
+		Icon: TicketIcon,
+		category: "SOCIAL",
 	},
 	[paths.myAccount]: {
 		label: "Account",
 		Icon: Cog8ToothIcon,
+		category: "SETTINGS",
+	},
+	[paths.apply]: {
+		label: "Application",
+		Icon: CodeBracketIcon,
+		category: "MAIN",
 	},
 };
 
@@ -161,6 +170,20 @@ const NavbarContent = ({
 	const [showLogout, setShowLogout] = useState(false);
 	const team = useUserStore((state) => state.team);
 
+	const categorizedRoutes = useMemo(() => {
+		const groups: Record<string, { path: string; label: string; Icon: any }[]> =
+			{};
+
+		Object.entries(navItems).forEach(([path, item]) => {
+			if (!availableRoutes.some((r) => r.path === path)) return;
+			const { category = "MAIN", label, Icon } = item;
+			if (!groups[category]) groups[category] = [];
+			groups[category].push({ path, label, Icon });
+		});
+
+		return groups;
+	}, [availableRoutes]);
+
 	return (
 		<>
 			<Flex
@@ -168,10 +191,11 @@ const NavbarContent = ({
 				direction="column"
 				alignItems="start"
 				justifyContent="start"
-				gap="1rem"
+				gap="0.5rem"
 				w="full"
 				pt={5}
 				px={2}
+				fontSize="xs"
 			>
 				<ChakraLink
 					w="full"
@@ -194,56 +218,17 @@ const NavbarContent = ({
 					}
 				>
 					<Flex
-						padding="1rem"
+						padding="0.6rem"
+						pl={6}
 						alignItems="center"
 						justifyContent="start"
 						gap="0.5rem"
 						cursor="pointer"
 					>
-						<FiMapPin size="1.5rem" />
+						<FiMapPin size="1rem" />
 						Location
 					</Flex>
 				</ChakraLink>
-				{availableRoutes
-					// @ts-ignore
-					.filter(({ path }) => path && !!navItems[path])
-					.map(({ path }) => {
-						// @ts-ignore
-						const { label, Icon } = navItems[path];
-						const isActive = location.pathname === path;
-						return (
-							// <Link to={path as string} className="w-full">
-							<RouterChakraLink
-								key={label}
-								as={Link}
-								to={path as string}
-								w="full"
-								textDecoration="none"
-								color="#666484"
-								rounded="full"
-								bg={isActive ? "#1F1E2E" : "transparent"}
-								_hover={{
-									bg: "#1F1E2E",
-								}}
-							>
-								<Flex
-									as="li"
-									padding="1rem"
-									w="full"
-									cursor="pointer"
-									gap="0.5rem"
-									alignItems="center"
-									justifyContent="start"
-								>
-									<Box width="1.5rem" height="1.5rem">
-										<Icon color={isActive ? "#FFA75F" : "#666483"} />
-									</Box>
-									<Text color={isActive ? "#DEEBFF" : "#666484"}>{label}</Text>
-								</Flex>
-							</RouterChakraLink>
-							// </Link>
-						);
-					})}
 				<ChakraLink
 					w="full"
 					href="https://discord.gg/NpnSUrZJQy"
@@ -265,7 +250,8 @@ const NavbarContent = ({
 					}
 				>
 					<Flex
-						padding="1rem"
+						padding="0.6rem"
+						pl={6}
 						alignItems="center"
 						justifyContent="start"
 						gap="0.5rem"
@@ -274,12 +260,59 @@ const NavbarContent = ({
 						<Image
 							src={DiscordLogo}
 							filter="brightness(0) saturate(100%) invert(44%) sepia(6%) saturate(1804%) hue-rotate(205deg) brightness(89%) contrast(93%)"
-							width="1.5rem"
-							height="1.5rem"
+							width="1rem"
+							height="1rem"
 						/>
 						Discord Support
 					</Flex>
 				</ChakraLink>
+				{Object.entries(categorizedRoutes).map(([section, routes]) => (
+					<Box key={section} w="full" gap={2}>
+						<Text fontSize="xs" pl={6} color="#666484" mt={4} mb={2}>
+							{section}
+						</Text>
+						<Flex direction="column" gap={2}>
+							{routes.map(({ path }) => {
+								const { label, Icon } = navItems[path as keyof typeof navItems];
+								const isActive = location.pathname === path;
+								return (
+									<RouterChakraLink
+										key={label}
+										as={Link}
+										to={path as string}
+										w="full"
+										textDecoration="none"
+										color="#666484"
+										rounded="full"
+										bg={isActive ? "#1F1E2E" : "transparent"}
+										_hover={{ bg: "#1F1E2E" }}
+									>
+										<Flex
+											as="li"
+											padding="0.6rem"
+											pl={6}
+											w="full"
+											cursor="pointer"
+											gap="0.5rem"
+											alignItems="center"
+											justifyContent="start"
+										>
+											<Box width="1rem" height="1rem">
+												<Icon color={isActive ? "#FFA75F" : "#666483"} />
+											</Box>
+											<Text
+												fontSize="xs"
+												color={isActive ? "#DEEBFF" : "#666484"}
+											>
+												{label}
+											</Text>
+										</Flex>
+									</RouterChakraLink>
+								);
+							})}
+						</Flex>
+					</Box>
+				))}
 			</Flex>
 			{user && (
 				<ChakraLink
@@ -468,7 +501,7 @@ export const Navbar = () => {
 						direction="column"
 						alignItems="center"
 						justifyContent="space-between"
-						height="83%"
+						height="90%"
 						overflowY="auto"
 					>
 						<NavbarContent
