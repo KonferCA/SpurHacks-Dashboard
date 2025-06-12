@@ -1,4 +1,4 @@
-import { Box, Button, HStack, Tabs, Text, VStack } from "@chakra-ui/react";
+import { Box, Tabs, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
 const DESKTOP_TIME_INDICATOR_HEIGHT = "40px";
@@ -533,7 +533,7 @@ export function ScheduleGridItem({
 		}
 	};
 
-	const maxDescriptionHeight = displayHeight - 140;
+	const maxDescriptionHeight = displayHeight - 100;
 	const needsScroll = description && description.length > 300;
 
 	return (
@@ -585,7 +585,6 @@ export function ScheduleGridItem({
 
 					{description && (
 						<Box
-							flex="1"
 							overflow={needsScroll ? "auto" : "visible"}
 							w="100%"
 							maxH={needsScroll ? `${maxDescriptionHeight}px` : "none"}
@@ -611,7 +610,7 @@ export function ScheduleGridItem({
 						</Box>
 					)}
 
-					<HStack flexShrink={0} justify="flex-end" w="100%">
+					{/* <HStack flexShrink={0} justify="flex-end" w="100%">
 						<Button
 							size="xs"
 							bg="orange.500"
@@ -629,7 +628,7 @@ export function ScheduleGridItem({
 						>
 							RSVP
 						</Button>
-					</HStack>
+					</HStack> */}
 				</VStack>
 			) : (
 				children
