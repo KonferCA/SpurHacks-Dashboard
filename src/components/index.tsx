@@ -46,12 +46,7 @@ export { Steps } from "./Steps/Steps";
  */
 export { LoadingAnimation } from "./LoadingAnimation";
 
-/*
- *
- * @component Card
- *
- */
-export { Card } from "./Card/Card";
+
 
 /*
  *

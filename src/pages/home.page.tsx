@@ -151,17 +151,17 @@ const HomePage = () => {
 									<Box spaceY="1rem">
 										<Flex alignItems="center" gapX={4}>
 											<Text color="fg.muted">
-												{!!currentApplication
+												{currentApplication
 													? "Application submitted"
 													: "Application not submitted"}
 											</Text>
 											<Icon
 												size="lg"
 												color={
-													!!currentApplication ? "green.400" : "yellow.400"
+													currentApplication ? "green.400" : "yellow.400"
 												}
 											>
-												{!!currentApplication ? (
+												{currentApplication ? (
 													<CheckCircle />
 												) : (
 													<WarningCircle />
@@ -171,13 +171,13 @@ const HomePage = () => {
 										<Text color="fg.muted">
 											{!currentApplication &&
 												"Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
-											{!!currentApplication &&
+											{currentApplication &&
 												currentApplication.applicationStatus !== "accepted" &&
-												"You’ll receive a confirmation on your application status in the email you provided."}
-											{!!currentApplication &&
+												"You'll receive a confirmation on your application status in the email you provided."}
+											{currentApplication &&
 												currentApplication.applicationStatus === "accepted" &&
 												!currentApplication.rsvp &&
-												"Congrats, you’re in! Make sure to RSVP to claim your spot!"}
+												"Congrats, you're in! Make sure to RSVP to claim your spot!"}
 										</Text>
 									</Box>
 								)}
@@ -188,13 +188,13 @@ const HomePage = () => {
 												Applications have now closed for SpurHacks 2025.
 											</Text>
 										)}
-										{!!currentApplication &&
+										{currentApplication &&
 											currentApplication.applicationStatus === "accepted" &&
 											!currentApplication.rsvp && (
 												<Box spaceY="1rem">
 													<Flex alignItems="center" gapX={4}>
 														<Text color="fg.muted">
-															Congrats, you’re in! Make sure to RSVP to claim
+															Congrats, you're in! Make sure to RSVP to claim
 															your spot!
 														</Text>
 														<Icon size="lg" color="green.400">
@@ -206,7 +206,7 @@ const HomePage = () => {
 													</Text>
 												</Box>
 											)}
-										{!!currentApplication &&
+										{currentApplication &&
 											currentApplication.applicationStatus !== "accepted" && (
 												<Box spaceY="1rem">
 													<Text color="fg.muted">
@@ -235,7 +235,7 @@ const HomePage = () => {
 										Apply Now
 									</Button>
 								)}
-								{!!currentApplication &&
+								{currentApplication &&
 									currentApplication.applicationStatus === "accepted" &&
 									!currentApplication.rsvp && (
 										<Button
@@ -419,7 +419,7 @@ const HomePage = () => {
 						<Card.Body>
 							<Text color="fg.muted" mb="1rem">
 								Play a key role in helping the event run smoothly. Whether
-								you’re sharing your expertise or lending a hand, your
+								you're sharing your expertise or lending a hand, your
 								contributions make a huge difference!
 							</Text>
 						</Card.Body>
