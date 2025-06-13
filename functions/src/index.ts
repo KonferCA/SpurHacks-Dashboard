@@ -604,14 +604,14 @@ export const applicationCreated = onDocumentCreated(
       <img src="${FE_URL}/spurhacks-full-logo-white.png" alt="SpurHacks Logo" class="logo" />
 
       <h1>
-        <span>We’ve received</span>
+        <span>We've received</span>
         <span>your application! 💌</span>
       </h1>
 
       <div class="message">
         <strong>Thanks for applying to SpurHacks 2025!</strong><br /><br />
         This email is a confirmation that your application submission was successful. Sit tight—you can expect a status update <strong>early June.</strong><br /><br />
-        If you highlighted travel accommodations or reimbursements in your application, we’ll be sure to contact you with further details.
+        If you highlighted travel accommodations or reimbursements in your application, we'll be sure to contact you with further details.
       </div>
 
       <div class="social">
@@ -657,17 +657,16 @@ export const applicationCreated = onDocumentCreated(
 );
 
 export {
-	isTeamNameAvailable,
 	createTeam,
-	getTeamByUser,
-	inviteMember,
-	updateTeamName,
-	removeMembers,
 	deleteTeam,
-	validateTeamInvitation,
+	getTeam,
+	inviteMember,
+	isTeamNameAvailable,
 	rejectInvitation,
-	checkInvitation,
-	getUserInvitations,
+	removeMembers,
+	updateTeamName,
+	validateTeamInvitation,
+	getInvitations,
 } from "./teams";
 
 export { createTicket } from "./apple";
