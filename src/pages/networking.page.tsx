@@ -1,4 +1,4 @@
-import { Modal, PageWrapper, Select } from "@/components";
+import { Modal, PageWrapper, Select, TextInput } from "@/components";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
@@ -7,14 +7,38 @@ import { getResumeURL, uploadGeneralResume } from "@/services/firebase/files";
 import type { ResumeVisibility, Socials } from "@/services/firebase/types";
 import { getSocials, updateSocials } from "@/services/firebase/user";
 import { useUserStore } from "@/stores/user.store";
+import { TextArea } from "@/components/TextArea/TextArea";
+import {
+	Box,
+	Button,
+	Flex,
+	Text,
+	Input,
+	FileUpload,
+	Stack,
+	Image,
+} from "@chakra-ui/react";
+import { pronouns } from "@/data";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
-import { type FormEventHandler, useEffect, useRef, useState } from "react";
+import {
+	type FormEventHandler,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import {
 	MdOpenInNew,
 	MdOutlineEdit,
 	MdOutlineRemoveCircleOutline,
 	MdWarning,
 } from "react-icons/md";
+import type {
+	ApplicationData,
+	ApplicationDataKey,
+} from "@/forms/hacker-form/types";
+import { useDebounce } from "@/hooks/use-debounce";
+import { updateSubmittedApplicationField } from "@/services/firebase/application";
 
 const allowedFileTypes = [
 	"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
@@ -48,9 +72,20 @@ const visibilityDescription = {
 	"Sponsors Only": "Your resume will only be visible to our sponsors.",
 };
 
+function mapOption(value?: string | string[]) {
+	if (!value) return undefined;
+	if (Array.isArray(value)) {
+		return value.map((val) => ({ value: val, label: val }));
+	}
+	return {
+		value: value,
+		label: value,
+	};
+}
+
 export const NetworkingPage = () => {
 	const { currentUser } = useAuth();
-	const { applications } = useApplications();
+	const { applications, refreshApplications } = useApplications();
 	const userApp = applications[0] || null;
 	const [isLoading, setIsLoading] = useState(true);
 	const [editMode, setEditMode] = useState("");
@@ -62,6 +97,10 @@ export const NetworkingPage = () => {
 	const [newVisibility, setNewVisibility] = useState<ResumeVisibility>(
 		socials?.resumeVisibility ?? "Public",
 	);
+	const [unsavedChanges, setUnsavedChanges] = useState<
+		Partial<Record<keyof Socials, boolean>>
+	>({});
+	const { currentUser: user } = useAuth();
 
 	const [file, setFile] = useState<File | null>(null);
 
@@ -71,6 +110,7 @@ export const NetworkingPage = () => {
 		linkedin: "",
 		github: "",
 		discord: "",
+		website: "",
 		resumeRef: "",
 		docId: "",
 		uid: "",
@@ -154,7 +194,7 @@ export const NetworkingPage = () => {
 
 	const handleInputChange = (key: keyof Socials, value: string) => {
 		setMediaValues((prev) => ({ ...prev, [key]: value }));
-		setEditMode(key);
+		setUnsavedChanges((prev) => ({ ...prev, [key]: true }));
 	};
 
 	const handleSubmit: FormEventHandler = async (e) => {
@@ -163,6 +203,7 @@ export const NetworkingPage = () => {
 			await updateSocials(mediaValues);
 			setSocials({ ...mediaValues });
 			setEditMode("");
+			setUnsavedChanges({});
 		} catch (e) {
 			toaster.error({
 				title: "Failed to update socials",
@@ -177,10 +218,12 @@ export const NetworkingPage = () => {
 			github: socials?.github ?? "",
 			linkedin: socials?.linkedin ?? "",
 			discord: socials?.discord ?? "",
+			website: socials?.website ?? "",
 			resumeRef: socials?.resumeRef ?? "",
 			docId: socials?.docId ?? "",
 			uid: socials?.uid ?? "",
 		});
+		setUnsavedChanges({});
 		setEditMode("");
 	};
 
@@ -254,112 +297,270 @@ export const NetworkingPage = () => {
 		}
 	};
 
+	const handlePronounChange = async (
+		field: keyof ApplicationData,
+		value: string[],
+	) => {
+		try {
+			await updateSubmittedApplicationField(field, value);
+			await refreshApplications();
+			toaster.success({
+				title: "Pronouns updated",
+				description: "Your pronouns have been updated successfully.",
+			});
+		} catch (error) {
+			toaster.error({
+				title: "Error updating pronouns",
+				description: "Please try again.",
+			});
+		}
+	};
+
+	const handleAboutMeChange = async (
+		field: keyof ApplicationData,
+		value: string,
+	) => {
+		try {
+			await updateSubmittedApplicationField(field, value);
+			await refreshApplications();
+			toaster.success({
+				title: "Pronouns updated",
+				description: "Your pronouns have been updated successfully.",
+			});
+		} catch (error) {
+			toaster.error({
+				title: "Error updating pronouns",
+				description: "Please try again.",
+			});
+		}
+	};
+
 	if (isLoading) return <LoadingAnimation />;
 
 	return (
 		<PageWrapper>
-			<div>
-				<div className="flex items-center gap-10">
-					<h1 className="font-bold text-2xl">
-						{firstName} {lastName}
-					</h1>
-					{userApp && <p>{userApp.pronouns}</p>}
-				</div>
-				<p className="mt-6">Your connections</p>
-				<div className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg mt-6 flex items-center max-w-md">
-					<MdWarning className="mr-4 text-3xl" />
-					<p>Information you enter on this page will be publicly visible.</p>
-				</div>
-				<form className="flex flex-col max-w-md gap-5 mt-12">
-					{mediaTypes.map(({ name, key }) => (
-						<div
-							key={key}
-							className="bg-white shadow-md p-4 rounded-xl flex flex-col"
-						>
-							<div className="mb-2 flex justify-between items-center">
-								<p className="flex-1">{name}</p>
-								{mediaValues[key] && (
-									<p
-										className={`rounded-full px-4 py-1 ${
-											editMode === key
-												? " text-gray-500 italic "
-												: "bg-green-300"
-										}`}
+			<Flex direction="column" mx="auto" gap={5}>
+				{/* Profile picture */}
+				<Text color="offwhite.primary/30">PERSONAL INFORMATION</Text>
+				<Flex alignItems="center" gap={3}>
+					<Box
+						boxSize="80px"
+						borderRadius="full"
+						bg="gray.600"
+						display="flex"
+						alignItems="center"
+						justifyContent="center"
+						overflow="hidden"
+					>
+						<Image
+							src={user?.photoURL ?? "/default-profile.png"}
+							alt="Profile Picture"
+							boxSize="full"
+							borderRadius="full"
+							objectFit="cover"
+						/>
+					</Box>
+					<Flex direction="column" gap={2}>
+						<Text color="white" fontWeight="medium">
+							Profile Picture
+						</Text>
+						<FileUpload.Root accept={allowedFileTypes.join(", ")} maxW="full">
+							<FileUpload.HiddenInput onChange={handleFileInput} />
+							<FileUpload.Trigger asChild>
+								{user?.photoURL ? (
+									<Button
+										size="sm"
+										color="red.400"
+										borderRadius="full"
+										variant="outline"
+										fontWeight="bold"
+										_hover={{ bg: "red.900", borderColor: "red.500" }}
 									>
-										{editMode === key ? "Unsaved Changes" : "Complete"}
-									</p>
+										REMOVE PICTURE
+									</Button>
+								) : (
+									<Button
+										size="sm"
+										borderRadius="full"
+										variant="outline"
+										fontWeight="bold"
+									>
+										SET PICTURE
+									</Button>
 								)}
-							</div>
-							<div className="relative">
-								<input
-									className="bg-peachWhite border-0 rounded-lg text-gray-500 pr-7 w-full"
+								{/* <Button
+										variant="outline"
+										w="full"
+										px={4}
+										py={2}
+										rounded="lg"
+										bg="peachWhite"
+										textAlign="left"
+									>
+										<Text truncate>
+											{file ? file.name : "Select new resume file"}
+										</Text>
+									</Button> */}
+							</FileUpload.Trigger>
+						</FileUpload.Root>
+					</Flex>
+				</Flex>
+
+				<Flex gap={10} align="center">
+					<TextInput
+						label="First Name"
+						type="text"
+						defaultValue={firstName}
+						required
+						description=""
+						disabled
+					/>
+					<TextInput
+						label="Last Name"
+						type="text"
+						defaultValue={lastName}
+						required
+						description=""
+						disabled
+					/>
+				</Flex>
+				<TextArea
+					value={userApp?.aboutMe}
+					label="About me"
+					placeholder="Share a fun fact"
+					onChange={(text) => handleAboutMeChange("aboutMe", text)}
+					rows={4}
+				/>
+				<Select
+					value={mapOption(userApp.pronouns)}
+					label="Pronouns"
+					placeholder="Select your pronouns"
+					options={pronouns}
+					onChange={(opts) => handlePronounChange("pronouns", opts)}
+					allowCustomValue
+				/>
+				<Text color="offwhite.primary/30" mt={6}>
+					CONNECTIONS
+				</Text>
+				<Box
+					as="form"
+					display="flex"
+					flexDirection="column"
+					maxW="md"
+					gap={5}
+					mt={2}
+				>
+					{mediaTypes.map(({ name, key }) => (
+						<Box key={key} rounded="xl" display="flex" flexDirection="column">
+							<Flex mb={2} justify="space-between" align="center">
+								<Text flex={1}>{name}</Text>
+								{mediaValues[key] && (
+									<Text
+										px={4}
+										py={1}
+										rounded="full"
+										fontStyle={unsavedChanges[key] ? "italic" : "normal"}
+										color={unsavedChanges[key] ? "gray.500" : "black"}
+										bg={unsavedChanges[key] ? "transparent" : "green.300"}
+									>
+										{unsavedChanges[key] ? "Unsaved Changes" : "Complete"}
+									</Text>
+								)}
+							</Flex>
+							<Box position="relative">
+								<TextInput
+									label=""
 									type="text"
+									rounded="full"
+									px={4}
+									py={6}
 									placeholder={`Add your ${name}!`}
 									value={mediaValues[key]}
 									onChange={(e) => handleInputChange(key, e.target.value)}
 								/>
-								{mediaValues[key] && (
-									<MdOutlineEdit className="text-gray-500 absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5" />
-								)}
-							</div>
-
-							{editMode === key && (
-								<div className="mt-2 flex gap-2">
-									<button
-										type="button"
-										className="bg-gray-300/30 rounded-lg px-4 py-1"
-										onClick={handleCancel}
-									>
-										Cancel
-									</button>
-									<button
-										type="button"
-										className="bg-peachWhite text-black rounded-lg px-4 py-1"
-										onClick={handleSubmit}
-									>
-										Save
-									</button>
-								</div>
-							)}
-						</div>
+							</Box>
+						</Box>
 					))}
+					{Object.values(unsavedChanges).some(Boolean) && (
+						<Flex mt={2} gap={2}>
+							<Button
+								type="button"
+								bg="gray.300"
+								color="black"
+								rounded="lg"
+								px={4}
+								py={1}
+								onClick={handleCancel}
+								_hover={{ bg: "gray.400" }}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="button"
+								color="black"
+								rounded="lg"
+								px={4}
+								py={1}
+								onClick={handleSubmit}
+								_hover={{ bg: "orange.200" }}
+							>
+								Save
+							</Button>
+						</Flex>
+					)}
+					<Text color="offwhite.primary/30" my={4}>
+						PORTFOLIO
+					</Text>
 
 					{/* RESUME UPLOAD */}
-					<div className="bg-white shadow-md p-4 rounded-xl flex flex-col">
-						<div className="mb-2 flex justify-between items-center">
-							<span className="flex-1 gap-2">
-								<p className="">Resume</p>
-							</span>
+					<Box rounded="xl" display="flex" flexDirection="column">
+						<TextInput
+							mb={4}
+							label="Website"
+							type="text"
+							placeholder="https://yourportfolio.com"
+							defaultValue={socials?.website ?? ""}
+							onChange={(e) =>
+								handleInputChange("website", e.target.value.trim())
+							}
+						/>
+						<Flex mb={2} justify="space-between" align="center">
+							<Flex flex={1} gap={2}>
+								<Text>Resume</Text>
+							</Flex>
 							{socials?.resumeRef ? (
-								<p className="bg-green-300 rounded-full px-4 py-1">
+								<Text bg="green.300" rounded="full" px={4} py={1}>
 									Resume Uploaded
-								</p>
+								</Text>
 							) : (
-								<p className="bg-red-500 rounded-full px-4 py-1 text-white">
+								<Text bg="red.500" color="white" rounded="full" px={4} py={1}>
 									Not Uploaded
-								</p>
+								</Text>
 							)}
-						</div>
+						</Flex>
 
-						<div className="flex items-center gap-4">
-							<label
-								htmlFor="resume-file-input"
-								className="flex-grow rounded-lg px-4 py-2 bg-peachWhite hover:cursor-pointer overflow-hidden"
-							>
-								<span className="block overflow-hidden text-ellipsis whitespace-nowrap">
-									{file ? file.name : "Select new resume file"}
-								</span>
-								<input
-									id="resume-file-input"
-									className="sr-only"
-									type="file"
-									accept={allowedFileTypes.join(", ")}
-									onChange={handleFileInput}
-								/>
-							</label>
+						<Flex align="center" gap={4}>
+							<FileUpload.Root accept={allowedFileTypes.join(", ")} maxW="full">
+								<FileUpload.HiddenInput onChange={handleFileInput} />
+								<FileUpload.Trigger asChild>
+									<Button
+										variant="outline"
+										w="full"
+										px={4}
+										py={2}
+										rounded="lg"
+										bg="peachWhite"
+										textAlign="left"
+									>
+										<Text truncate>
+											{file ? file.name : "Select new resume file"}
+										</Text>
+									</Button>
+								</FileUpload.Trigger>
+							</FileUpload.Root>
 							{mediaValues.resumeRef && (
 								<>
-									<button
+									<Button
 										title="Open Resume in new tab"
 										type="button"
 										className="p-2 bg-peachWhite rounded-lg flex items-center justify-center hover:cursor-pointer flex-shrink-0"
@@ -384,94 +585,125 @@ export const NetworkingPage = () => {
 										}}
 									>
 										<MdOpenInNew className="text-gray-500 w-6 h-6" />
-									</button>
-									<button
+									</Button>
+									<Button
 										title="Resume Settings"
 										type="button"
 										className="p-2 bg-peachWhite rounded-lg flex items-center justify-center hover:cursor-pointer flex-shrink-0"
 										onClick={openResumeSettings}
 									>
 										<Cog6ToothIcon className="w-6 h-6 text-gray-500" />
-									</button>
+									</Button>
 								</>
 							)}
-						</div>
+						</Flex>
 						{editMode === "resume" && (
-							<div className="mt-4 flex gap-2">
-								<button
+							<Flex mt={4} gap={2}>
+								<Button
 									type="button"
-									className="bg-gray-300/30 rounded-lg px-4 py-1"
+									bg="gray.300"
+									color="black"
+									rounded="lg"
+									px={4}
+									py={1}
+									_hover={{ bg: "gray.400" }}
 									onClick={() => {
 										setFile(null);
 										setEditMode("");
 									}}
 								>
 									Cancel
-								</button>
-								<button
+								</Button>
+								<Button
 									type="button"
-									className="bg-peachWhite text-black rounded-lg px-4 py-1"
+									color="black"
+									rounded="lg"
+									px={4}
+									py={1}
+									_hover={{ bg: "orange.200" }}
 									onClick={submitFile}
 								>
 									Save
-								</button>
-							</div>
+								</Button>
+							</Flex>
 						)}
 						{mediaValues.resumeRef && (
-							<div className="mt-2">
-								<p className="text-sm text-gray-500">
+							<Box mt={2}>
+								<Text fontSize="sm" color="gray.500">
 									{visibilityDescription[socials?.resumeVisibility ?? "Public"]}
-								</p>
-							</div>
+								</Text>
+							</Box>
 						)}
-					</div>
-				</form>
-			</div>
+					</Box>
+				</Box>
+			</Flex>
 			<Modal
 				title="Resume Settings"
 				subTitle=""
 				open={isResumeSettingsOpened}
 				onClose={closeResumeSettings}
 			>
-				<div className="space-y-12">
-					<div>
+				<Stack gap={12}>
+					<Box>
 						<Select label="Resume Visibility" options={visibilityOptions} />
-						<p>{visibilityDescription[newVisibility]}</p>
+						<Text>{visibilityDescription[newVisibility]}</Text>
 						{editMode === "resume-visibility" && (
-							<div className="mt-4 flex gap-2">
-								<button
+							<Flex mt={4} gap={2}>
+								<Button
 									type="button"
-									className="bg-gray-300/30 rounded-lg px-4 py-1"
+									bg="gray.300"
+									color="black"
+									rounded="lg"
+									px={4}
+									py={1}
 									onClick={() => {
 										setNewVisibility(socials?.resumeVisibility ?? "Public");
 										setEditMode("");
 									}}
+									_hover={{ bg: "gray.400" }}
 								>
 									Cancel
-								</button>
-								<button
+								</Button>
+								<Button
 									type="button"
-									className="bg-peachWhite text-black rounded-lg px-4 py-1"
+									bg="peachWhite"
+									color="black"
+									rounded="lg"
+									px={4}
+									py={1}
 									onClick={saveResumeSettings}
+									_hover={{ bg: "orange.100" }}
 								>
 									Save
-								</button>
-							</div>
+								</Button>
+							</Flex>
 						)}
-					</div>
-					<div>
-						<button
+					</Box>
+					<Box>
+						<Button
 							type="button"
-							className="border-2 rounded-lg border-red-400 w-full flex p-2 gap-4 transition hover:bg-red-600/5 text-red-500 font-medium"
 							onClick={removeResume}
+							variant="outline"
+							borderColor="red.400"
+							color="red.500"
+							w="full"
+							display="flex"
+							gap={4}
+							fontWeight="medium"
+							_hover={{ bg: "red.600", opacity: 0.05 }}
+							px={4}
+							py={2}
+							rounded="lg"
 						>
-							<span>
-								<MdOutlineRemoveCircleOutline className="text-red-500 w-6 h-6" />
-							</span>
+							<Box
+								as={MdOutlineRemoveCircleOutline}
+								boxSize={6}
+								color="red.500"
+							/>
 							Remove Resume
-						</button>
-					</div>
-				</div>
+						</Button>
+					</Box>
+				</Stack>
 			</Modal>
 		</PageWrapper>
 	);

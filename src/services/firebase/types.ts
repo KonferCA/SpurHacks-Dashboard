@@ -41,6 +41,7 @@ export interface Socials {
 	github: string;
 	linkedin: string;
 	discord: string;
+	website?: string;
 	resumeRef: string;
 	docId: string;
 	uid: string;

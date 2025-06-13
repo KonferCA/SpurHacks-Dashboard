@@ -65,6 +65,7 @@ export interface ApplicationData {
 	hackathonYear: string;
 	rsvp: boolean;
 	applicationStatus: "draft" | "pending" | "rejected" | "accepted";
+	aboutMe?: string;
 }
 
 export type ApplicationDataKey = keyof ApplicationData;
