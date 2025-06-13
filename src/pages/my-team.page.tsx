@@ -101,7 +101,7 @@ export const MyTeamPage = () => {
 						description:
 							"Your team has been created successfully!",
 					});
-					setTeam(res.data);
+					await fetchTeam();
 					setTeamName("");
 				} else {
 					toaster.error({
