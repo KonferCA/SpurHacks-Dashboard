@@ -67,56 +67,61 @@ interface Socials {
 	github: string;
 	linkedin: string;
 	discord: string;
+	website?: string;
 	resumeRef: string;
+	resumeFilename?: string;
+	profilePictureRef?: string;
 	docId: string;
 	uid: string;
 	resumeVisibility: "Public" | "Private" | "Sponsors Only";
+	resumeConsent?: boolean;
 }
 
-export const requestSocials = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context || !context.auth)
+export const requestSocials = onCall(async (req) => {
+	if (!req.auth) {
 		return response(HttpStatus.UNAUTHORIZED, { message: "unauthorized" });
+	}
 
 	const func = "requestSocials";
-
 	logInfo("Getting socials...");
 	let socials: Socials | undefined;
+
 	try {
 		const snap = await getFirestore()
 			.collection("socials")
-			.where("uid", "==", context.auth.uid)
+			.where("uid", "==", req.auth.uid)
 			.get();
 		socials = snap.docs[0]?.data() as Socials;
 	} catch (e) {
 		logError("Failed to get socials.", { error: e, func });
 		return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-			message: "internal (get_socials) ",
+			message: "internal (get_socials)",
 		});
 	}
 
 	if (!socials) {
-		// create a new socials document
-		const app = (
-			await getFirestore()
-				.collection("applications")
-				.where("applicantId", "==", context.auth.uid)
-				.get()
-		).docs[0]?.data();
+		const appSnap = await getFirestore()
+			.collection("applications")
+			.where("applicantId", "==", req.auth.uid)
+			.get();
+		const app = appSnap.docs[0]?.data();
 		const docId = uuidv4();
 
 		if (!app) {
 			logInfo("Creating new socials with default values...");
-			// create with default
 			socials = {
 				instagram: "",
 				github: "",
 				linkedin: "",
 				discord: "",
+				website: "",
 				resumeRef: "",
+				resumeFilename: "",
+				profilePictureRef: "",
 				docId,
-				uid: context.auth.uid,
+				uid: req.auth.uid,
 				resumeVisibility: "Public",
+				resumeConsent: false,
 			};
 		} else {
 			logInfo("Creating new socials with selected application values...");
@@ -125,15 +130,20 @@ export const requestSocials = onCall(async (_, res) => {
 				github: app.githubUrl ?? "",
 				linkedin: app.linkedUrl ?? "",
 				discord: app.discord,
+				website: "",
 				resumeRef:
 					app.participatingAs === "Mentor"
 						? app.mentorResumeRef
 						: app.generalResumeRef,
+				resumeFilename: "",
+				profilePictureRef: "",
 				docId,
-				uid: context.auth.uid,
+				uid: req.auth.uid,
 				resumeVisibility: "Public",
+				resumeConsent: false,
 			};
 		}
+
 		await getFirestore().collection("socials").doc(docId).set(socials);
 		logInfo("Socials saved.");
 	}
@@ -141,50 +151,109 @@ export const requestSocials = onCall(async (_, res) => {
 	return response(HttpStatus.OK, { message: "ok", data: socials });
 });
 
-export const updateSocials = onCall(async (data: any, res) => {
-	const context = res as Context;
-	if (!context || !context.auth) {
+export const updateSocials = onCall(async (req) => {
+	if (!req.auth) {
 		logInfo("Authentication required.");
 		throw new HttpsError("permission-denied", "Not authenticated");
 	}
 
+	const data = req.data;
 	logInfo("Updating socials:", data);
-	logInfo("User ID in Func:", context.auth.uid);
+	logInfo("User ID in Func:", req.auth.uid);
 
 	try {
 		const doc = await getFirestore()
 			.collection("socials")
 			.doc(data.docId)
 			.get();
-		if (!doc.exists)
+
+		if (!doc.exists) {
 			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+		}
 
 		const socials = doc.data() as Socials;
-		if (socials.uid !== context.auth.uid)
+		if (socials.uid !== req.auth.uid) {
 			return response(HttpStatus.UNAUTHORIZED, {
 				message: "cannot update socials",
 			});
+		}
 
 		logInfo("Updating socials for application:", doc.id);
 		logInfo("Data in ref:", doc);
 
 		const db = getFirestore();
-		db.settings({ ignoreUndefinedProperties: true });
-		await db.collection("socials").doc(doc.id).update({
-			instagram: data.instagram,
-			linkedin: data.linkedin,
-			github: data.github,
-			discord: data.discord,
-			resumeRef: data.resumeRef,
-			resumeVisibility: data.resumeVisibility,
-		});
-		logInfo("Socials updated:", data);
+
+		const updateData = {
+			instagram: data.instagram || "",
+			linkedin: data.linkedin || "",
+			github: data.github || "",
+			discord: data.discord || "",
+			website: data.website || "",
+			resumeRef: data.resumeRef || "",
+			resumeFilename: data.resumeFilename || "",
+			profilePictureRef: data.profilePictureRef || "",
+			resumeVisibility: data.resumeVisibility || "Public",
+			resumeConsent: data.resumeConsent ?? false,
+			uid: data.uid,
+			docId: data.docId,
+		};
+
+		logInfo("About to update with data:", updateData);
+
+		await db.collection("socials").doc(doc.id).set(updateData, { merge: true });
+
+		logInfo("Socials updated successfully:", data);
 		return response(HttpStatus.OK, { message: "ok" });
 	} catch (error) {
-		logError("Failed to update socials", { error });
+		logError("Failed to update socials - error:", error);
 		throw new HttpsError("internal", "Failed to update socials", error);
 	}
 });
+// // DELETE IF NEW WORKS
+// export const OLDupdateSocials = onCall(async (data: any, res) => {
+// 	const context = res as Context;
+// 	if (!context || !context.auth) {
+// 		logInfo("Authentication required.");
+// 		throw new HttpsError("permission-denied", "Not authenticated");
+// 	}
+
+// 	logInfo("Updating socials:", data);
+// 	logInfo("User ID in Func:", context.auth.uid);
+
+// 	try {
+// 		const doc = await getFirestore()
+// 			.collection("socials")
+// 			.doc(data.docId)
+// 			.get();
+// 		if (!doc.exists)
+// 			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+
+// 		const socials = doc.data() as Socials;
+// 		if (socials.uid !== context.auth.uid)
+// 			return response(HttpStatus.UNAUTHORIZED, {
+// 				message: "cannot update socials",
+// 			});
+
+// 		logInfo("Updating socials for application:", doc.id);
+// 		logInfo("Data in ref:", doc);
+
+// 		const db = getFirestore();
+// 		db.settings({ ignoreUndefinedProperties: true });
+// 		await db.collection("socials").doc(doc.id).update({
+// 			instagram: data.instagram,
+// 			linkedin: data.linkedin,
+// 			github: data.github,
+// 			discord: data.discord,
+// 			resumeRef: data.resumeRef,
+// 			resumeVisibility: data.resumeVisibility,
+// 		});
+// 		logInfo("Socials updated:", data);
+// 		return response(HttpStatus.OK, { message: "ok" });
+// 	} catch (error) {
+// 		logError("Failed to update socials", { error });
+// 		throw new HttpsError("internal", "Failed to update socials", error);
+// 	}
+// });
 
 export const updatePhoneNumber = onCall(async (req) => {
 	if (!req.auth) {
@@ -230,6 +299,26 @@ export const updatePhoneNumber = onCall(async (req) => {
 		logError("Failed to update phone number", { error });
 		throw new HttpsError("internal", "Failed to update phone number", error);
 	}
+});
+
+export const updateApplicationField = onCall(async (req) => {
+	const { field, value } = req.data;
+	const uid = req.auth?.uid;
+
+	if (!uid) throw new HttpsError("unauthenticated", "Login required");
+
+	const snap = await getFirestore()
+		.collection("applications")
+		.where("applicantId", "==", uid)
+		.limit(1)
+		.get();
+
+	const doc = snap.docs[0];
+	if (!doc) throw new HttpsError("not-found", "No application found");
+
+	await doc.ref.update({ [field]: value });
+
+	return { message: "Field updated" };
 });
 
 /**

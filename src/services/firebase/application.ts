@@ -167,3 +167,20 @@ export async function updatePhoneNumber(phoneData: {
 	const fn = httpsCallable(functions, "updatePhoneNumber");
 	await fn({ phone: phoneData });
 }
+
+/**
+ * Updates a single field in the user's submitted application via Cloud Function.
+ */
+export async function updateSubmittedApplicationField<
+	K extends keyof ApplicationData,
+>(field: K, value: ApplicationData[K]) {
+	const fn = httpsCallable(functions, "updateApplicationField");
+
+	try {
+		const res = await fn({ field, value });
+		return res.data;
+	} catch (error) {
+		console.error("❌ Error updating application field:", error);
+		throw error;
+	}
+}
