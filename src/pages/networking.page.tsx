@@ -357,6 +357,11 @@ export const NetworkingPage = () => {
 				savePromises.push(updateSocials(mediaValues));
 			}
 
+			// check if existing resume without consent
+			if (mediaValues.resumeRef && !resumeConsent) {
+				throw new Error("Please consent to resume sharing or remove your existing resume before saving.");
+			}
+
 			// save resume if file selected and consent given
 			if (file && currentUser) {
 				if (!resumeConsent) {
