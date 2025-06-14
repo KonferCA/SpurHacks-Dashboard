@@ -1,5 +1,5 @@
-import { getDoc, doc, setDoc } from "firebase/firestore";
 import { firestore } from "@/services/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const EMERGENCY_CONTACT_COLLECTION = "emergency-contacts";
 

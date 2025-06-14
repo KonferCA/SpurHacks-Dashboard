@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, type BoxProps } from "@chakra-ui/react";
+import { type BoxProps, Card, CardBody, CardHeader } from "@chakra-ui/react";
 import type { FC, ReactNode } from "react";
 
 interface InfoCalloutProps extends BoxProps {
@@ -12,9 +12,7 @@ export const InfoCallout: FC<InfoCalloutProps> = ({ title, body, ...rest }) => {
 			<CardHeader>
 				<Card.Title>{title}</Card.Title>
 			</CardHeader>
-			<CardBody>
-				{body}
-			</CardBody>
+			<CardBody>{body}</CardBody>
 		</Card.Root>
 	);
 };

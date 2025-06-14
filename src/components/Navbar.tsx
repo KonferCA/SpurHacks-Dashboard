@@ -25,12 +25,12 @@ import {
 import {
 	CalendarDaysIcon,
 	CodeBracketIcon,
+	Cog8ToothIcon,
 	HomeIcon,
 	ShareIcon,
+	StarIcon,
 	TicketIcon,
 	UserGroupIcon,
-	Cog8ToothIcon,
-	StarIcon,
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
