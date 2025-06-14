@@ -358,12 +358,15 @@ export const NetworkingPage = () => {
 			}
 
 			// save resume if file selected and consent given
-			if (file && currentUser && resumeConsent) {
+			if (file && currentUser) {
+				if (!resumeConsent) {
+					throw new Error("Please consent to resume sharing before uploading your resume.");
+				}
 				const ref = await uploadGeneralResume(file, currentUser.uid);
-				const updatedMediaValues = { ...mediaValues, resumeRef: ref, resumeFilename: file.name };
+				const updatedMediaValues = { ...mediaValues, resumeRef: ref, resumeFilename: file.name, resumeConsent: true };
 				savePromises.push(updateSocials(updatedMediaValues));
 				setMediaValues(updatedMediaValues);
-				setSocials(socials ? { ...socials, resumeRef: ref, resumeFilename: file.name } : null);
+				setSocials(socials ? { ...socials, resumeRef: ref, resumeFilename: file.name, resumeConsent: true } : null);
 				setFile(null);
 			}
 
@@ -402,10 +405,18 @@ export const NetworkingPage = () => {
 			});
 
 		} catch (error) {
-			toaster.error({
-				title: "Failed to save changes",
-				description: "Please try again.",
-			});
+			const errorMessage = (error as Error).message;
+			if (errorMessage.includes("consent")) {
+				toaster.error({
+					title: "Consent Required",
+					description: errorMessage,
+				});
+			} else {
+				toaster.error({
+					title: "Failed to save changes",
+					description: "Please try again.",
+				});
+			}
 		} finally {
 			setIsGlobalSaving(false);
 		}
@@ -834,6 +845,8 @@ export const NetworkingPage = () => {
 										p={4}
 										w="full"
 										mt={3}
+										opacity={resumeConsent ? 1 : 0.5}
+										transition="all 0.2s"
 									>
 										<Flex align="center" gap={3}>
 											{/* PDF Icon */}
@@ -854,7 +867,6 @@ export const NetworkingPage = () => {
 													}}
 												/>
 												<Box
-													bg="#dc2626"
 													borderRadius="md"
 													p={2}
 													minW="40px"
