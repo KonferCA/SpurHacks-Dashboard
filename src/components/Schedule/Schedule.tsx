@@ -206,7 +206,6 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 						<Box
 							minW={`${timelineWidth}px`}
 							position="relative"
-							px={4}
 							pt={4}
 							pb={4}
 							h="100%"
