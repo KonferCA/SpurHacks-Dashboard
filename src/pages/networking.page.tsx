@@ -1,4 +1,4 @@
-import { Modal, PageWrapper, Select, TextInput } from "@/components";
+import { PageWrapper, Select, TextInput } from "@/components";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
 import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
@@ -15,7 +15,6 @@ import {
 	Dialog,
 	Flex,
 	Text,
-	Input,
 	FileUpload,
 	Stack,
 	Image,
@@ -25,40 +24,24 @@ import {
 import { pronouns } from "@/data";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
 import {
-	type FormEventHandler,
-	useCallback,
 	useEffect,
 	useRef,
 	useState,
 } from "react";
 import {
 	MdOpenInNew,
-	MdOutlineEdit,
-	MdOutlineRemoveCircleOutline,
-	MdWarning,
 	MdLink,
 	MdOutlineFileUpload,
 } from "react-icons/md";
 import { IoMdTrash } from "react-icons/io";
 import type {
 	ApplicationData,
-	ApplicationDataKey,
 } from "@/forms/hacker-form/types";
-import { useDebounce } from "@/hooks/use-debounce";
+
 import { useProfilePicture } from "@/hooks/use-profile-picture";
 import { updateSubmittedApplicationField } from "@/services/firebase/application";
 
-const allowedFileTypes = [
-	"image/*", //png, jpg, jpeg, jfif, pjpeg, pjp, gif, webp, bmp, svg
-	"application/pdf", //pdf
-	"application/msword", //doc, dot, wiz
-	"application/vnd.openxmlformats-officedocument.wordprocessingml.document", //docx
-	"application/rtf", //rtf
-	"application/oda", //oda
-	"text/markdown", //md, markdown, mdown, markdn
-	"text/plain", //txt, text, conf, def, list, log, in, ini
-	"application/vnd.oasis.opendocument.text", //odt
-];
+
 
 const mediaTypes: { name: string; key: keyof Socials }[] = [
 	{ name: "LinkedIn", key: "linkedin" },
@@ -96,7 +79,6 @@ export const NetworkingPage = () => {
 	const { applications, refreshApplications } = useApplications();
 	const userApp = applications[0] || null;
 	const [isLoading, setIsLoading] = useState(true);
-	const [editMode, setEditMode] = useState("");
 	const timeoutRef = useRef<number | null>(null);
 	const gettinSocialsRef = useRef<boolean>(false);
 	const socials = useUserStore((state) => state.socials);
@@ -119,18 +101,6 @@ export const NetworkingPage = () => {
 
 	const [aboutMe, setAboutMe] = useState(userApp?.aboutMe ?? "");
 	const [aboutMeUnsaved, setAboutMeUnsaved] = useState(false);
-	const [isUpdatingAboutMe, setIsUpdatingAboutMe] = useState(false);
-
-	// add loading states for other operations
-	const [isUpdatingSocials, setIsUpdatingSocials] = useState(false);
-	const [isUploadingResume, setIsUploadingResume] = useState(false);
-	const [isUpdatingResumeSettings, setIsUpdatingResumeSettings] = useState(false);
-
-	// add success states that persist for a few seconds
-	const [aboutMeSuccess, setAboutMeSuccess] = useState(false);
-	const [socialsSuccess, setSocialsSuccess] = useState(false);
-	const [resumeUploadSuccess, setResumeUploadSuccess] = useState(false);
-	const [resumeSettingsSuccess, setResumeSettingsSuccess] = useState(false);
 	
 	// unified profile picture success state
 	const [profilePictureSuccess, setProfilePictureSuccess] = useState(false);
@@ -184,25 +154,7 @@ export const NetworkingPage = () => {
 		}
 	};
 
-	// helper function to show success state for a few seconds
-	const showSuccessState = (
-		setSuccessState: (value: boolean) => void, 
-		clearEditMode = true,
-		clearUnsavedCallback?: () => void
-	) => {
-		setSuccessState(true);
-		setTimeout(() => {
-			setSuccessState(false);
-			// clear edit mode when success state ends to hide buttons (only if needed)
-			if (clearEditMode) {
-				setEditMode("");
-			}
-			// clear unsaved states after success state ends
-			if (clearUnsavedCallback) {
-				clearUnsavedCallback();
-			}
-		}, 2000); // show success for 2 seconds
-	};
+
 
 	useEffect(() => {
 		if (userApp) {
@@ -351,40 +303,7 @@ export const NetworkingPage = () => {
 		}
 	};
 
-	const submitFile = async () => {
-		if (!file || !currentUser || !userApp || !resumeConsent) return;
 
-		setIsUploadingResume(true);
-		try {
-			const ref = await uploadGeneralResume(file, currentUser.uid);
-
-			await updateSocials({ ...mediaValues, resumeRef: ref });
-			setSocials(
-				socials
-					? {
-							...socials,
-							resumeRef: ref,
-						}
-					: null,
-			);
-			setMediaValues({
-				...mediaValues,
-				resumeRef: ref,
-			});
-			setFile(null);
-			toaster.success({
-				title: "Resume uploaded successfully!",
-			});
-			showSuccessState(setResumeUploadSuccess);
-		} catch (e) {
-			toaster.error({
-				title: "Failed to upload resume",
-				description: (e as Error).message,
-			});
-		} finally {
-			setIsUploadingResume(false);
-		}
-	};
 
 	const removeProfilePicture = async () => {
 		try {
@@ -594,21 +513,7 @@ export const NetworkingPage = () => {
 		}
 	};
 
-	const debouncedAboutMeChange = useDebounce((...args: unknown[]) => {
-		const value = args[0] as string;
-		updateSubmittedApplicationField("aboutMe", value).then(() => {
-			refreshApplications();
-			toaster.success({
-				title: "about me updated",
-				description: "your about me has been updated successfully.",
-			});
-		}).catch((error) => {
-			toaster.error({
-				title: "error updating about me",
-				description: "please try again.",
-			});
-		});
-	}, 1000);
+
 
 	if (isLoading) return <LoadingAnimation />;
 

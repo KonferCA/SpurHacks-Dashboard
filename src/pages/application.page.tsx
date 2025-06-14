@@ -13,7 +13,8 @@ export const ApplicationPage = () => {
 				<div className="w-fit mb-4">
 					{/* gotta explicitly check for "false" because not all apps have the accepted property which means that their apps are in review */}
 					<InfoCallout
-						text={
+						title="Application Status"
+						body={
 							userApp && userApp.applicationStatus !== "accepted"
 								? "Unfortunately, due to high volume of applications and limited spots, we are unable to accept your application this year... We encourage you to try again next year."
 								: "Applications have now closed for SpurHacks 2024."

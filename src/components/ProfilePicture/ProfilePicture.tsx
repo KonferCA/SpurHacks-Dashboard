@@ -1,6 +1,6 @@
 import { useProfilePicture } from "@/hooks/use-profile-picture";
 import { useAuth } from "@/providers";
-import { Image, Box } from "@chakra-ui/react";
+import { Image } from "@chakra-ui/react";
 
 interface ProfilePictureProps {
 	size?: string | number;
