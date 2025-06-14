@@ -7,8 +7,8 @@ import { useAuth } from "@/providers";
 import {
 	createTeam,
 	deleteTeam,
-	getTeam,
 	getInvitations,
+	getTeam,
 	inviteMember,
 	isTeamNameAvailable,
 	rejectInvitation,
@@ -19,9 +19,13 @@ import {
 import type { Invitation } from "@/services/firebase/types";
 import { useUserStore } from "@/stores/user.store";
 import {
+	Badge,
 	Box,
 	Button,
 	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
 	Dialog,
 	Field,
 	Flex,
@@ -30,14 +34,18 @@ import {
 	Input,
 	Text,
 	useDisclosure,
-	Badge,
-	CardBody,
-	CardFooter,
-	CardHeader,
 } from "@chakra-ui/react";
 import { type FormEventHandler, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { FaCheck, FaEdit, FaPlus, FaTimes, FaTrash, FaCrown, FaClock } from "react-icons/fa";
+import {
+	FaCheck,
+	FaClock,
+	FaCrown,
+	FaEdit,
+	FaPlus,
+	FaTimes,
+	FaTrash,
+} from "react-icons/fa";
 import { z } from "zod";
 
 export const MyTeamPage = () => {
@@ -98,8 +106,7 @@ export const MyTeamPage = () => {
 				if (res.status >= 200 && res.status < 300) {
 					toaster.success({
 						title: "Team Created!",
-						description:
-							"Your team has been created successfully!",
+						description: "Your team has been created successfully!",
 					});
 					await fetchTeam();
 					setTeamName("");
@@ -221,8 +228,7 @@ export const MyTeamPage = () => {
 				if (res.status === 200) {
 					toaster.success({
 						title: "Team Name Updated!",
-						description:
-							"Team name updated successfully.",
+						description: "Team name updated successfully.",
 					});
 					// want to set the new team name in the team object
 					updateTeamNameState(teamName);
@@ -387,17 +393,13 @@ export const MyTeamPage = () => {
 				<Flex justify="center" align="center" h="full">
 					<Text>Loading...</Text>
 				</Flex>
-						) : (
+			) : (
 				<Flex direction="column" gap={6} maxWidth="590px">
 					{team ? (
 						<Flex direction="column" gap={6}>
 							<Card.Root rounded="4xl">
 								<CardHeader>
-									<Flex
-										justify="space-between"
-										align="center"
-										w="full"
-									>
+									<Flex justify="space-between" align="center" w="full">
 										<Heading size="md">My Team</Heading>
 										{team.isOwner && (
 											<Button
@@ -423,9 +425,7 @@ export const MyTeamPage = () => {
 								<CardBody>
 									{isEditingTeamName ? (
 										<Flex>
-											<Field.Root
-												invalid={invalidTeamName || isTeamNameTaken}
-											>
+											<Field.Root invalid={invalidTeamName || isTeamNameTaken}>
 												<Input
 													value={teamName}
 													onChange={(e) => {
@@ -485,8 +485,8 @@ export const MyTeamPage = () => {
 									<CardFooter>
 										<Flex direction="column" gap={2}>
 											<Text color="fg.muted" fontSize="sm">
-												Are you sure you want to delete your team? This
-												action is irreversible.
+												Are you sure you want to delete your team? This action
+												is irreversible.
 											</Text>
 											<Flex mt={2} gap={2}>
 												<Button
@@ -525,96 +525,98 @@ export const MyTeamPage = () => {
 									<Heading size="md">Team Members</Heading>
 								</CardHeader>
 								<CardBody>
-									{team?.members?.sort((a, b) => {
-										// put the owner first
-										if (a.email === team.ownerEmail) return -1;
-										if (b.email === team.ownerEmail) return 1;
-										return 0;
-									})?.map((member) => (
-										<Flex
-											key={member.email}
-											justify="space-between"
-											align="center"
-											py={2}
-											px={2}
-											borderBottom="1px solid"
-											borderColor="border.subtle"
-											_last={{ borderBottom: "none" }}
-										>
-											<Box>
-												<Flex align="center" gap={2}>
-													<Box display={{ base: "block", md: "none" }}>
-														{member.status === "accepted" && (
-															<Icon 
-																as={FaCheck} 
-																color="green.400" 
-																fontSize="sm"
-															/>
-														)}
-														{member.status === "pending" && (
-															<Icon 
-																as={FaClock} 
-																color="fg.muted"
-																fontSize="sm"
-															/>
-														)}
-													</Box>
-													<Text fontWeight="medium">
-														{member.firstName} {member.lastName}
-													</Text>
-													{member.email === team.ownerEmail && (
-														<Tooltip content="Team Owner">
-															<Icon 
-																as={FaCrown} 
-																color="white" 
-																fontSize="sm"
-															/>
-														</Tooltip>
-													)}
-												</Flex>
-												<Text color="fg.muted" fontSize="sm">{member.email}</Text>
-											</Box>
-											<Badge
-												bg={
-													member.status === "pending"
-														? "bg.hover"
-														: "transparent"
-												}
-												borderStyle={
-													member.status === "pending"
-														? "none"
-														: "solid"
-												}
-												borderWidth="2px"
-												borderColor={
-													member.status === "pending"
-														? "transparent"
-														: "green.400"
-												}
-												color={
-													member.status === "pending"
-														? "fg.muted"
-														: "green.400"
-												}
-												size="lg"
-												rounded="full"
-												px={3}
-												py={1}
-												textTransform="uppercase"
-												flexShrink={0}
-												display={{ base: "none", md: "block" }}
+									{team?.members
+										?.sort((a, b) => {
+											// put the owner first
+											if (a.email === team.ownerEmail) return -1;
+											if (b.email === team.ownerEmail) return 1;
+											return 0;
+										})
+										?.map((member) => (
+											<Flex
+												key={member.email}
+												justify="space-between"
+												align="center"
+												py={2}
+												px={2}
+												borderBottom="1px solid"
+												borderColor="border.subtle"
+												_last={{ borderBottom: "none" }}
 											>
-												{member.status}
-											</Badge>
-										</Flex>
-									))}
+												<Box>
+													<Flex align="center" gap={2}>
+														<Box display={{ base: "block", md: "none" }}>
+															{member.status === "accepted" && (
+																<Icon
+																	as={FaCheck}
+																	color="green.400"
+																	fontSize="sm"
+																/>
+															)}
+															{member.status === "pending" && (
+																<Icon
+																	as={FaClock}
+																	color="fg.muted"
+																	fontSize="sm"
+																/>
+															)}
+														</Box>
+														<Text fontWeight="medium">
+															{member.firstName} {member.lastName}
+														</Text>
+														{member.email === team.ownerEmail && (
+															<Tooltip content="Team Owner">
+																<Icon
+																	as={FaCrown}
+																	color="white"
+																	fontSize="sm"
+																/>
+															</Tooltip>
+														)}
+													</Flex>
+													<Text color="fg.muted" fontSize="sm">
+														{member.email}
+													</Text>
+												</Box>
+												<Badge
+													bg={
+														member.status === "pending"
+															? "bg.hover"
+															: "transparent"
+													}
+													borderStyle={
+														member.status === "pending" ? "none" : "solid"
+													}
+													borderWidth="2px"
+													borderColor={
+														member.status === "pending"
+															? "transparent"
+															: "green.400"
+													}
+													color={
+														member.status === "pending"
+															? "fg.muted"
+															: "green.400"
+													}
+													size="lg"
+													rounded="full"
+													px={3}
+													py={1}
+													textTransform="uppercase"
+													flexShrink={0}
+													display={{ base: "none", md: "block" }}
+												>
+													{member.status}
+												</Badge>
+											</Flex>
+										))}
 								</CardBody>
 								<CardFooter flexWrap="wrap">
 									<Flex gap={2} flexWrap="wrap">
 										{team.isOwner && (
 											<>
-												<Button 
-													onClick={onInviteOpen} 
+												<Button
+													onClick={onInviteOpen}
 													rounded="full"
 													colorScheme="brand"
 													color="black"
@@ -623,8 +625,8 @@ export const MyTeamPage = () => {
 													<Icon as={FaPlus} mr={2} />
 													Invite Members
 												</Button>
-												<Button 
-													onClick={onTeammatesOpen} 
+												<Button
+													onClick={onTeammatesOpen}
 													rounded="full"
 													variant="outline"
 													size="sm"
@@ -655,11 +657,10 @@ export const MyTeamPage = () => {
 							<form onSubmit={submitNewTeam}>
 								<CardBody>
 									<Text color="fg.muted" mb={4} fontSize="sm">
-										Start your hackathon journey by creating a team and inviting talented hackers to join you.
+										Start your hackathon journey by creating a team and inviting
+										talented hackers to join you.
 									</Text>
-									<Field.Root
-										invalid={invalidTeamName || isTeamNameTaken}
-									>
+									<Field.Root invalid={invalidTeamName || isTeamNameTaken}>
 										<Field.Label>Team Name</Field.Label>
 										<Input
 											value={teamName}
@@ -701,12 +702,13 @@ export const MyTeamPage = () => {
 							</CardHeader>
 							<CardBody>
 								<Text color="fg.muted" fontSize="sm">
-									Check if other teams have invited you to join them before creating your own team.
+									Check if other teams have invited you to join them before
+									creating your own team.
 								</Text>
 							</CardBody>
 							<CardFooter>
-								<Button 
-									onClick={onInvitationsOpen} 
+								<Button
+									onClick={onInvitationsOpen}
 									rounded="full"
 									variant="outline"
 									size="sm"
@@ -806,7 +808,7 @@ export const MyTeamPage = () => {
 														? {
 																colorScheme: "red",
 																variant: "solid",
-														  }
+															}
 														: { variant: "outline" })}
 												>
 													{toBeRemovedTeammates.includes(member.email)
@@ -935,10 +937,12 @@ export const MyTeamPage = () => {
 						body={
 							<Box spaceY="0.5rem">
 								<Text color="fg.muted" fontSize="sm">
-									Create or join a team to participate in SpurHacks. Teams can have up to 4 members total.
+									Create or join a team to participate in SpurHacks. Teams can
+									have up to 4 members total.
 								</Text>
 								<Text color="fg.muted" fontSize="sm">
-									Team names can be changed until registration closes, so feel free to experiment!
+									Team names can be changed until registration closes, so feel
+									free to experiment!
 								</Text>
 							</Box>
 						}

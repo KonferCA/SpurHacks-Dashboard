@@ -39,6 +39,7 @@ import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 import { Redirect } from "@/navigation/redirect";
 
+import { AccountPage } from "@/pages/account.page";
 // Local imports
 import {
 	disable,
@@ -53,7 +54,6 @@ import {
 import { RoutesContext } from "./context";
 import { paths } from "./data";
 import type { RouteConfig } from "./types";
-import { AccountPage } from "@/pages/account.page";
 
 /**
  * Creates a wrapper component for routes with access control

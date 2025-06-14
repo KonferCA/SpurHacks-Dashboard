@@ -1,27 +1,27 @@
 import { PageWrapper, TextInput } from "@/components";
-import { toaster } from "@/components/ui/toaster";
-import { Field } from "@/components/ui/field";
 import { PhoneInput } from "@/components/PhoneInput/PhoneInput";
+import { Field } from "@/components/ui/field";
+import { PasswordInput } from "@/components/ui/password-input";
+import { toaster } from "@/components/ui/toaster";
+import type { ApplicationDataKey } from "@/forms/hacker-form/types";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
-import { useQuery } from "@tanstack/react-query";
+import { auth } from "@/services/firebase";
+import { updatePhoneNumber } from "@/services/firebase/application";
 import {
-	getEmergencyContact,
 	type EmergencyContact,
+	getEmergencyContact,
 } from "@/services/firebase/emergency-contact";
 import { saveEmergencyContact } from "@/services/firebase/emergency-contact";
-import { useMutation } from "@tanstack/react-query";
+import { withdrawRSVP } from "@/services/firebase/rsvp";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { deleteUser } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 // import { verifyRSVP } from "@/services/firebase/rsvp";
 import { useEffect, useState } from "react";
-import type { ApplicationDataKey } from "@/forms/hacker-form/types";
-import { PasswordInput } from "@/components/ui/password-input";
-import { updatePhoneNumber } from "@/services/firebase/application";
-import { auth } from "@/services/firebase";
-import { withdrawRSVP } from "@/services/firebase/rsvp";
+import { useNavigate } from "react-router-dom";
 // if (isLoading) return <LoadingAnimation />;
 type FormErrors = { _hasErrors: boolean } & Partial<
 	Record<ApplicationDataKey, string>

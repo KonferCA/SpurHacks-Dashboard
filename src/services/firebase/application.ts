@@ -16,8 +16,8 @@ import {
 } from "firebase/firestore";
 
 import type { ApplicationData } from "@/forms/hacker-form/types";
-import type { ApplicationDataDoc } from "./types";
 import { httpsCallable } from "firebase/functions";
+import type { ApplicationDataDoc } from "./types";
 
 export class DuplicateApplicationError extends Error {
 	constructor() {

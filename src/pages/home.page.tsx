@@ -157,9 +157,7 @@ const HomePage = () => {
 											</Text>
 											<Icon
 												size="lg"
-												color={
-													currentApplication ? "green.400" : "yellow.400"
-												}
+												color={currentApplication ? "green.400" : "yellow.400"}
 											>
 												{currentApplication ? (
 													<CheckCircle />
@@ -343,7 +341,7 @@ const HomePage = () => {
 							</Card.Body>
 						</Card.Root>
 					)}
-					
+
 					<Card.Root
 						maxWidth={{ base: "none", xl: "450px" }}
 						width="full"
@@ -361,12 +359,16 @@ const HomePage = () => {
 									{faqs.map((faq, index) => (
 										<Accordion.Item key={index} value={`item-${index}`}>
 											<Accordion.ItemTrigger>
-												<Text fontWeight="medium" fontSize="sm">{faq.question}</Text>
+												<Text fontWeight="medium" fontSize="sm">
+													{faq.question}
+												</Text>
 												<Accordion.ItemIndicator />
 											</Accordion.ItemTrigger>
 											<Accordion.ItemContent>
 												<Accordion.ItemBody>
-													<Text color="fg.muted" fontSize="sm">{faq.answer}</Text>
+													<Text color="fg.muted" fontSize="sm">
+														{faq.answer}
+													</Text>
 												</Accordion.ItemBody>
 											</Accordion.ItemContent>
 										</Accordion.Item>

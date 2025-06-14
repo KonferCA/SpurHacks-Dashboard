@@ -273,15 +273,12 @@ export const createTeam = onCall<TeamNameRequest>(async (req) => {
 
 		logInfo("Creating team document", { func });
 		// create the team doc
-		await getFirestore()
-			.collection(TEAMS_COLLECTION)
-			.doc(teamId)
-			.set({
-				name: req.data.name,
-				owner: req.auth.uid,
-				id: teamId,
-				createdAt: Timestamp.now(),
-			});
+		await getFirestore().collection(TEAMS_COLLECTION).doc(teamId).set({
+			name: req.data.name,
+			owner: req.auth.uid,
+			id: teamId,
+			createdAt: Timestamp.now(),
+		});
 
 		logInfo("Updating user profile", { func, uid: req.auth.uid });
 		const profileSnap = await getFirestore()
@@ -521,17 +518,20 @@ export const inviteMember = onCall<EmailsRequest>(async (req) => {
 				invitationId,
 			});
 
-			await firestore.collection(INVITATIONS_COLLECTION).doc(invitationId).set({
-				invitationId,
-				status: "pending",
-				userId: userRecord?.uid ?? "",
-				teamId: team.id,
-				invitationSentAt: Timestamp.now(),
-				resendEmailId: sent?.id ?? "",
-				email,
-				firstName,
-				lastName,
-			});
+			await firestore
+				.collection(INVITATIONS_COLLECTION)
+				.doc(invitationId)
+				.set({
+					invitationId,
+					status: "pending",
+					userId: userRecord?.uid ?? "",
+					teamId: team.id,
+					invitationSentAt: Timestamp.now(),
+					resendEmailId: sent?.id ?? "",
+					email,
+					firstName,
+					lastName,
+				});
 		}
 
 		return response(HttpStatus.OK, {
@@ -726,7 +726,10 @@ export const deleteTeam = onCall(async (req) => {
 		});
 
 		// delete any outstanding invitations for this team
-		logInfo("Deleting outstanding invitations for team...", { func, teamId: team.id });
+		logInfo("Deleting outstanding invitations for team...", {
+			func,
+			teamId: team.id,
+		});
 		const invitationSnap = await getFirestore()
 			.collection(INVITATIONS_COLLECTION)
 			.where("teamId", "==", team.id)
