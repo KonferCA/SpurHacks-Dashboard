@@ -30,6 +30,7 @@ interface MemberData {
 	lastName: string;
 	email: string;
 	status: InvitationStatus;
+	profilePictureRef?: string;
 }
 
 // return schema to client
@@ -116,16 +117,37 @@ async function internalGetMembersByTeam(teamId: string): Promise<MemberData[]> {
 		.where("teamId", "==", teamId)
 		.get();
 	const members: MemberData[] = [];
-	snap.forEach((doc) => {
+	
+	// process each member and fetch their profile picture
+	for (const doc of snap.docs) {
 		const data = doc.data() as UserProfile;
-		// to get the status, we need to
+		
+		// get profile picture from socials collection
+		let profilePictureRef: string | undefined;
+		try {
+			const socialsSnap = await getFirestore()
+				.collection("socials")
+				.where("uid", "==", data.uid)
+				.limit(1)
+				.get();
+			
+			if (!socialsSnap.empty) {
+				const socialsData = socialsSnap.docs[0].data();
+				profilePictureRef = socialsData.profilePictureRef || undefined;
+			}
+		} catch (e) {
+			logError("Failed to get profile picture for member", { uid: data.uid, error: e });
+		}
+		
 		members.push({
 			firstName: data.firstName,
 			lastName: data.lastName,
 			email: data.email,
 			status: "accepted", // everyone who is in the team already must have accepted the team invitation
+			profilePictureRef,
 		});
-	});
+	}
+	
 	return members;
 }
 
@@ -142,15 +164,39 @@ async function internalGetInvitedMembersByTeam(
 		.where("status", "==", "pending")
 		.get();
 	const members: MemberData[] = [];
-	snap.forEach((doc) => {
+	
+	// process each invited member and fetch their profile picture
+	for (const doc of snap.docs) {
 		const data = doc.data() as Invitation;
+		
+		// get profile picture from socials collection using userId if available
+		let profilePictureRef: string | undefined;
+		if (data.userId) {
+			try {
+				const socialsSnap = await getFirestore()
+					.collection("socials")
+					.where("uid", "==", data.userId)
+					.limit(1)
+					.get();
+				
+				if (!socialsSnap.empty) {
+					const socialsData = socialsSnap.docs[0].data();
+					profilePictureRef = socialsData.profilePictureRef || undefined;
+				}
+			} catch (e) {
+				logError("Failed to get profile picture for invited member", { uid: data.userId, error: e });
+			}
+		}
+		
 		members.push({
 			firstName: data.firstName,
 			lastName: data.lastName,
 			email: data.email,
 			status: data.status,
+			profilePictureRef,
 		});
-	});
+	}
+	
 	return members;
 }
 

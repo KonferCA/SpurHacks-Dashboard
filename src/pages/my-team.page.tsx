@@ -18,6 +18,7 @@ import {
 } from "@/services/firebase/teams";
 import type { Invitation } from "@/services/firebase/types";
 import { useUserStore } from "@/stores/user.store";
+import { getProfilePictureURL } from "@/services/firebase/files";
 import {
 	Badge,
 	Box,
@@ -33,6 +34,7 @@ import {
 	Icon,
 	Input,
 	Text,
+	Image,
 	useDisclosure,
 } from "@chakra-ui/react";
 import { type FormEventHandler, useEffect, useRef, useState } from "react";
@@ -66,6 +68,8 @@ export const MyTeamPage = () => {
 	const [toBeRemovedTeammates, setToBeRemovedTeammates] = useState<string[]>(
 		[],
 	);
+	// holds profile picture URLs for team members
+	const [memberProfilePictures, setMemberProfilePictures] = useState<Record<string, string | null>>({});
 	const { currentUser } = useAuth();
 	const debounce = useDebounce(
 		//@ts-ignore
@@ -154,6 +158,28 @@ export const MyTeamPage = () => {
 					const newTeam = { ...team };
 					newTeam.members.push(data);
 					setTeam(newTeam);
+					
+					// convert profile picture ref to URL for the new member
+					if (data.profilePictureRef) {
+						try {
+							const url = await getProfilePictureURL(data.profilePictureRef);
+							setMemberProfilePictures(prev => ({
+								...prev,
+								[data.email]: url
+							}));
+						} catch (e) {
+							console.error("Failed to get profile picture URL for new member:", e);
+							setMemberProfilePictures(prev => ({
+								...prev,
+								[data.email]: null
+							}));
+						}
+					} else {
+						setMemberProfilePictures(prev => ({
+							...prev,
+							[data.email]: null
+						}));
+					}
 				}
 				setEmail("");
 				toaster.success({
@@ -277,6 +303,15 @@ export const MyTeamPage = () => {
 				);
 				// @ts-ignore
 				setTeam({ ...team, members: newMembers });
+				
+				// remove profile pictures for removed members
+				setMemberProfilePictures(prev => {
+					const updated = { ...prev };
+					toBeRemovedTeammates.forEach(email => {
+						delete updated[email];
+					});
+					return updated;
+				});
 			}
 
 			closeTeammatesDialog();
@@ -301,6 +336,27 @@ export const MyTeamPage = () => {
 			]);
 			setTeam(team.data || null);
 			setInvitations(invitations.data || []);
+			
+			// convert profile picture refs to URLs for team members
+			if (team.data?.members) {
+				const profilePictureUrls: Record<string, string | null> = {};
+				
+				for (const member of team.data.members) {
+					if (member.profilePictureRef) {
+						try {
+							const url = await getProfilePictureURL(member.profilePictureRef);
+							profilePictureUrls[member.email] = url;
+						} catch (e) {
+							console.error(`Failed to get profile picture URL for ${member.email}:`, e);
+							profilePictureUrls[member.email] = null;
+						}
+					} else {
+						profilePictureUrls[member.email] = null;
+					}
+				}
+				
+				setMemberProfilePictures(profilePictureUrls);
+			}
 		} catch (e) {
 			toaster.error({
 				title: "Error fetching data",
@@ -539,45 +595,79 @@ export const MyTeamPage = () => {
 												align="center"
 												py={2}
 												px={2}
-												borderBottom="1px solid"
-												borderColor="border.subtle"
-												_last={{ borderBottom: "none" }}
 											>
-												<Box>
-													<Flex align="center" gap={2}>
-														<Box display={{ base: "block", md: "none" }}>
-															{member.status === "accepted" && (
-																<Icon
-																	as={FaCheck}
-																	color="green.400"
-																	fontSize="sm"
-																/>
-															)}
-															{member.status === "pending" && (
-																<Icon
-																	as={FaClock}
-																	color="fg.muted"
-																	fontSize="sm"
-																/>
-															)}
-														</Box>
-														<Text fontWeight="medium">
-															{member.firstName} {member.lastName}
-														</Text>
-														{member.email === team.ownerEmail && (
-															<Tooltip content="Team Owner">
-																<Icon
-																	as={FaCrown}
-																	color="white"
-																	fontSize="sm"
-																/>
-															</Tooltip>
+												<Flex align="center" gap={3}>
+													{/* Profile Picture */}
+													<Box
+														boxSize="40px"
+														borderRadius="full"
+														bg="gray.600"
+														display="flex"
+														alignItems="center"
+														justifyContent="center"
+														overflow="hidden"
+														flexShrink={0}
+													>
+														{memberProfilePictures[member.email] ? (
+															<Image
+																src={memberProfilePictures[member.email] as string}
+																alt={`${member.firstName} ${member.lastName}`}
+																boxSize="full"
+																borderRadius="full"
+																objectFit="cover"
+															/>
+														) : (
+															<Box
+																boxSize="full"
+																bg="gray.600"
+																display="flex"
+																alignItems="center"
+																justifyContent="center"
+																color="gray.300"
+																fontSize="sm"
+																fontWeight="bold"
+															>
+																{member.firstName.charAt(0)}{member.lastName.charAt(0)}
+															</Box>
 														)}
-													</Flex>
-													<Text color="fg.muted" fontSize="sm">
-														{member.email}
-													</Text>
-												</Box>
+													</Box>
+													
+													<Box>
+														<Flex align="center" gap={2}>
+															<Box display={{ base: "block", md: "none" }}>
+																{member.status === "accepted" && (
+																	<Icon
+																		as={FaCheck}
+																		color="green.400"
+																		fontSize="sm"
+																	/>
+																)}
+																{member.status === "pending" && (
+																	<Icon
+																		as={FaClock}
+																		color="fg.muted"
+																		fontSize="sm"
+																	/>
+																)}
+															</Box>
+															<Text fontWeight="medium">
+																{member.firstName} {member.lastName}
+															</Text>
+															{member.email === team.ownerEmail && (
+																<Tooltip content="Team Owner">
+																	<Icon
+																		as={FaCrown}
+																		color="white"
+																		fontSize="sm"
+																	/>
+																</Tooltip>
+															)}
+														</Flex>
+														<Text color="fg.muted" fontSize="sm">
+															{member.email}
+														</Text>
+													</Box>
+												</Flex>
 												<Badge
 													bg={
 														member.status === "pending"
