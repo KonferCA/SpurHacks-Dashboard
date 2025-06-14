@@ -49,7 +49,7 @@ export const MyTeamPage = () => {
 	const [teamName, setTeamName] = useState("");
 	const [isTeamNameTaken, setIsTeamNameTaken] = useState(false);
 	const [invalidTeamName, setInvalidTeamName] = useState(false);
-	const [invalidEmailMsg, setInvalidEmailMsg] = useState("");
+	const [invalidEmailMsg] = useState("");
 	const [email, setEmail] = useState("");
 	const [disableAllActions, setDisableAllActions] = useState(false);
 	const [isEditingTeamName, setIsEditingTeamName] = useState(false);
