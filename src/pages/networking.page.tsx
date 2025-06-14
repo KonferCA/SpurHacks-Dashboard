@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
 	Box,
 	Button,
+	Dialog,
 	Flex,
 	Text,
 	Input,
@@ -847,6 +848,21 @@ export const NetworkingPage = () => {
 									optional
 								</Text>
 							</Flex>
+							{mediaValues.resumeRef && (
+								<Button
+									size="sm"
+									variant="ghost"
+									color="gray.400"
+									p={2}
+									minW="auto"
+									bg="transparent"
+									_hover={{ bg: "gray.600" }}
+									onClick={() => setIsResumeSettingsOpened(true)}
+									title="Resume Settings"
+								>
+									<Icon as={Cog6ToothIcon} boxSize={5} />
+								</Button>
+							)}
 						</Flex>
 
 						<FileUpload.Root accept=".pdf" w="full">
@@ -1187,54 +1203,41 @@ export const NetworkingPage = () => {
 				)}
 			</AnimatePresence>
 
-			<Modal
-				title="Resume Settings"
-				subTitle=""
+			<Dialog.Root
 				open={isResumeSettingsOpened}
-				onClose={() => {
-					setIsResumeSettingsOpened(false);
-				}}
+				onOpenChange={(details: { open: boolean }) => !details.open && setIsResumeSettingsOpened(false)}
 			>
-				<Stack gap={12}>
-					<Box>
-						<Select 
-							label="Resume Visibility" 
-							options={visibilityOptions} 
-							value={mapOption(newVisibility)}
-							onChange={(selected) => {
-								if (selected && selected.length > 0) {
-									setNewVisibility(selected[0] as ResumeVisibility);
-								}
-							}}
-						/>
-						<Text>{visibilityDescription[newVisibility]}</Text>
-					</Box>
-					<Box>
-						<Button
-							type="button"
-							onClick={removeResume}
-							variant="outline"
-							borderColor="red.400"
-							color="red.500"
-							w="full"
-							display="flex"
-							gap={4}
-							fontWeight="medium"
-							_hover={{ bg: "red.600", opacity: 0.05 }}
-							px={4}
-							py={2}
-							rounded="lg"
-						>
-							<Box
-								as={MdOutlineRemoveCircleOutline}
-								boxSize={6}
-								color="red.500"
-							/>
-							Remove Resume
-						</Button>
-					</Box>
-				</Stack>
-			</Modal>
+				<Dialog.Backdrop />
+				<Dialog.Positioner>
+					<Dialog.Content rounded="4xl" maxWidth="500px">
+						<Dialog.Header>
+							<Dialog.Title>Resume Settings</Dialog.Title>
+						</Dialog.Header>
+						<Dialog.Body>
+							<Stack gap={6}>
+								<Box>
+									<Select 
+										label="Resume Visibility" 
+										options={visibilityOptions} 
+										value={mapOption(newVisibility)}
+										onChange={(selected) => {
+											if (selected && selected.length > 0) {
+												setNewVisibility(selected[0] as ResumeVisibility);
+											}
+										}}
+									/>
+									<Text color="fg.muted" fontSize="sm" mt={2}>
+										{visibilityDescription[newVisibility]}
+									</Text>
+								</Box>	
+							</Stack>
+						</Dialog.Body>
+						<Dialog.CloseTrigger asChild>
+							<Button variant="ghost" size="sm" aria-label="Close" />
+						</Dialog.CloseTrigger>
+					</Dialog.Content>
+				</Dialog.Positioner>
+			</Dialog.Root>
 		</PageWrapper>
 	);
 };
