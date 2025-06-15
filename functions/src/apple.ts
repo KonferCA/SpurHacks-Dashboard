@@ -216,9 +216,13 @@ export const createTicket = onCall({ cors }, async (request: CallableRequest) =>
 		await fileRef.save(buffer, {
 			metadata: { contentType: "application/vnd.apple.pkpass" },
 		});
-		await fileRef.makePublic();
+		
+		const [signedUrl] = await fileRef.getSignedUrl({
+			action: 'read',
+			expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+		});
 
-		return { url: fileRef.publicUrl() };
+		return { url: signedUrl };
 	} catch (error) {
 		logError("failed to create apple wallet pass:", error);
 		throw new HttpsError("internal", "failed to create ticket");
