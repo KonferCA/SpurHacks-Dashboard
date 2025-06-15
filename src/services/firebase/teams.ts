@@ -118,6 +118,23 @@ export async function removeMembers(emails: string[]) {
 }
 
 /**
+ * Calls the cloud function 'leaveTeam' that allows any team member to leave their current team
+ */
+export async function leaveTeam() {
+	try {
+		const fn = httpsCallable<unknown, CloudFunctionResponse<void>>(
+			functions,
+			"leaveTeam",
+		);
+		const { data } = await fn();
+		return data;
+	} catch (e) {
+		await logError(e as Error, "leave_team_error");
+		throw e;
+	}
+}
+
+/**
  * Calls the cloud function 'deleteTeam' that deletes the given team the requesting user owns
  */
 export async function deleteTeam() {

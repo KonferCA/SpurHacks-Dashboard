@@ -12,6 +12,7 @@ export interface MemberData {
 	lastName: string;
 	email: string;
 	status: "pending" | "rejected" | "accepted";
+	profilePictureRef?: string;
 }
 
 export interface TeamData {
