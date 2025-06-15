@@ -8,6 +8,7 @@ import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import { HttpStatus, response } from "./utils";
+import { cors } from "./cors";
 
 // Define interfaces for request data types
 interface TeamNameRequest {
@@ -372,7 +373,7 @@ export const createTeam = onCall<TeamNameRequest>(async (req) => {
 /**
  * Gets the team that the requesting user belongs to
  */
-export const getTeam = onCall(async (req) => {
+export const getTeam = onCall({ cors }, async (req) => {
 	if (!req.auth) {
 		return response(HttpStatus.UNAUTHORIZED, {
 			message: "Unauthorized",
@@ -1263,7 +1264,7 @@ export const checkInvitation = onCall<CodeRequest>(async (req) => {
 	}
 });
 
-export const getInvitations = onCall(async (req) => {
+export const getInvitations = onCall({ cors }, async (req) => {
 	if (!req.auth) {
 		throw new HttpsError("unauthenticated", "User must be logged in.");
 	}

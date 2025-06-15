@@ -1,13 +1,14 @@
 import { Timestamp, getFirestore } from "firebase-admin/firestore";
 import { error as logError } from "firebase-functions/logger";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { cors } from "./cors";
 import type { TicketData } from "./types";
 
 /*
  * Creates a new ticket document in 'tickets' collection.
  * Returns the new ticket document id.
  */
-export const createTicketDoc = onCall(async (req) => {
+export const createTicketDoc = onCall({ cors }, async (req) => {
 	if (!req.auth) {
 		throw new HttpsError("permission-denied", "not authenticated");
 	}

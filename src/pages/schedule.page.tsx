@@ -13,26 +13,25 @@ import { useState } from "react";
 
 import { schedule } from "@/data/events";
 
-// utility function to truncate text based on card width (time duration)
-function truncateTextByDuration(text: string, startTime: string, endTime: string): string {
-	const [startHour, startMin] = startTime.split(':').map(Number);
-	const [endHour, endMin] = endTime.split(':').map(Number);
+// utility function to truncate text based on actual card width
+function truncateTextByWidth(text: string, widthPx: number, isTitle = true): string {
+	const avgCharWidth = isTitle ? 6.5 : 6;
+	const availableWidth = widthPx - 16;
+	const maxChars = Math.floor(availableWidth / avgCharWidth);
+	const minChars = 6;
+	const finalMaxChars = Math.max(minChars, Math.min(maxChars, 60));
 
-	const startTotalHours = startHour + startMin / 60;
-	let endTotalHours = endHour + endMin / 60;
+	if (text.length <= finalMaxChars) return text;
 
-	if (endHour >= 24) {
-		endTotalHours = endHour + endMin / 60;
+	if (finalMaxChars > 10) {
+		const truncated = text.slice(0, finalMaxChars - 3);
+		const lastSpace = truncated.lastIndexOf(' ');
+		if (lastSpace > finalMaxChars * 0.4) {
+			return `${truncated.slice(0, lastSpace)}...`;
+		}
 	}
 
-	const durationHours = endTotalHours - startTotalHours;
-
-	const baseChars = 21;
-	const scaleFactor = 12;
-	const maxChars = Math.min(60, Math.max(baseChars, Math.floor(baseChars + (durationHours - 0.5) * scaleFactor)));
-
-	if (text.length <= maxChars) return text;
-	return `${text.slice(0, maxChars - 3)}...`;
+	return `${text.slice(0, finalMaxChars - 3)}...`;
 }
 
 interface ScheduleEntryProps {
@@ -55,32 +54,59 @@ function ScheduleEntry(
 		onExpand: (eventId: string | null) => void;
 	},
 ) {
+	const [startHour, startMin] = props.startTime.split(':').map(Number);
+	const [endHour, endMin] = props.endTime.split(':').map(Number);
+	const startTotalHours = startHour + startMin / 60;
+	let endTotalHours = endHour + endMin / 60;
+	if (endHour >= 24) {
+		endTotalHours = endHour + endMin / 60;
+	}
+	const durationHours = endTotalHours - startTotalHours;
+	
+	const totalHours = props.timeRange.end - props.timeRange.start;
+	const duration = durationHours / totalHours;
+	const normalWidth = duration * (props.timelineWidth - 32);
+	const eventDurationHours = endTotalHours - startTotalHours;
+	const minWidth = eventDurationHours <= 0.5 ? 60 : Math.min(80, normalWidth);
+	const boxWidth = Math.max(normalWidth, minWidth);
+	
+	const isVeryShort = durationHours <= 0.5;
+	const isShort = durationHours <= 1;
+	
 	return (
 		<ScheduleGridItem
 			{...props}
 			isExpanded={props.isExpanded}
 			onExpand={props.onExpand}
 		>
-			<VStack align="start" h="100%" justify="start">
+			<VStack align="start" h="100%" justify="start" gap={isVeryShort ? 1 : 2}>
 				<Text
 					fontWeight="bold"
-					fontSize="sm"
-					lineHeight="1.2"
+					fontSize={isVeryShort ? "xs" : isShort ? "sm" : "sm"}
+					lineHeight={isVeryShort ? "1.1" : "1.2"}
 					title={props.title}
+					overflow="hidden"
+					textOverflow="ellipsis"
+					whiteSpace={isVeryShort ? "nowrap" : "normal"}
 				>
-					{truncateTextByDuration(props.title, props.startTime, props.endTime)}
+					{truncateTextByWidth(props.title, boxWidth, true)}
 				</Text>
 				<Text
-					fontSize="xs"
+					fontSize={isVeryShort ? "xs" : "xs"}
 					opacity={0.9}
 					lineHeight="1.1"
 					title={props.location}
+					overflow="hidden"
+					textOverflow="ellipsis"
+					whiteSpace="nowrap"
 				>
-					{truncateTextByDuration(props.location, props.startTime, props.endTime)}
+					{truncateTextByWidth(props.location, boxWidth, false)}
 				</Text>
 				<Text fontSize="xs" opacity={0.8} lineHeight="1.1" mt={1}>
-					{format12HourTime(props.startTime, false)} -{" "}
-					{format12HourTime(props.endTime, false)}
+					{isVeryShort 
+						? format12HourTime(props.startTime, false)
+						: `${format12HourTime(props.startTime, false)} - ${format12HourTime(props.endTime, false)}`
+					}
 				</Text>
 			</VStack>
 		</ScheduleGridItem>
@@ -188,8 +214,7 @@ export const SchedulePage: React.FC = () => {
 		([dayKey, data]) => {
 			const timeRange = calculateTimeRange(data.events, data.dayDate);
 			const totalHours = timeRange.end - timeRange.start;
-			const timelineWidth = Math.max(800, totalHours * 120);
-
+			const timelineWidth = Math.max(800, totalHours * 150);
 			return [dayKey, { ...data, timeRange, timelineWidth }] as const;
 		},
 	);

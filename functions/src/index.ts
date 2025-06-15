@@ -13,6 +13,7 @@ import { Octokit } from "octokit";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+import { cors } from "./cors";
 import type { Context } from "./types";
 import { HttpStatus, response } from "./utils";
 
@@ -255,7 +256,7 @@ export const updateSocials = onCall(async (req) => {
 // 	}
 // });
 
-export const updatePhoneNumber = onCall(async (req) => {
+export const updatePhoneNumber = onCall({ cors }, async (req) => {
 	if (!req.auth) {
 		logInfo("Authentication required.");
 		throw new HttpsError("permission-denied", "Not authenticated");
@@ -301,7 +302,7 @@ export const updatePhoneNumber = onCall(async (req) => {
 	}
 });
 
-export const updateApplicationField = onCall(async (req) => {
+export const updateApplicationField = onCall({ cors }, async (req) => {
 	const { field, value } = req.data;
 	const uid = req.auth?.uid;
 
@@ -334,7 +335,7 @@ export const updateApplicationField = onCall(async (req) => {
  *
  * Sends back true/false of verification status
  */
-export const verifyGitHubEmail = onCall(async (data: any, res) => {
+export const verifyGitHubEmail = onCall({ cors }, async (data: any, res) => {
 	const context = res as Context;
 	if (!context || !context.auth) {
 		return new HttpsError("permission-denied", "Not authenticated");
