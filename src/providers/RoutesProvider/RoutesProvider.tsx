@@ -35,7 +35,8 @@ import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
 import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
-import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
+// NOTE: Uncomment this when the page is ready
+// import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 import { Redirect } from "@/navigation/redirect";
 
@@ -143,10 +144,12 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.notFound,
 				element: <NotFoundPage />,
 			},
-			{
-				path: paths.ticket,
-				element: <ViewTicketPage />,
-			},
+			// NOTE: This page has been removed for now since they won't be scanning it any time soon.
+			//       The page needs an update on how it fetches the ticket and renders the information.
+			// {
+			// 	path: paths.ticket,
+			// 	element: <ViewTicketPage />,
+			// },
 		];
 
 		// Routes requiring basic authentication
