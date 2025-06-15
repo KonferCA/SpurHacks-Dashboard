@@ -45,10 +45,8 @@ import {
 	FaClock,
 	FaCrown,
 	FaEdit,
-	FaPlus,
 	FaRegCheckCircle,
 	FaTimes,
-	FaTrash,
 } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
 import { PiUserCirclePlusFill, PiPlusCircleBold } from "react-icons/pi";
@@ -63,19 +61,24 @@ export const MyTeamPage = () => {
 	const [teamName, setTeamName] = useState("");
 	const [isTeamNameTaken, setIsTeamNameTaken] = useState(false);
 	const [invalidTeamName, setInvalidTeamName] = useState(false);
-	const [invalidEmailMsg] = useState("");
+	const [invalidEmailMsg, setInvalidEmailMsg] = useState("");
 	const [email, setEmail] = useState("");
 	const [disableAllActions, setDisableAllActions] = useState(false);
 	const [isEditingTeamName, setIsEditingTeamName] = useState(false);
 	const [showConfirmDeleteTeam, setShowConfirmDeleteTeam] = useState(false);
 	const [showConfirmLeaveTeam, setShowConfirmLeaveTeam] = useState(false);
-	const [memberToRemove, setMemberToRemove] = useState<{email: string, name: string} | null>(null);
+	const [memberToRemove, setMemberToRemove] = useState<{
+		email: string;
+		name: string;
+	} | null>(null);
 	// holds ths emails of the members to be removed
 	const [toBeRemovedTeammates, setToBeRemovedTeammates] = useState<string[]>(
 		[],
 	);
 	// holds profile picture URLs for team members
-	const [memberProfilePictures, setMemberProfilePictures] = useState<Record<string, string | null>>({});
+	const [memberProfilePictures, setMemberProfilePictures] = useState<
+		Record<string, string | null>
+	>({});
 	const { currentUser } = useAuth();
 	const debounce = useDebounce(
 		//@ts-ignore
@@ -95,7 +98,7 @@ export const MyTeamPage = () => {
 	} = useDisclosure();
 	const {
 		open: isTeammatesOpen,
-		onOpen: onTeammatesOpen,
+		onOpen: _onTeammatesOpen,
 		onClose: onTeammatesClose,
 	} = useDisclosure();
 	const {
@@ -153,9 +156,14 @@ export const MyTeamPage = () => {
 	};
 
 	const sendInvitation = async () => {
-		setIsLoading(true);
+		// resent error msg
+		setInvalidEmailMsg("");
 		// do not allow to send another invitation to someone who is already in the team
-		if (team?.members?.some((m) => m.email === email)) return;
+		if (team?.members?.some((m) => m.email === email)) {
+			setInvalidEmailMsg(`User with email '${email}' is already in the team.`);
+			return;
+		}
+		setIsLoading(true);
 		setDisableAllActions(true);
 		try {
 			const { status, data, message } = await inviteMember([email]);
@@ -164,26 +172,29 @@ export const MyTeamPage = () => {
 					const newTeam = { ...team };
 					newTeam.members.push(data);
 					setTeam(newTeam);
-					
+
 					// convert profile picture ref to URL for the new member
 					if (data.profilePictureRef) {
 						try {
 							const url = await getProfilePictureURL(data.profilePictureRef);
-							setMemberProfilePictures(prev => ({
+							setMemberProfilePictures((prev) => ({
 								...prev,
-								[data.email]: url
+								[data.email]: url,
 							}));
 						} catch (e) {
-							console.error("Failed to get profile picture URL for new member:", e);
-							setMemberProfilePictures(prev => ({
+							console.error(
+								"Failed to get profile picture URL for new member:",
+								e,
+							);
+							setMemberProfilePictures((prev) => ({
 								...prev,
-								[data.email]: null
+								[data.email]: null,
 							}));
 						}
 					} else {
-						setMemberProfilePictures(prev => ({
+						setMemberProfilePictures((prev) => ({
 							...prev,
-							[data.email]: null
+							[data.email]: null,
 						}));
 					}
 				}
@@ -259,7 +270,7 @@ export const MyTeamPage = () => {
 
 	const handleLeaveTeamConfirmed = async () => {
 		if (!currentUser?.email) return;
-		
+
 		setIsLoading(true);
 
 		try {
@@ -268,7 +279,8 @@ export const MyTeamPage = () => {
 			if (res.status === 200) {
 				toaster.success({
 					title: "Left Team Successfully!",
-					description: "You have left the team. Feel free to join another team or create your own!",
+					description:
+						"You have left the team. Feel free to join another team or create your own!",
 				});
 				flushSync(() => {
 					// reset all states
@@ -354,11 +366,11 @@ export const MyTeamPage = () => {
 				);
 				// @ts-ignore
 				setTeam({ ...team, members: newMembers });
-				
+
 				// remove profile pictures for removed members
-				setMemberProfilePictures(prev => {
+				setMemberProfilePictures((prev) => {
 					const updated = { ...prev };
-					toBeRemovedTeammates.forEach(email => {
+					toBeRemovedTeammates.forEach((email) => {
 						delete updated[email];
 					});
 					return updated;
@@ -383,7 +395,7 @@ export const MyTeamPage = () => {
 
 	const handleRemoveMemberConfirmed = async () => {
 		if (!memberToRemove) return;
-		
+
 		try {
 			setDisableAllActions(true);
 			const res = await removeMembers([memberToRemove.email]);
@@ -398,14 +410,14 @@ export const MyTeamPage = () => {
 				);
 				// @ts-ignore
 				setTeam({ ...team, members: newMembers });
-				
+
 				// remove profile picture for removed member
-				setMemberProfilePictures(prev => {
+				setMemberProfilePictures((prev) => {
 					const updated = { ...prev };
 					delete updated[memberToRemove.email];
 					return updated;
 				});
-				
+
 				// reset the member to remove
 				setMemberToRemove(null);
 			} else {
@@ -434,25 +446,28 @@ export const MyTeamPage = () => {
 			]);
 			setTeam(team.data || null);
 			setInvitations(invitations.data || []);
-			
+
 			// convert profile picture refs to URLs for team members
 			if (team.data?.members) {
 				const profilePictureUrls: Record<string, string | null> = {};
-				
+
 				for (const member of team.data.members) {
 					if (member.profilePictureRef) {
 						try {
 							const url = await getProfilePictureURL(member.profilePictureRef);
 							profilePictureUrls[member.email] = url;
 						} catch (e) {
-							console.error(`Failed to get profile picture URL for ${member.email}:`, e);
+							console.error(
+								`Failed to get profile picture URL for ${member.email}:`,
+								e,
+							);
 							profilePictureUrls[member.email] = null;
 						}
 					} else {
 						profilePictureUrls[member.email] = null;
 					}
 				}
-				
+
 				setMemberProfilePictures(profilePictureUrls);
 			}
 		} catch (e) {
@@ -549,7 +564,7 @@ export const MyTeamPage = () => {
 				</Flex>
 			) : (
 				<Flex direction="column" gap={6} maxWidth="590px">
-										{team ? (
+					{team ? (
 						<Card.Root rounded="4xl">
 							<CardHeader>
 								<Flex direction="column" gap={4}>
@@ -613,13 +628,15 @@ export const MyTeamPage = () => {
 											</Flex>
 										</Flex>
 									)}
-									
+
 									{/* Team Members Header */}
-									<Heading size="md" color="fg.muted">MEMBERS</Heading>
+									<Heading size="md" color="fg.muted">
+										MEMBERS
+									</Heading>
 								</Flex>
 							</CardHeader>
-								<CardBody>
-																	{team?.members
+							<CardBody>
+								{team?.members
 									?.sort((a, b) => {
 										// put the owner first
 										if (a.email === team.ownerEmail) return -1;
@@ -651,7 +668,9 @@ export const MyTeamPage = () => {
 													>
 														{memberProfilePictures[member.email] ? (
 															<Image
-																src={memberProfilePictures[member.email] as string}
+																src={
+																	memberProfilePictures[member.email] as string
+																}
 																alt={`${member.firstName} ${member.lastName}`}
 																boxSize="full"
 																borderRadius="full"
@@ -668,11 +687,12 @@ export const MyTeamPage = () => {
 																fontSize="sm"
 																fontWeight="bold"
 															>
-																{member.firstName.charAt(0)}{member.lastName.charAt(0)}
+																{member.firstName.charAt(0)}
+																{member.lastName.charAt(0)}
 															</Box>
 														)}
 													</Box>
-													
+
 													<Box>
 														<Flex align="center" gap={2}>
 															<Box display={{ base: "block", md: "none" }}>
@@ -704,32 +724,46 @@ export const MyTeamPage = () => {
 																</Tooltip>
 															)}
 														</Flex>
-														<Text 
-															color="fg.muted" 
+														<Text
+															color="fg.muted"
 															fontSize="sm"
 															overflow="hidden"
 															textOverflow="ellipsis"
 															whiteSpace="nowrap"
-															maxWidth={{ base: "120px", sm: "160px", md: "200px", lg: "none" }}
+															maxWidth={{
+																base: "120px",
+																sm: "160px",
+																md: "200px",
+																lg: "none",
+															}}
 														>
 															{member.email}
 														</Text>
 													</Box>
 												</Flex>
 												<Flex align="center" gap={{ base: 1, md: 2 }}>
-													{team.isOwner && member.email !== currentUser?.email && (
-														<Box
-															cursor="pointer"
-															onClick={() => handleRemoveMemberClick(member.email, `${member.firstName} ${member.lastName}`)}
-															_hover={{ color: "red.400" }}
-															color="red.400"
-														>
-															<Icon as={FaRegCircleXmark} fontSize={{ base: "xl", md: "2xl" }} />
-														</Box>
-													)}
+													{team.isOwner &&
+														member.email !== currentUser?.email && (
+															<Box
+																cursor="pointer"
+																onClick={() =>
+																	handleRemoveMemberClick(
+																		member.email,
+																		`${member.firstName} ${member.lastName}`,
+																	)
+																}
+																_hover={{ color: "red.400" }}
+																color="red.400"
+															>
+																<Icon
+																	as={FaRegCircleXmark}
+																	fontSize={{ base: "xl", md: "2xl" }}
+																/>
+															</Box>
+														)}
 													{member.status === "accepted" ? (
-														<Icon 
-															as={FaRegCheckCircle} 
+														<Icon
+															as={FaRegCheckCircle}
 															fontSize={{ base: "xl", md: "2xl" }}
 															color="green.400"
 															display={{ base: "none", md: "block" }}
@@ -752,167 +786,188 @@ export const MyTeamPage = () => {
 													)}
 												</Flex>
 											</Flex>
-											
-											{memberToRemove && memberToRemove.email === member.email && (
-												<Flex
-													justify="space-between"
-													align="center"
-													py={3}
-													px={{ base: 3, md: 4 }}
-													bg="#1f1e2d"
-													borderRadius="2xl"
-													mb={2}
-												>
-													<Text color="offwhite.primary/30">
-														Are you sure?
-													</Text>
-													<Flex gap={1} align="center">
-														<Box
-															cursor="pointer"
-															onClick={() => setMemberToRemove(null)}
-															_hover={{ color: "gray.300" }}
-															color="gray.400"
-															p={1}
-														>
-															<Icon as={FaTimes} fontSize="lg" />
-														</Box>
+
+											{memberToRemove &&
+												memberToRemove.email === member.email && (
+													<Flex
+														justify="space-between"
+														align="center"
+														py={3}
+														px={{ base: 3, md: 4 }}
+														bg="#1f1e2d"
+														borderRadius="2xl"
+														mb={2}
+													>
+														<Text color="offwhite.primary/30">
+															Are you sure?
+														</Text>
+														<Flex gap={1} align="center">
+															<Box
+																cursor="pointer"
+																onClick={() => setMemberToRemove(null)}
+																_hover={{ color: "gray.300" }}
+																color="gray.400"
+																p={1}
+															>
+																<Icon as={FaTimes} fontSize="lg" />
+															</Box>
+															<Button
+																bg="#1f1e2e"
+																color="brand.error"
+																rounded="full"
+																onClick={handleRemoveMemberConfirmed}
+																size="sm"
+															>
+																Remove
+															</Button>
+														</Flex>
+													</Flex>
+												)}
+										</Box>
+									))}
+
+								{team.isOwner && team?.members && team.members.length < 4 && (
+									<Flex
+										justify="space-between"
+										align="center"
+										py={2}
+										px={2}
+										cursor="pointer"
+										onClick={onInviteOpen}
+										borderRadius="2xl"
+										border="3px dashed"
+										borderColor="#1f1e2d"
+										mt={2}
+									>
+										<Flex align="center" gap={{ base: 2, md: 3 }}>
+											{/* User Plus Icon */}
+											<Box
+												boxSize={{ base: "36px", md: "40px" }}
+												display="flex"
+												alignItems="center"
+												justifyContent="center"
+												flexShrink={0}
+											>
+												<Icon
+													as={PiUserCirclePlusFill}
+													color="#686486"
+													fontSize={{ base: "2xl", md: "3xl" }}
+												/>
+											</Box>
+
+											<Box>
+												<Text fontWeight="medium" color="fg.muted">
+													Add a member
+												</Text>
+											</Box>
+										</Flex>
+										<Box
+											cursor="pointer"
+											onClick={(e) => {
+												e.stopPropagation();
+												onInviteOpen();
+											}}
+										>
+											<Icon
+												as={PiPlusCircleBold}
+												color="#686486"
+												fontSize={{ base: "xl", md: "2xl" }}
+											/>
+										</Box>
+									</Flex>
+								)}
+							</CardBody>
+							<CardFooter>
+								<Flex direction="column" gap={4} w="full">
+									{/* Danger Zone */}
+									<Flex
+										direction="column"
+										gap={4}
+										pt={4}
+										borderTop="1px solid"
+										borderColor="border.subtle"
+									>
+										<Text
+											color="fg.muted"
+											fontSize="sm"
+											fontWeight="bold"
+											textTransform="uppercase"
+										>
+											DANGER ZONE
+										</Text>
+
+										{team.isOwner ? (
+											<>
+												<Text color="fg.muted" fontSize="sm">
+													Disbanding the team removes all current members. This
+													action cannot be undone.
+												</Text>
+												<Flex direction="column" gap={2}>
+													<Button
+														bg="brand.error"
+														color="offwhite.primary"
+														rounded="full"
+														onClick={handleDeleteTeamClick}
+														alignSelf="start"
+													>
+														DISBAND TEAM
+													</Button>
+													{showConfirmDeleteTeam && (
 														<Button
 															bg="#1f1e2e"
 															color="brand.error"
 															rounded="full"
-															onClick={handleRemoveMemberConfirmed}
-															size="sm"
+															onClick={handleDeleteTeamConfirmed}
+															mt={-2}
+															alignSelf="start"
 														>
-															Remove
+															<Text color="offwhite.primary/30" pr={2}>
+																Are you sure?
+															</Text>{" "}
+															Yes, delete my team.
 														</Button>
-													</Flex>
+													)}
 												</Flex>
-											)}
-										</Box>
-									))}
-									
-									{team.isOwner && team?.members && team.members.length < 4 && (
-										<Flex
-											justify="space-between"
-											align="center"
-											py={2}
-											px={2}
-											cursor="pointer"
-											onClick={onInviteOpen}
-											borderRadius="2xl"
-											border="3px dashed"
-											borderColor="#1f1e2d"
-											mt={2}
-										>
-											<Flex align="center" gap={{ base: 2, md: 3 }}>
-												{/* User Plus Icon */}
-												<Box
-													boxSize={{ base: "36px", md: "40px" }}
-													display="flex"
-													alignItems="center"
-													justifyContent="center"
-													flexShrink={0}
-												>
-													<Icon as={PiUserCirclePlusFill} color="#686486" fontSize={{ base: "2xl", md: "3xl" }} />
-												</Box>
-												
-												<Box>
-													<Text fontWeight="medium" color="fg.muted">
-														Add a member
-													</Text>
-												</Box>
-											</Flex>
-											<Box
-												cursor="pointer"
-												onClick={(e) => {
-													e.stopPropagation();
-													onInviteOpen();
-												}}
-											>
-												<Icon as={PiPlusCircleBold} color="#686486" fontSize={{ base: "xl", md: "2xl" }} />
-											</Box>
-										</Flex>
-									)}
-									
-
-								</CardBody>
-								<CardFooter>
-									<Flex direction="column" gap={4} w="full">
-										{/* Danger Zone */}
-										<Flex direction="column" gap={4} pt={4} borderTop="1px solid" borderColor="border.subtle">
-											<Text color="fg.muted" fontSize="sm" fontWeight="bold" textTransform="uppercase">
-												DANGER ZONE
-											</Text>
-											
-											{team.isOwner ? (
-												<>
-													<Text color="fg.muted" fontSize="sm">
-														Disbanding the team removes all current members. This action cannot be undone.
-													</Text>
-													<Flex direction="column" gap={2}>
+											</>
+										) : (
+											<>
+												<Text color="fg.muted" fontSize="sm">
+													Leaving the team will remove you from all team
+													activities. You can join another team or create your
+													own.
+												</Text>
+												<Flex direction="column" gap={2}>
+													<Button
+														bg="brand.error"
+														color="offwhite.primary"
+														rounded="full"
+														onClick={handleLeaveTeamClick}
+														alignSelf="start"
+													>
+														LEAVE TEAM
+													</Button>
+													{showConfirmLeaveTeam && (
 														<Button
-															bg="brand.error"
-															color="offwhite.primary"
+															bg="#1f1e2e"
+															color="brand.error"
 															rounded="full"
-															onClick={handleDeleteTeamClick}
+															onClick={handleLeaveTeamConfirmed}
+															mt={-2}
 															alignSelf="start"
 														>
-															DISBAND TEAM
+															<Text color="offwhite.primary/30" pr={2}>
+																Are you sure?
+															</Text>{" "}
+															Yes, leave team.
 														</Button>
-														{showConfirmDeleteTeam && (
-															<Button
-																bg="#1f1e2e"
-																color="brand.error"
-																rounded="full"
-																onClick={handleDeleteTeamConfirmed}
-																mt={-2}
-																alignSelf="start"
-															>
-																<Text color="offwhite.primary/30" pr={2}>
-																	Are you sure?
-																</Text>{" "}
-																Yes, delete my team.
-															</Button>
-														)}
-													</Flex>
-												</>
-											) : (
-												<>
-													<Text color="fg.muted" fontSize="sm">
-														Leaving the team will remove you from all team activities. You can join another team or create your own.
-													</Text>
-													<Flex direction="column" gap={2}>
-														<Button
-															bg="brand.error"
-															color="offwhite.primary"
-															rounded="full"
-															onClick={handleLeaveTeamClick}
-															alignSelf="start"
-														>
-															LEAVE TEAM
-														</Button>
-														{showConfirmLeaveTeam && (
-															<Button
-																bg="#1f1e2e"
-																color="brand.error"
-																rounded="full"
-																onClick={handleLeaveTeamConfirmed}
-																mt={-2}
-																alignSelf="start"
-															>
-																<Text color="offwhite.primary/30" pr={2}>
-																	Are you sure?
-																</Text>{" "}
-																Yes, leave team.
-															</Button>
-														)}
-													</Flex>
-												</>
-											)}
-										</Flex>
+													)}
+												</Flex>
+											</>
+										)}
 									</Flex>
-								</CardFooter>
-							</Card.Root>
+								</Flex>
+							</CardFooter>
+						</Card.Root>
 					) : (
 						<Card.Root rounded="4xl">
 							<CardHeader>
