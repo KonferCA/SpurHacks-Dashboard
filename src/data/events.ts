@@ -53,7 +53,7 @@ export const schedule = [
 	{
 		id: "fri-hacking-start",
 		startDate: new Date("2025-06-20T22:00:00"),
-		endTime: new Date("2025-06-20T22:30:00"),
+		endTime: new Date("2025-06-20T22:00:00"),
 		color: "purple",
 		title: "Hacking Starts",
 		location: "Hacking Spaces",
@@ -227,7 +227,7 @@ export const schedule = [
 	{
 		id: "sun-hacking-ends",
 		startDate: new Date("2025-06-22T11:00:00"),
-		endTime: new Date("2025-06-22T11:30:00"),
+		endTime: new Date("2025-06-22T11:00:00"),
 		color: "purple",
 		title: "Hacking Ends",
 		location: "Hacking Spaces",
