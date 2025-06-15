@@ -11,6 +11,7 @@ import {
 	getTeam,
 	inviteMember,
 	isTeamNameAvailable,
+	leaveTeam,
 	rejectInvitation,
 	removeMembers,
 	updateTeamName,
@@ -45,9 +46,12 @@ import {
 	FaCrown,
 	FaEdit,
 	FaPlus,
+	FaRegCheckCircle,
 	FaTimes,
 	FaTrash,
 } from "react-icons/fa";
+import { FaRegCircleXmark } from "react-icons/fa6";
+import { PiUserCirclePlusFill, PiPlusCircleBold } from "react-icons/pi";
 import { z } from "zod";
 
 export const MyTeamPage = () => {
@@ -63,7 +67,9 @@ export const MyTeamPage = () => {
 	const [email, setEmail] = useState("");
 	const [disableAllActions, setDisableAllActions] = useState(false);
 	const [isEditingTeamName, setIsEditingTeamName] = useState(false);
-	const [confirmDelete, setConfirmDelete] = useState("");
+	const [showConfirmDeleteTeam, setShowConfirmDeleteTeam] = useState(false);
+	const [showConfirmLeaveTeam, setShowConfirmLeaveTeam] = useState(false);
+	const [memberToRemove, setMemberToRemove] = useState<{email: string, name: string} | null>(null);
 	// holds ths emails of the members to be removed
 	const [toBeRemovedTeammates, setToBeRemovedTeammates] = useState<string[]>(
 		[],
@@ -208,7 +214,15 @@ export const MyTeamPage = () => {
 		}
 	};
 
-	const handleDeleteTeam = async () => {
+	const handleDeleteTeamClick = () => {
+		setShowConfirmDeleteTeam((prev) => !prev);
+	};
+
+	const handleLeaveTeamClick = () => {
+		setShowConfirmLeaveTeam((prev) => !prev);
+	};
+
+	const handleDeleteTeamConfirmed = async () => {
 		setIsLoading(true);
 
 		try {
@@ -224,7 +238,7 @@ export const MyTeamPage = () => {
 					setTeam(null);
 					setTeamName("");
 					setEmail("");
-					setConfirmDelete("");
+					setShowConfirmDeleteTeam(false);
 				});
 			} else {
 				toaster.error({
@@ -235,6 +249,43 @@ export const MyTeamPage = () => {
 		} catch (e) {
 			toaster.error({
 				title: "Error Deleting Team",
+				description: `Please try again later. (${(e as Error).message})`,
+			});
+		} finally {
+			setIsLoading(false);
+			setDisableAllActions(false);
+		}
+	};
+
+	const handleLeaveTeamConfirmed = async () => {
+		if (!currentUser?.email) return;
+		
+		setIsLoading(true);
+
+		try {
+			setDisableAllActions(true);
+			const res = await leaveTeam();
+			if (res.status === 200) {
+				toaster.success({
+					title: "Left Team Successfully!",
+					description: "You have left the team. Feel free to join another team or create your own!",
+				});
+				flushSync(() => {
+					// reset all states
+					setTeam(null);
+					setTeamName("");
+					setEmail("");
+					setShowConfirmLeaveTeam(false);
+				});
+			} else {
+				toaster.error({
+					title: "Oh no... Something went wrong",
+					description: res.message,
+				});
+			}
+		} catch (e) {
+			toaster.error({
+				title: "Error Leaving Team",
 				description: `Please try again later. (${(e as Error).message})`,
 			});
 		} finally {
@@ -322,6 +373,53 @@ export const MyTeamPage = () => {
 			});
 		} finally {
 			setIsLoading(false);
+			setDisableAllActions(false);
+		}
+	};
+
+	const handleRemoveMemberClick = (memberEmail: string, memberName: string) => {
+		setMemberToRemove({ email: memberEmail, name: memberName });
+	};
+
+	const handleRemoveMemberConfirmed = async () => {
+		if (!memberToRemove) return;
+		
+		try {
+			setDisableAllActions(true);
+			const res = await removeMembers([memberToRemove.email]);
+			if (res.status === 200) {
+				toaster.success({
+					title: "Member Removed",
+					description: `${memberToRemove.name} has been removed from the team.`,
+				});
+				// set new team members list
+				const newMembers = team?.members.filter(
+					(m) => m.email !== memberToRemove.email,
+				);
+				// @ts-ignore
+				setTeam({ ...team, members: newMembers });
+				
+				// remove profile picture for removed member
+				setMemberProfilePictures(prev => {
+					const updated = { ...prev };
+					delete updated[memberToRemove.email];
+					return updated;
+				});
+				
+				// reset the member to remove
+				setMemberToRemove(null);
+			} else {
+				toaster.error({
+					title: "Error removing member",
+					description: res.message,
+				});
+			}
+		} catch (e) {
+			toaster.error({
+				title: "Error removing member",
+				description: `Please try again later. (${(e as Error).message})`,
+			});
+		} finally {
 			setDisableAllActions(false);
 		}
 	};
@@ -451,34 +549,11 @@ export const MyTeamPage = () => {
 				</Flex>
 			) : (
 				<Flex direction="column" gap={6} maxWidth="590px">
-					{team ? (
-						<Flex direction="column" gap={6}>
-							<Card.Root rounded="4xl">
-								<CardHeader>
-									<Flex justify="space-between" align="center" w="full">
-										<Heading size="md">My Team</Heading>
-										{team.isOwner && (
-											<Button
-												variant="outline"
-												rounded="full"
-												borderColor="fg.muted"
-												borderWidth="2px"
-												color="fg.muted"
-												bg="transparent"
-												size="sm"
-												_hover={{
-													borderColor: "red.500",
-													color: "red.500",
-													bg: "transparent",
-												}}
-												onClick={() => setConfirmDelete("delete")}
-											>
-												Delete Team
-											</Button>
-										)}
-									</Flex>
-								</CardHeader>
-								<CardBody>
+										{team ? (
+						<Card.Root rounded="4xl">
+							<CardHeader>
+								<Flex direction="column" gap={4}>
+									{/* Team Name Section */}
 									{isEditingTeamName ? (
 										<Flex>
 											<Field.Root invalid={invalidTeamName || isTeamNameTaken}>
@@ -518,90 +593,56 @@ export const MyTeamPage = () => {
 											</Button>
 										</Flex>
 									) : (
-										<Flex align="center">
-											<Heading size="md">{team.teamName}</Heading>
-											{team.isOwner && (
-												<Button
-													onClick={() => {
-														setIsEditingTeamName(true);
-														setTeamName(team.teamName);
-													}}
-													ml={2}
-													size="sm"
-													rounded="full"
-													variant="outline"
-												>
-													<FaEdit />
-												</Button>
-											)}
-										</Flex>
-									)}
-								</CardBody>
-								{confirmDelete === "delete" && (
-									<CardFooter>
-										<Flex direction="column" gap={2}>
-											<Text color="fg.muted" fontSize="sm">
-												Are you sure you want to delete your team? This action
-												is irreversible.
-											</Text>
-											<Flex mt={2} gap={2}>
-												<Button
-													variant="outline"
-													rounded="full"
-													borderColor="fg.muted"
-													borderWidth="2px"
-													color="fg.muted"
-													bg="transparent"
-													size="sm"
-													_hover={{
-														borderColor: "red.500",
-														color: "red.500",
-														bg: "transparent",
-													}}
-													onClick={handleDeleteTeam}
-												>
-													Yes, Delete
-												</Button>
-												<Button
-													onClick={() => setConfirmDelete("")}
-													variant="outline"
-													rounded="full"
-													size="sm"
-												>
-													Cancel
-												</Button>
+										<Flex align="center" justify="space-between" w="full">
+											<Flex align="center">
+												<Heading size="lg">{team.teamName}</Heading>
+												{team.isOwner && (
+													<Button
+														onClick={() => {
+															setIsEditingTeamName(true);
+															setTeamName(team.teamName);
+														}}
+														ml={2}
+														size="sm"
+														rounded="full"
+														variant="outline"
+													>
+														<FaEdit />
+													</Button>
+												)}
 											</Flex>
 										</Flex>
-									</CardFooter>
-								)}
-							</Card.Root>
-
-							<Card.Root rounded="4xl">
-								<CardHeader>
-									<Heading size="md">Team Members</Heading>
-								</CardHeader>
+									)}
+									
+									{/* Team Members Header */}
+									<Heading size="md" color="fg.muted">MEMBERS</Heading>
+								</Flex>
+							</CardHeader>
 								<CardBody>
-									{team?.members
-										?.sort((a, b) => {
-											// put the owner first
-											if (a.email === team.ownerEmail) return -1;
-											if (b.email === team.ownerEmail) return 1;
-											return 0;
-										})
-										?.map((member) => (
+																	{team?.members
+									?.sort((a, b) => {
+										// put the owner first
+										if (a.email === team.ownerEmail) return -1;
+										if (b.email === team.ownerEmail) return 1;
+										return 0;
+									})
+									?.map((member) => (
+										<Box key={member.email}>
 											<Flex
-												key={member.email}
 												justify="space-between"
 												align="center"
-												py={2}
-												px={2}
+												py={3}
+												px={{ base: 3, md: 4 }}
+												bg="#1f1e2d"
+												borderRadius="2xl"
+												mb={2}
 											>
-												<Flex align="center" gap={3}>
+												<Flex align="center" gap={{ base: 2, md: 3 }}>
 													{/* Profile Picture */}
 													<Box
-														boxSize="40px"
+														boxSize={{ base: "36px", md: "40px" }}
 														borderRadius="full"
-														bg="gray.600"
+														bg="#1f1e2d"
 														display="flex"
 														alignItems="center"
 														justifyContent="center"
@@ -619,7 +660,7 @@ export const MyTeamPage = () => {
 														) : (
 															<Box
 																boxSize="full"
-																bg="gray.600"
+																bg="#1f1e2d"
 																display="flex"
 																alignItems="center"
 																justifyContent="center"
@@ -663,82 +704,215 @@ export const MyTeamPage = () => {
 																</Tooltip>
 															)}
 														</Flex>
-														<Text color="fg.muted" fontSize="sm">
+														<Text 
+															color="fg.muted" 
+															fontSize="sm"
+															overflow="hidden"
+															textOverflow="ellipsis"
+															whiteSpace="nowrap"
+															maxWidth={{ base: "120px", sm: "160px", md: "200px", lg: "none" }}
+														>
 															{member.email}
 														</Text>
 													</Box>
 												</Flex>
-												<Badge
-													bg={
-														member.status === "pending"
-															? "bg.hover"
-															: "transparent"
-													}
-													borderStyle={
-														member.status === "pending" ? "none" : "solid"
-													}
-													borderWidth="2px"
-													borderColor={
-														member.status === "pending"
-															? "transparent"
-															: "green.400"
-													}
-													color={
-														member.status === "pending"
-															? "fg.muted"
-															: "green.400"
-													}
-													size="lg"
-													rounded="full"
-													px={3}
-													py={1}
-													textTransform="uppercase"
-													flexShrink={0}
-													display={{ base: "none", md: "block" }}
-												>
-													{member.status}
-												</Badge>
+												<Flex align="center" gap={{ base: 1, md: 2 }}>
+													{team.isOwner && member.email !== currentUser?.email && (
+														<Box
+															cursor="pointer"
+															onClick={() => handleRemoveMemberClick(member.email, `${member.firstName} ${member.lastName}`)}
+															_hover={{ color: "red.400" }}
+															color="red.400"
+														>
+															<Icon as={FaRegCircleXmark} fontSize={{ base: "xl", md: "2xl" }} />
+														</Box>
+													)}
+													{member.status === "accepted" ? (
+														<Icon 
+															as={FaRegCheckCircle} 
+															fontSize={{ base: "xl", md: "2xl" }}
+															color="green.400"
+															display={{ base: "none", md: "block" }}
+														/>
+													) : (
+														<Badge
+															bg="bg.hover"
+															borderStyle="none"
+															color="fg.muted"
+															size="lg"
+															rounded="full"
+															px={3}
+															py={1}
+															textTransform="uppercase"
+															flexShrink={0}
+															display={{ base: "none", md: "block" }}
+														>
+															{member.status}
+														</Badge>
+													)}
+												</Flex>
 											</Flex>
-										))}
-								</CardBody>
-								<CardFooter flexWrap="wrap">
-									<Flex gap={2} flexWrap="wrap">
-										{team.isOwner && (
-											<>
-												<Button
-													onClick={onInviteOpen}
-													rounded="full"
-													colorScheme="brand"
-													color="black"
-													size="sm"
+											
+											{memberToRemove && memberToRemove.email === member.email && (
+												<Flex
+													justify="space-between"
+													align="center"
+													py={3}
+													px={{ base: 3, md: 4 }}
+													bg="#1f1e2d"
+													borderRadius="2xl"
+													mb={2}
 												>
-													<Icon as={FaPlus} mr={2} />
-													Invite Members
-												</Button>
-												<Button
-													onClick={onTeammatesOpen}
-													rounded="full"
-													variant="outline"
-													size="sm"
-												>
-													<Icon as={FaTrash} mr={2} />
-													Remove Members
-												</Button>
-											</>
-										)}
-										<Button
-											onClick={onInvitationsOpen}
-											rounded="full"
-											variant="outline"
-											size="sm"
+													<Text color="offwhite.primary/30">
+														Are you sure?
+													</Text>
+													<Flex gap={1} align="center">
+														<Box
+															cursor="pointer"
+															onClick={() => setMemberToRemove(null)}
+															_hover={{ color: "gray.300" }}
+															color="gray.400"
+															p={1}
+														>
+															<Icon as={FaTimes} fontSize="lg" />
+														</Box>
+														<Button
+															bg="#1f1e2e"
+															color="brand.error"
+															rounded="full"
+															onClick={handleRemoveMemberConfirmed}
+															size="sm"
+														>
+															Remove
+														</Button>
+													</Flex>
+												</Flex>
+											)}
+										</Box>
+									))}
+									
+									{team.isOwner && team?.members && team.members.length < 4 && (
+										<Flex
+											justify="space-between"
+											align="center"
+											py={2}
+											px={2}
+											cursor="pointer"
+											onClick={onInviteOpen}
+											borderRadius="2xl"
+											border="3px dashed"
+											borderColor="#1f1e2d"
+											mt={2}
 										>
-											<Icon as={FaCheck} mr={2} />
-											View Invitations
-										</Button>
+											<Flex align="center" gap={{ base: 2, md: 3 }}>
+												{/* User Plus Icon */}
+												<Box
+													boxSize={{ base: "36px", md: "40px" }}
+													display="flex"
+													alignItems="center"
+													justifyContent="center"
+													flexShrink={0}
+												>
+													<Icon as={PiUserCirclePlusFill} color="#686486" fontSize={{ base: "2xl", md: "3xl" }} />
+												</Box>
+												
+												<Box>
+													<Text fontWeight="medium" color="fg.muted">
+														Add a member
+													</Text>
+												</Box>
+											</Flex>
+											<Box
+												cursor="pointer"
+												onClick={(e) => {
+													e.stopPropagation();
+													onInviteOpen();
+												}}
+											>
+												<Icon as={PiPlusCircleBold} color="#686486" fontSize={{ base: "xl", md: "2xl" }} />
+											</Box>
+										</Flex>
+									)}
+									
+
+								</CardBody>
+								<CardFooter>
+									<Flex direction="column" gap={4} w="full">
+										{/* Danger Zone */}
+										<Flex direction="column" gap={4} pt={4} borderTop="1px solid" borderColor="border.subtle">
+											<Text color="fg.muted" fontSize="sm" fontWeight="bold" textTransform="uppercase">
+												DANGER ZONE
+											</Text>
+											
+											{team.isOwner ? (
+												<>
+													<Text color="fg.muted" fontSize="sm">
+														Disbanding the team removes all current members. This action cannot be undone.
+													</Text>
+													<Flex direction="column" gap={2}>
+														<Button
+															bg="brand.error"
+															color="offwhite.primary"
+															rounded="full"
+															onClick={handleDeleteTeamClick}
+															alignSelf="start"
+														>
+															DISBAND TEAM
+														</Button>
+														{showConfirmDeleteTeam && (
+															<Button
+																bg="#1f1e2e"
+																color="brand.error"
+																rounded="full"
+																onClick={handleDeleteTeamConfirmed}
+																mt={-2}
+																alignSelf="start"
+															>
+																<Text color="offwhite.primary/30" pr={2}>
+																	Are you sure?
+																</Text>{" "}
+																Yes, delete my team.
+															</Button>
+														)}
+													</Flex>
+												</>
+											) : (
+												<>
+													<Text color="fg.muted" fontSize="sm">
+														Leaving the team will remove you from all team activities. You can join another team or create your own.
+													</Text>
+													<Flex direction="column" gap={2}>
+														<Button
+															bg="brand.error"
+															color="offwhite.primary"
+															rounded="full"
+															onClick={handleLeaveTeamClick}
+															alignSelf="start"
+														>
+															LEAVE TEAM
+														</Button>
+														{showConfirmLeaveTeam && (
+															<Button
+																bg="#1f1e2e"
+																color="brand.error"
+																rounded="full"
+																onClick={handleLeaveTeamConfirmed}
+																mt={-2}
+																alignSelf="start"
+															>
+																<Text color="offwhite.primary/30" pr={2}>
+																	Are you sure?
+																</Text>{" "}
+																Yes, leave team.
+															</Button>
+														)}
+													</Flex>
+												</>
+											)}
+										</Flex>
 									</Flex>
 								</CardFooter>
 							</Card.Root>
-						</Flex>
 					) : (
 						<Card.Root rounded="4xl">
 							<CardHeader>

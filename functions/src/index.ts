@@ -751,6 +751,7 @@ export {
 	getTeam,
 	inviteMember,
 	isTeamNameAvailable,
+	leaveTeam,
 	rejectInvitation,
 	removeMembers,
 	updateTeamName,

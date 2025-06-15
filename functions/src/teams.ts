@@ -460,10 +460,22 @@ export const inviteMember = onCall<EmailsRequest>(async (req) => {
 		}
 
 		const members = await internalGetMembersByTeam(team.id);
-		if (members.length + req.data.emails.length > 4) {
-			logInfo("Team size cannot exceed 4 members", { func, uid });
+		const pendingInvitations = await internalGetInvitedMembersByTeam(team.id);
+		const totalCurrentSize = members.length + pendingInvitations.length;
+		
+		logInfo("Team size check", { 
+			func, 
+			currentMembers: members.length, 
+			pendingInvitations: pendingInvitations.length,
+			totalCurrentSize,
+			newInvites: req.data.emails.length,
+			wouldBeTotal: totalCurrentSize + req.data.emails.length
+		});
+		
+		if (totalCurrentSize + req.data.emails.length > 4) {
+			logInfo("Team size would exceed 4 members with pending invitations", { func, uid });
 			return response(HttpStatus.BAD_REQUEST, {
-				message: "Team size cannot exceed 4 members",
+				message: `Team size cannot exceed 4 members. Current team has ${members.length} members and ${pendingInvitations.length} pending invitations.`,
 			});
 		}
 
@@ -729,6 +741,114 @@ export const removeMembers = onCall<EmailsRequest>(async (req) => {
 });
 
 /**
+ * Allow any team member to leave their current team.
+ * This is different from removeMembers which only allows team owners to remove other members.
+ */
+export const leaveTeam = onCall(async (req) => {
+	const func = "leaveTeam";
+	logInfo("=== LEAVE TEAM FUNCTION STARTED ===", { func });
+
+	if (!req.auth) {
+		logInfo("No auth found", { func });
+		return response(HttpStatus.UNAUTHORIZED, {
+			message: "Unauthorized",
+		});
+	}
+
+	logInfo("Auth found", { func, uid: req.auth.uid });
+
+	// check environment variable
+	const allowLeaveTeam = process.env.TEAMS_ALLOW_LEAVE_TEAM;
+	logInfo("Environment variable check", { func, allowLeaveTeam, expected: "true" });
+
+	if (allowLeaveTeam !== "true") {
+		logInfo("Leave team not allowed by environment variable", { func, allowLeaveTeam });
+		return response(HttpStatus.BAD_REQUEST, {
+			message: "Leave team not available.",
+		});
+	}
+
+	logInfo("Environment check passed", { func });
+
+	try {
+		logInfo("Starting team lookup process", { func, uid: req.auth.uid });
+		
+		// get the user's profile to find their current team
+		logInfo("Querying user profile", { func, collection: USER_PROFILES_COLLECTION });
+		const profileSnap = await getFirestore()
+			.collection(USER_PROFILES_COLLECTION)
+			.where("uid", "==", req.auth.uid)
+			.where("teamId", "!=", "")
+			.get();
+		
+		logInfo("Profile query completed", { func, docsFound: profileSnap.docs.length });
+		
+		if (profileSnap.empty) {
+			logInfo("User is not in any team", { func, uid: req.auth.uid });
+			return response(HttpStatus.BAD_REQUEST, {
+				message: "You are not in any team.",
+			});
+		}
+
+		const userProfile = profileSnap.docs[0].data() as UserProfile;
+		const teamId = userProfile.teamId;
+
+		logInfo("Found user's team", { func, teamId, uid: req.auth.uid, userProfile });
+
+		// get the team to check if user is the owner
+		logInfo("Querying team document", { func, teamId });
+		const teamSnap = await getFirestore()
+			.collection(TEAMS_COLLECTION)
+			.doc(teamId)
+			.get();
+
+		logInfo("Team query completed", { func, teamExists: teamSnap.exists });
+
+		if (!teamSnap.exists) {
+			logInfo("Team not found", { func, teamId });
+			return response(HttpStatus.NOT_FOUND, {
+				message: "Team not found.",
+			});
+		}
+
+		const team = teamSnap.data() as Team;
+		logInfo("Team data retrieved", { func, team });
+
+		// check if the user is the team owner
+		if (team.owner === req.auth.uid) {
+			logInfo("Team owner cannot leave team, must delete team instead", { func, uid: req.auth.uid });
+			return response(HttpStatus.BAD_REQUEST, {
+				message: "As team owner, you must delete the team instead of leaving it.",
+			});
+		}
+
+		// remove the user from the team by clearing their teamId
+		logInfo("Removing user from team", { func, uid: req.auth.uid, teamId, docId: profileSnap.docs[0].id });
+		await getFirestore()
+			.collection(USER_PROFILES_COLLECTION)
+			.doc(profileSnap.docs[0].id)
+			.update({ teamId: "" });
+
+		logInfo("User successfully left team", { func, uid: req.auth.uid, teamId });
+
+	} catch (error) {
+		logError("Failed to leave team - DETAILED ERROR", { 
+			func, 
+			error: error,
+			errorMessage: (error as Error).message,
+			errorStack: (error as Error).stack,
+			uid: req.auth?.uid 
+		});
+		return response(HttpStatus.INTERNAL_SERVER_ERROR, {
+			message: "Failed to leave team.",
+		});
+	}
+
+	logInfo("=== LEAVE TEAM FUNCTION COMPLETED SUCCESSFULLY ===", { func });
+	return response(HttpStatus.OK, { message: "Successfully left team." });
+});
+
+/**
  * Delete the team the requesting user owns.
  */
 export const deleteTeam = onCall(async (req) => {
@@ -851,6 +971,18 @@ export const validateTeamInvitation = onCall<CodeRequest>(async (req) => {
 			});
 		}
 
+		// check if the team already has 4 members (safeguard)
+		logInfo("Checking current team size", { func, teamId: invitation.teamId });
+		const currentMembers = await internalGetMembersByTeam(invitation.teamId);
+		logInfo("Current team members count", { func, memberCount: currentMembers.length });
+		
+		if (currentMembers.length >= 4) {
+			logInfo("Team is already full (4 members)", { func, teamId: invitation.teamId });
+			return response(HttpStatus.BAD_REQUEST, {
+				message: "This team is already full. Teams can have a maximum of 4 members.",
+			});
+		}
+
 		// if we found a member, then it is for the requesting user
 		// now we update the status of the member
 		logInfo("Updating invitation status", { func });
@@ -896,6 +1028,36 @@ export const validateTeamInvitation = onCall<CodeRequest>(async (req) => {
 				.doc(snap.docs[0].id)
 				.update({ teamId: invitation.teamId });
 		}
+
+		// check if team now has 4 members and automatically remove all pending invitations
+		logInfo("Checking if team is now full after adding new member", { func, teamId: invitation.teamId });
+		const updatedMembers = await internalGetMembersByTeam(invitation.teamId);
+		logInfo("Updated team members count", { func, memberCount: updatedMembers.length });
+		
+		if (updatedMembers.length >= 4) {
+			logInfo("Team is now full, removing all pending invitations", { func, teamId: invitation.teamId });
+			
+			// get all pending invitations for this team
+			const pendingInvitationsSnap = await getFirestore()
+				.collection(INVITATIONS_COLLECTION)
+				.where("teamId", "==", invitation.teamId)
+				.where("status", "==", "pending")
+				.get();
+			
+			logInfo("Found pending invitations to remove", { func, count: pendingInvitationsSnap.docs.length });
+			
+			// remove all pending invitations using batch
+			if (!pendingInvitationsSnap.empty) {
+				const batch = getFirestore().batch();
+				pendingInvitationsSnap.docs.forEach((doc) => {
+					logInfo("Removing pending invitation", { func, invitationId: doc.id });
+					batch.delete(doc.ref);
+				});
+				await batch.commit();
+				logInfo("All pending invitations removed", { func, teamId: invitation.teamId });
+			}
+		}
+
 	} catch (error) {
 		logError("Failed to update user profile", {
 			func,
