@@ -30,8 +30,8 @@ export const MyTicketPage = () => {
 	const { data: qrCodeValue, isLoading: isLoadingQRCode } = useQuery({
 		queryKey: ["my-ticket", currentUser],
 		queryFn: async () => {
-			if (!currentUser) return;
-			let ticketID: string | undefined = `ticket_${currentUser.uid}`;
+			if (!currentUser) return "";
+			let ticketID: string = `ticket_${currentUser.uid}`;
 			let exists = false;
 			try {
 				exists = await existsTicketDoc(ticketID);
@@ -45,14 +45,14 @@ export const MyTicketPage = () => {
 				} catch (error) {
 					console.error("Failed to create ticket", error);
 					// set ticketID to undefined to indicate that the generation has gone wrong.
-					ticketID = undefined;
+					ticketID = "";
 				}
 			}
 
 			// final qr code value has to be the url if ticketID is defined (no errors) otherwise it should return undefined
 			return ticketID
 				? `${import.meta.env.VITE_BASE_URL}/ticket/${ticketID}`
-				: undefined;
+				: "";
 		},
 		enabled: !!currentUser,
 		refetchOnMount: false,
