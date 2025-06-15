@@ -11,6 +11,7 @@ import {
 } from "firebase-functions/v2/https";
 import { PKPass } from "passkit-generator";
 import { v4 as uuidv4 } from "uuid";
+import { cors } from "./cors";
 
 const signerCert = process.env.APPLE_WALLET_CERTS_SIGNER_CERT;
 const signerKey = process.env.APPLE_WALLET_CERTS_SIGNER_KEY;
@@ -20,7 +21,7 @@ const signerKeyPassphrase =
 const teamIdentifier = process.env.APPLE_WALLET_CERTS_TEAM_ID;
 
 // apple wallet ticket
-export const createTicket = onCall(async (request: CallableRequest) => {
+export const createTicket = onCall({ cors }, async (request: CallableRequest) => {
 	if (!request.auth) {
 		logError("createTicket: Not authenticated - request.auth is missing.");
 		throw new HttpsError("permission-denied", "Not authenticated");

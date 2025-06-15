@@ -111,7 +111,7 @@ const Router = ({ routes }: { routes: RouteConfig[] }) => {
 
 	// Create the data router using createRoutesFromElements
 	const router = useMemo(
-		() => createBrowserRouter(createRoutesFromElements(<>{routeElements}</>)),
+		() => createBrowserRouter(createRoutesFromElements(routeElements)),
 		[routeElements],
 	);
 
@@ -181,7 +181,6 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 					hasVerifiedEmail,
 					isAccepted,
 					hasRSVP,
-
 				],
 			},
 			{

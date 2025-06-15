@@ -94,7 +94,7 @@ interface ScheduleGridProps {
 export function ScheduleGrid(props: ScheduleGridProps) {
 	const { timeRange } = props;
 	const totalHours = timeRange.end - timeRange.start;
-	const timelineWidth = Math.max(800, totalHours * 120);
+	const timelineWidth = Math.max(800, totalHours * 150);
 
 	const timeSlots = [];
 
@@ -416,7 +416,8 @@ export function ScheduleGridItem({
 	const leftPosition = 16 + startOffset * (timelineWidth - 32);
 	const normalWidth = duration * (timelineWidth - 32);
 
-	const minWidth = 140;
+	const eventDurationHours = endHour - startHour;
+	const minWidth = eventDurationHours <= 0.5 ? 60 : Math.min(80, normalWidth);
 	const maxWidth = (3 / totalHours) * (timelineWidth - 32);
 
 	const displayWidth = isExpanded
