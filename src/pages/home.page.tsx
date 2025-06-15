@@ -10,7 +10,6 @@ import { paths } from "@/providers/RoutesProvider/data";
 import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
 	Accordion,
-	Alert,
 	Badge,
 	Box,
 	Button,
@@ -93,19 +92,6 @@ const HomePage = () => {
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
-				{/* TODO: this alert needs to be removed once all the features are implemented and released on June 13th. */}
-				{currentApplication?.rsvp &&
-					currentApplication.applicationStatus === "accepted" && (
-						<Alert.Root rounded="4xl">
-							<Alert.Indicator />
-							<Alert.Content>
-								<Alert.Title>
-									June 13th: Schedule drops, tickets go live, teams form! Don't
-									miss out - come back then!
-								</Alert.Title>
-							</Alert.Content>
-						</Alert.Root>
-					)}
 				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					{/* Only render if no submission or application status is not accepted and has not rsvp'd */}
 					{(!currentApplication ||
