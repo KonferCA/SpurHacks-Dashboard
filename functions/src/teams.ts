@@ -117,11 +117,11 @@ async function internalGetMembersByTeam(teamId: string): Promise<MemberData[]> {
 		.where("teamId", "==", teamId)
 		.get();
 	const members: MemberData[] = [];
-	
+
 	// process each member and fetch their profile picture
 	for (const doc of snap.docs) {
 		const data = doc.data() as UserProfile;
-		
+
 		// get profile picture from socials collection
 		let profilePictureRef: string | undefined;
 		try {
@@ -130,15 +130,18 @@ async function internalGetMembersByTeam(teamId: string): Promise<MemberData[]> {
 				.where("uid", "==", data.uid)
 				.limit(1)
 				.get();
-			
+
 			if (!socialsSnap.empty) {
 				const socialsData = socialsSnap.docs[0].data();
 				profilePictureRef = socialsData.profilePictureRef || undefined;
 			}
 		} catch (e) {
-			logError("Failed to get profile picture for member", { uid: data.uid, error: e });
+			logError("Failed to get profile picture for member", {
+				uid: data.uid,
+				error: e,
+			});
 		}
-		
+
 		members.push({
 			firstName: data.firstName,
 			lastName: data.lastName,
@@ -147,7 +150,7 @@ async function internalGetMembersByTeam(teamId: string): Promise<MemberData[]> {
 			profilePictureRef,
 		});
 	}
-	
+
 	return members;
 }
 
@@ -164,11 +167,11 @@ async function internalGetInvitedMembersByTeam(
 		.where("status", "==", "pending")
 		.get();
 	const members: MemberData[] = [];
-	
+
 	// process each invited member and fetch their profile picture
 	for (const doc of snap.docs) {
 		const data = doc.data() as Invitation;
-		
+
 		// get profile picture from socials collection using userId if available
 		let profilePictureRef: string | undefined;
 		if (data.userId) {
@@ -178,16 +181,19 @@ async function internalGetInvitedMembersByTeam(
 					.where("uid", "==", data.userId)
 					.limit(1)
 					.get();
-				
+
 				if (!socialsSnap.empty) {
 					const socialsData = socialsSnap.docs[0].data();
 					profilePictureRef = socialsData.profilePictureRef || undefined;
 				}
 			} catch (e) {
-				logError("Failed to get profile picture for invited member", { uid: data.userId, error: e });
+				logError("Failed to get profile picture for invited member", {
+					uid: data.userId,
+					error: e,
+				});
 			}
 		}
-		
+
 		members.push({
 			firstName: data.firstName,
 			lastName: data.lastName,
@@ -196,7 +202,7 @@ async function internalGetInvitedMembersByTeam(
 			profilePictureRef,
 		});
 	}
-	
+
 	return members;
 }
 
@@ -462,18 +468,21 @@ export const inviteMember = onCall<EmailsRequest>(async (req) => {
 		const members = await internalGetMembersByTeam(team.id);
 		const pendingInvitations = await internalGetInvitedMembersByTeam(team.id);
 		const totalCurrentSize = members.length + pendingInvitations.length;
-		
-		logInfo("Team size check", { 
-			func, 
-			currentMembers: members.length, 
+
+		logInfo("Team size check", {
+			func,
+			currentMembers: members.length,
 			pendingInvitations: pendingInvitations.length,
 			totalCurrentSize,
 			newInvites: req.data.emails.length,
-			wouldBeTotal: totalCurrentSize + req.data.emails.length
+			wouldBeTotal: totalCurrentSize + req.data.emails.length,
 		});
-		
+
 		if (totalCurrentSize + req.data.emails.length > 4) {
-			logInfo("Team size would exceed 4 members with pending invitations", { func, uid });
+			logInfo("Team size would exceed 4 members with pending invitations", {
+				func,
+				uid,
+			});
 			return response(HttpStatus.BAD_REQUEST, {
 				message: `Team size cannot exceed 4 members. Current team has ${members.length} members and ${pendingInvitations.length} pending invitations.`,
 			});
@@ -759,10 +768,17 @@ export const leaveTeam = onCall(async (req) => {
 
 	// check environment variable
 	const allowLeaveTeam = process.env.TEAMS_ALLOW_LEAVE_TEAM;
-	logInfo("Environment variable check", { func, allowLeaveTeam, expected: "true" });
+	logInfo("Environment variable check", {
+		func,
+		allowLeaveTeam,
+		expected: "true",
+	});
 
 	if (allowLeaveTeam !== "true") {
-		logInfo("Leave team not allowed by environment variable", { func, allowLeaveTeam });
+		logInfo("Leave team not allowed by environment variable", {
+			func,
+			allowLeaveTeam,
+		});
 		return response(HttpStatus.BAD_REQUEST, {
 			message: "Leave team not available.",
 		});
@@ -772,17 +788,23 @@ export const leaveTeam = onCall(async (req) => {
 
 	try {
 		logInfo("Starting team lookup process", { func, uid: req.auth.uid });
-		
+
 		// get the user's profile to find their current team
-		logInfo("Querying user profile", { func, collection: USER_PROFILES_COLLECTION });
+		logInfo("Querying user profile", {
+			func,
+			collection: USER_PROFILES_COLLECTION,
+		});
 		const profileSnap = await getFirestore()
 			.collection(USER_PROFILES_COLLECTION)
 			.where("uid", "==", req.auth.uid)
 			.where("teamId", "!=", "")
 			.get();
-		
-		logInfo("Profile query completed", { func, docsFound: profileSnap.docs.length });
-		
+
+		logInfo("Profile query completed", {
+			func,
+			docsFound: profileSnap.docs.length,
+		});
+
 		if (profileSnap.empty) {
 			logInfo("User is not in any team", { func, uid: req.auth.uid });
 			return response(HttpStatus.BAD_REQUEST, {
@@ -793,7 +815,12 @@ export const leaveTeam = onCall(async (req) => {
 		const userProfile = profileSnap.docs[0].data() as UserProfile;
 		const teamId = userProfile.teamId;
 
-		logInfo("Found user's team", { func, teamId, uid: req.auth.uid, userProfile });
+		logInfo("Found user's team", {
+			func,
+			teamId,
+			uid: req.auth.uid,
+			userProfile,
+		});
 
 		// get the team to check if user is the owner
 		logInfo("Querying team document", { func, teamId });
@@ -816,28 +843,36 @@ export const leaveTeam = onCall(async (req) => {
 
 		// check if the user is the team owner
 		if (team.owner === req.auth.uid) {
-			logInfo("Team owner cannot leave team, must delete team instead", { func, uid: req.auth.uid });
+			logInfo("Team owner cannot leave team, must delete team instead", {
+				func,
+				uid: req.auth.uid,
+			});
 			return response(HttpStatus.BAD_REQUEST, {
-				message: "As team owner, you must delete the team instead of leaving it.",
+				message:
+					"As team owner, you must delete the team instead of leaving it.",
 			});
 		}
 
 		// remove the user from the team by clearing their teamId
-		logInfo("Removing user from team", { func, uid: req.auth.uid, teamId, docId: profileSnap.docs[0].id });
+		logInfo("Removing user from team", {
+			func,
+			uid: req.auth.uid,
+			teamId,
+			docId: profileSnap.docs[0].id,
+		});
 		await getFirestore()
 			.collection(USER_PROFILES_COLLECTION)
 			.doc(profileSnap.docs[0].id)
 			.update({ teamId: "" });
 
 		logInfo("User successfully left team", { func, uid: req.auth.uid, teamId });
-
 	} catch (error) {
-		logError("Failed to leave team - DETAILED ERROR", { 
-			func, 
+		logError("Failed to leave team - DETAILED ERROR", {
+			func,
 			error: error,
 			errorMessage: (error as Error).message,
 			errorStack: (error as Error).stack,
-			uid: req.auth?.uid 
+			uid: req.auth?.uid,
 		});
 		return response(HttpStatus.INTERNAL_SERVER_ERROR, {
 			message: "Failed to leave team.",
@@ -974,12 +1009,19 @@ export const validateTeamInvitation = onCall<CodeRequest>(async (req) => {
 		// check if the team already has 4 members (safeguard)
 		logInfo("Checking current team size", { func, teamId: invitation.teamId });
 		const currentMembers = await internalGetMembersByTeam(invitation.teamId);
-		logInfo("Current team members count", { func, memberCount: currentMembers.length });
-		
+		logInfo("Current team members count", {
+			func,
+			memberCount: currentMembers.length,
+		});
+
 		if (currentMembers.length >= 4) {
-			logInfo("Team is already full (4 members)", { func, teamId: invitation.teamId });
+			logInfo("Team is already full (4 members)", {
+				func,
+				teamId: invitation.teamId,
+			});
 			return response(HttpStatus.BAD_REQUEST, {
-				message: "This team is already full. Teams can have a maximum of 4 members.",
+				message:
+					"This team is already full. Teams can have a maximum of 4 members.",
 			});
 		}
 
@@ -1030,34 +1072,51 @@ export const validateTeamInvitation = onCall<CodeRequest>(async (req) => {
 		}
 
 		// check if team now has 4 members and automatically remove all pending invitations
-		logInfo("Checking if team is now full after adding new member", { func, teamId: invitation.teamId });
+		logInfo("Checking if team is now full after adding new member", {
+			func,
+			teamId: invitation.teamId,
+		});
 		const updatedMembers = await internalGetMembersByTeam(invitation.teamId);
-		logInfo("Updated team members count", { func, memberCount: updatedMembers.length });
-		
+		logInfo("Updated team members count", {
+			func,
+			memberCount: updatedMembers.length,
+		});
+
 		if (updatedMembers.length >= 4) {
-			logInfo("Team is now full, removing all pending invitations", { func, teamId: invitation.teamId });
-			
+			logInfo("Team is now full, removing all pending invitations", {
+				func,
+				teamId: invitation.teamId,
+			});
+
 			// get all pending invitations for this team
 			const pendingInvitationsSnap = await getFirestore()
 				.collection(INVITATIONS_COLLECTION)
 				.where("teamId", "==", invitation.teamId)
 				.where("status", "==", "pending")
 				.get();
-			
-			logInfo("Found pending invitations to remove", { func, count: pendingInvitationsSnap.docs.length });
-			
+
+			logInfo("Found pending invitations to remove", {
+				func,
+				count: pendingInvitationsSnap.docs.length,
+			});
+
 			// remove all pending invitations using batch
 			if (!pendingInvitationsSnap.empty) {
 				const batch = getFirestore().batch();
 				pendingInvitationsSnap.docs.forEach((doc) => {
-					logInfo("Removing pending invitation", { func, invitationId: doc.id });
+					logInfo("Removing pending invitation", {
+						func,
+						invitationId: doc.id,
+					});
 					batch.delete(doc.ref);
 				});
 				await batch.commit();
-				logInfo("All pending invitations removed", { func, teamId: invitation.teamId });
+				logInfo("All pending invitations removed", {
+					func,
+					teamId: invitation.teamId,
+				});
 			}
 		}
-
 	} catch (error) {
 		logError("Failed to update user profile", {
 			func,

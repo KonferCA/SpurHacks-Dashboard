@@ -1,1 +1,1 @@
-export { ProfilePicture } from "./ProfilePicture"; 
+export { ProfilePicture } from "./ProfilePicture";

@@ -10,7 +10,6 @@ import {
 } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { useUserStore } from "@/stores/user.store";
-import { ProfilePicture } from "./ProfilePicture";
 import {
 	Box,
 	Link as ChakraLink,
@@ -36,6 +35,7 @@ import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
 import { FiChevronUp, FiLogOut, FiMapPin } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { ProfilePicture } from "./ProfilePicture";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
 
@@ -374,10 +374,7 @@ const NavbarContent = ({
 						gap={2}
 					>
 						<Flex flex="1" justifyContent="start" alignItems="center" gap={4}>
-							<ProfilePicture
-								size="2rem"
-								borderRadius="full"
-							/>
+							<ProfilePicture size="2rem" borderRadius="full" />
 							<Flex
 								flex="1"
 								justifyContent="start"

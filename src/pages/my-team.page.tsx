@@ -4,6 +4,7 @@ import { toaster } from "@/components/ui/toaster";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/providers";
+import { getProfilePictureURL } from "@/services/firebase/files";
 import {
 	createTeam,
 	deleteTeam,
@@ -19,7 +20,6 @@ import {
 } from "@/services/firebase/teams";
 import type { Invitation } from "@/services/firebase/types";
 import { useUserStore } from "@/stores/user.store";
-import { getProfilePictureURL } from "@/services/firebase/files";
 import {
 	Badge,
 	Box,
@@ -33,9 +33,9 @@ import {
 	Flex,
 	Heading,
 	Icon,
+	Image,
 	Input,
 	Text,
-	Image,
 	useDisclosure,
 } from "@chakra-ui/react";
 import { type FormEventHandler, useEffect, useRef, useState } from "react";
@@ -49,7 +49,7 @@ import {
 	FaTimes,
 } from "react-icons/fa";
 import { FaRegCircleXmark } from "react-icons/fa6";
-import { PiUserCirclePlusFill, PiPlusCircleBold } from "react-icons/pi";
+import { PiPlusCircleBold, PiUserCirclePlusFill } from "react-icons/pi";
 import { z } from "zod";
 
 export const MyTeamPage = () => {

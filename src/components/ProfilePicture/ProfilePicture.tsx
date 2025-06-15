@@ -9,11 +9,11 @@ interface ProfilePictureProps {
 	className?: string;
 }
 
-export const ProfilePicture = ({ 
-	size = "40px", 
+export const ProfilePicture = ({
+	size = "40px",
 	fallbackSrc = "/default-profile.png",
 	borderRadius = "full",
-	className = ""
+	className = "",
 }: ProfilePictureProps) => {
 	const { profilePictureUrl } = useProfilePicture();
 	const { currentUser } = useAuth();
@@ -40,4 +40,4 @@ export const ProfilePicture = ({
 			}}
 		/>
 	);
-}; 
+};

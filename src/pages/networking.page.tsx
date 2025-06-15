@@ -1,47 +1,40 @@
 import { PageWrapper, Select, TextInput } from "@/components";
 import { LoadingAnimation } from "@/components/LoadingAnimation";
+import { TextArea } from "@/components/TextArea/TextArea";
 import { toaster } from "@/components/ui/toaster";
+import { pronouns } from "@/data";
+import type { ApplicationData } from "@/forms/hacker-form/types";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
-import { getResumeURL, uploadGeneralResume, uploadProfilePicture, getProfilePictureURL } from "@/services/firebase/files";
+import {
+	getProfilePictureURL,
+	getResumeURL,
+	uploadGeneralResume,
+	uploadProfilePicture,
+} from "@/services/firebase/files";
 import type { ResumeVisibility, Socials } from "@/services/firebase/types";
 import { getSocials, updateSocials } from "@/services/firebase/user";
 import { useUserStore } from "@/stores/user.store";
-import { TextArea } from "@/components/TextArea/TextArea";
-import { motion, AnimatePresence } from "framer-motion";
 import {
 	Box,
 	Button,
-	Dialog,
-	Flex,
-	Text,
-	FileUpload,
-	Stack,
-	Image,
-	Icon,
 	Checkbox,
+	Dialog,
+	FileUpload,
+	Flex,
+	Icon,
+	Image,
+	Stack,
+	Text,
 } from "@chakra-ui/react";
-import { pronouns } from "@/data";
 import { Cog6ToothIcon } from "@heroicons/react/24/outline";
-import {
-	useEffect,
-	useRef,
-	useState,
-} from "react";
-import {
-	MdOpenInNew,
-	MdLink,
-	MdOutlineFileUpload,
-} from "react-icons/md";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { IoMdTrash } from "react-icons/io";
-import type {
-	ApplicationData,
-} from "@/forms/hacker-form/types";
+import { MdLink, MdOpenInNew, MdOutlineFileUpload } from "react-icons/md";
 
 import { useProfilePicture } from "@/hooks/use-profile-picture";
 import { updateSubmittedApplicationField } from "@/services/firebase/application";
-
-
 
 const mediaTypes: { name: string; key: keyof Socials }[] = [
 	{ name: "LinkedIn", key: "linkedin" },
@@ -97,24 +90,27 @@ export const NetworkingPage = () => {
 	const [resumeConsent, setResumeConsent] = useState(false);
 	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-	const [isUploadingProfilePicture, setIsUploadingProfilePicture] = useState(false);
+	const [isUploadingProfilePicture, setIsUploadingProfilePicture] =
+		useState(false);
 
 	const [aboutMe, setAboutMe] = useState(userApp?.aboutMe ?? "");
 	const [aboutMeUnsaved, setAboutMeUnsaved] = useState(false);
-	
+
 	// unified profile picture success state
 	const [profilePictureSuccess, setProfilePictureSuccess] = useState(false);
-	const [profilePictureSuccessMessage, setProfilePictureSuccessMessage] = useState("");
+	const [profilePictureSuccessMessage, setProfilePictureSuccessMessage] =
+		useState("");
 
 	// global loading and success states
 	const [isGlobalSaving, setIsGlobalSaving] = useState(false);
 	const [globalSaveSuccess, setGlobalSaveSuccess] = useState(false);
 
 	// global unsaved changes state
-	const hasUnsavedChanges = aboutMeUnsaved || 
-		Object.values(unsavedChanges).some(Boolean) || 
-		(!!file && resumeConsent) || 
-		(newVisibility !== (socials?.resumeVisibility ?? "Public"));
+	const hasUnsavedChanges =
+		aboutMeUnsaved ||
+		Object.values(unsavedChanges).some(Boolean) ||
+		(!!file && resumeConsent) ||
+		newVisibility !== (socials?.resumeVisibility ?? "Public");
 
 	// helper for profile picture success states
 	const showProfilePictureSuccess = (message: string) => {
@@ -133,28 +129,26 @@ export const NetworkingPage = () => {
 			y: 20,
 			transition: {
 				duration: 0.3,
-				ease: "easeInOut" as const
-			}
+				ease: "easeInOut" as const,
+			},
 		},
 		visible: {
 			opacity: 1,
 			y: 0,
 			transition: {
 				duration: 0.3,
-				ease: "easeInOut" as const
-			}
+				ease: "easeInOut" as const,
+			},
 		},
 		exit: {
 			opacity: 0,
 			y: 20,
 			transition: {
 				duration: 0.3,
-				ease: "easeInOut" as const
-			}
-		}
+				ease: "easeInOut" as const,
+			},
+		},
 	};
-
-
 
 	useEffect(() => {
 		if (userApp) {
@@ -189,7 +183,7 @@ export const NetworkingPage = () => {
 			setMediaValues({ ...socials });
 			setResumeConsent(socials.resumeConsent ?? false);
 			if (socials.profilePictureRef) {
-				getProfilePictureURL(socials.profilePictureRef).then(url => {
+				getProfilePictureURL(socials.profilePictureRef).then((url) => {
 					if (url) setProfilePictureUrl(url);
 				});
 			}
@@ -238,7 +232,7 @@ export const NetworkingPage = () => {
 		const selectedFiles = Array.from(e.target.files || []);
 		const selectedFile = selectedFiles[0] ?? null;
 		setFile(selectedFile);
-		
+
 		if (selectedFile) {
 			const url = URL.createObjectURL(selectedFile);
 			setPreviewUrl(url);
@@ -250,7 +244,9 @@ export const NetworkingPage = () => {
 		}
 	};
 
-	const handleProfilePictureInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
+	const handleProfilePictureInput = async (
+		e: React.ChangeEvent<HTMLInputElement>,
+	) => {
 		const selectedFiles = Array.from(e.target.files || []);
 		const file = selectedFiles[0];
 		if (!file || !currentUser || isUploadingProfilePicture) return;
@@ -284,11 +280,11 @@ export const NetworkingPage = () => {
 				...mediaValues,
 				profilePictureRef: ref,
 			});
-			
+
 			// update the profile picture url for display
 			const url = await getProfilePictureURL(ref);
 			if (url) setProfilePictureUrl(url);
-			
+
 			toaster.success({
 				title: "Profile picture uploaded successfully!",
 			});
@@ -302,8 +298,6 @@ export const NetworkingPage = () => {
 			setIsUploadingProfilePicture(false);
 		}
 	};
-
-
 
 	const removeProfilePicture = async () => {
 		try {
@@ -343,7 +337,7 @@ export const NetworkingPage = () => {
 	// global save function
 	const handleGlobalSave = async () => {
 		setIsGlobalSaving(true);
-		
+
 		try {
 			const savePromises = [];
 
@@ -359,28 +353,51 @@ export const NetworkingPage = () => {
 
 			// check if existing resume without consent
 			if (mediaValues.resumeRef && !resumeConsent) {
-				throw new Error("Please consent to resume sharing or remove your existing resume before saving.");
+				throw new Error(
+					"Please consent to resume sharing or remove your existing resume before saving.",
+				);
 			}
 
 			// save resume if file selected and consent given
 			if (file && currentUser) {
 				if (!resumeConsent) {
-					throw new Error("Please consent to resume sharing before uploading your resume.");
+					throw new Error(
+						"Please consent to resume sharing before uploading your resume.",
+					);
 				}
 				const ref = await uploadGeneralResume(file, currentUser.uid);
-				const updatedMediaValues = { ...mediaValues, resumeRef: ref, resumeFilename: file.name, resumeConsent: true };
+				const updatedMediaValues = {
+					...mediaValues,
+					resumeRef: ref,
+					resumeFilename: file.name,
+					resumeConsent: true,
+				};
 				savePromises.push(updateSocials(updatedMediaValues));
 				setMediaValues(updatedMediaValues);
-				setSocials(socials ? { ...socials, resumeRef: ref, resumeFilename: file.name, resumeConsent: true } : null);
+				setSocials(
+					socials
+						? {
+								...socials,
+								resumeRef: ref,
+								resumeFilename: file.name,
+								resumeConsent: true,
+							}
+						: null,
+				);
 				setFile(null);
 			}
 
 			// save resume settings if changed
 			if (newVisibility !== (socials?.resumeVisibility ?? "Public")) {
-				const updatedMediaValues = { ...mediaValues, resumeVisibility: newVisibility };
+				const updatedMediaValues = {
+					...mediaValues,
+					resumeVisibility: newVisibility,
+				};
 				savePromises.push(updateSocials(updatedMediaValues));
 				setMediaValues(updatedMediaValues);
-				setSocials(socials ? { ...socials, resumeVisibility: newVisibility } : null);
+				setSocials(
+					socials ? { ...socials, resumeVisibility: newVisibility } : null,
+				);
 			}
 
 			await Promise.all(savePromises);
@@ -392,7 +409,7 @@ export const NetworkingPage = () => {
 
 			// update global state
 			setSocials(mediaValues);
-			
+
 			// clear all unsaved states
 			setAboutMeUnsaved(false);
 			setUnsavedChanges({});
@@ -408,7 +425,6 @@ export const NetworkingPage = () => {
 				title: "Changes saved successfully!",
 				description: "All your updates have been saved.",
 			});
-
 		} catch (error) {
 			const errorMessage = (error as Error).message;
 			if (errorMessage.includes("consent")) {
@@ -468,24 +484,24 @@ export const NetworkingPage = () => {
 	const removeResume = async () => {
 		if (mediaValues.resumeRef) {
 			try {
-							await updateSocials({
-				...mediaValues,
-				resumeRef: "",
-				resumeFilename: "",
-				resumeVisibility: "Public",
-			});
-			setSocials({
-				...mediaValues,
-				resumeRef: "",
-				resumeFilename: "",
-				resumeVisibility: "Public",
-			});
-			setMediaValues({
-				...mediaValues,
-				resumeRef: "",
-				resumeFilename: "",
-				resumeVisibility: "Public",
-			});
+				await updateSocials({
+					...mediaValues,
+					resumeRef: "",
+					resumeFilename: "",
+					resumeVisibility: "Public",
+				});
+				setSocials({
+					...mediaValues,
+					resumeRef: "",
+					resumeFilename: "",
+					resumeVisibility: "Public",
+				});
+				setMediaValues({
+					...mediaValues,
+					resumeRef: "",
+					resumeFilename: "",
+					resumeVisibility: "Public",
+				});
 				setFile(null);
 				setIsResumeSettingsOpened(false);
 				toaster.success({
@@ -529,13 +545,16 @@ export const NetworkingPage = () => {
 		}
 	};
 
-
-
 	if (isLoading) return <LoadingAnimation />;
 
 	return (
 		<PageWrapper>
-			<Flex direction="column" maxW="700px" gap={5} pb={hasUnsavedChanges ? "120px" : "0"}>
+			<Flex
+				direction="column"
+				maxW="700px"
+				gap={5}
+				pb={hasUnsavedChanges ? "120px" : "0"}
+			>
 				{/* Profile picture */}
 				<Text color="offwhite.primary/30">PERSONAL INFORMATION</Text>
 				<Flex alignItems="center" gap={3}>
@@ -549,7 +568,9 @@ export const NetworkingPage = () => {
 						overflow="hidden"
 					>
 						<Image
-							src={profilePictureUrl || user?.photoURL || "/default-profile.png"}
+							src={
+								profilePictureUrl || user?.photoURL || "/default-profile.png"
+							}
 							alt="Profile Picture"
 							boxSize="full"
 							borderRadius="full"
@@ -584,11 +605,18 @@ export const NetworkingPage = () => {
 								disabled={isUploadingProfilePicture || profilePictureSuccess}
 								transition="all 0.3s ease-in-out"
 							>
-								{profilePictureSuccess ? profilePictureSuccessMessage : isUploadingProfilePicture ? "REMOVING..." : "REMOVE PICTURE"}
+								{profilePictureSuccess
+									? profilePictureSuccessMessage
+									: isUploadingProfilePicture
+										? "REMOVING..."
+										: "REMOVE PICTURE"}
 							</Button>
 						) : (
 							<FileUpload.Root accept="image/*" maxW="full">
-								<FileUpload.HiddenInput onChange={handleProfilePictureInput} disabled={isUploadingProfilePicture} />
+								<FileUpload.HiddenInput
+									onChange={handleProfilePictureInput}
+									disabled={isUploadingProfilePicture}
+								/>
 								<FileUpload.Trigger asChild>
 									<Button
 										size="sm"
@@ -596,19 +624,27 @@ export const NetworkingPage = () => {
 										variant="outline"
 										fontWeight="bold"
 										loading={isUploadingProfilePicture}
-										disabled={isUploadingProfilePicture || profilePictureSuccess}
+										disabled={
+											isUploadingProfilePicture || profilePictureSuccess
+										}
 										bg="transparent"
 										color={profilePictureSuccess ? "#10b981" : "inherit"}
 										borderColor={profilePictureSuccess ? "#10b981" : "inherit"}
 										borderWidth={profilePictureSuccess ? "2px" : "1px"}
-										_hover={{ 
+										_hover={{
 											bg: "transparent",
 											color: profilePictureSuccess ? "#10b981" : "inherit",
-											borderColor: profilePictureSuccess ? "#10b981" : "inherit"
+											borderColor: profilePictureSuccess
+												? "#10b981"
+												: "inherit",
 										}}
 										transition="all 0.3s ease-in-out"
 									>
-										{profilePictureSuccess ? profilePictureSuccessMessage : isUploadingProfilePicture ? "UPLOADING..." : "SET PICTURE"}
+										{profilePictureSuccess
+											? profilePictureSuccessMessage
+											: isUploadingProfilePicture
+												? "UPLOADING..."
+												: "SET PICTURE"}
 									</Button>
 								</FileUpload.Trigger>
 							</FileUpload.Root>
@@ -682,13 +718,7 @@ export const NetworkingPage = () => {
 				<Text color="offwhite.primary/30" mt={6}>
 					CONNECTIONS
 				</Text>
-				<Box
-					display="flex"
-					flexDirection="column"
-					maxW="md"
-					gap={5}
-					mt={2}
-				>
+				<Box display="flex" flexDirection="column" maxW="md" gap={5} mt={2}>
 					{mediaTypes.map(({ name, key }) => (
 						<Box key={key} rounded="xl" display="flex" flexDirection="column">
 							<Flex mb={2} justify="space-between" align="center">
@@ -798,7 +828,7 @@ export const NetworkingPage = () => {
 								cursor="pointer"
 								w="full"
 								_hover={{
-									borderColor: "#2d2a3d"
+									borderColor: "#2d2a3d",
 								}}
 								transition="all 0.2s"
 							>
@@ -815,15 +845,18 @@ export const NetworkingPage = () => {
 										<Box flex={1} h="1px" bg="#4e4b66" />
 									</Flex>
 									<FileUpload.Trigger asChild>
-										<Text
-											fontSize="md"
-											cursor="pointer"
-										>
-											<Text as="span" color="gray.300" fontWeight="bold" _hover={{ color: "gray.200" }}>
+										<Text fontSize="md" cursor="pointer">
+											<Text
+												as="span"
+												color="gray.300"
+												fontWeight="bold"
+												_hover={{ color: "gray.200" }}
+											>
 												Choose a file
 											</Text>
 											<Text as="span" color="#4e4b66">
-												{" "}to upload
+												{" "}
+												to upload
 											</Text>
 										</Text>
 									</FileUpload.Trigger>
@@ -838,10 +871,18 @@ export const NetworkingPage = () => {
 							{file && (
 								<motion.div
 									key="file-preview"
-									initial={mediaValues.resumeRef ? { opacity: 1, y: 0, height: "auto" } : { opacity: 0, y: -10, height: 0 }}
+									initial={
+										mediaValues.resumeRef
+											? { opacity: 1, y: 0, height: "auto" }
+											: { opacity: 0, y: -10, height: 0 }
+									}
 									animate={{ opacity: 1, y: 0, height: "auto" }}
 									exit={{ opacity: 0, y: -10, height: 0 }}
-									transition={mediaValues.resumeRef ? { duration: 0 } : { duration: 0.3, ease: "easeOut" }}
+									transition={
+										mediaValues.resumeRef
+											? { duration: 0 }
+											: { duration: 0.3, ease: "easeOut" }
+									}
 									style={{ overflow: "hidden" }}
 								>
 									<Box
@@ -868,7 +909,7 @@ export const NetworkingPage = () => {
 													boxSize="30px"
 													objectFit="contain"
 													onError={(e) => {
-														e.currentTarget.style.display = 'none';
+														e.currentTarget.style.display = "none";
 													}}
 												/>
 												<Box
@@ -887,14 +928,16 @@ export const NetworkingPage = () => {
 													</Text>
 												</Box>
 											</Box>
-											
+
 											{/* Filename */}
 											<Box flex={1}>
 												<Text color="white" fontWeight="medium" fontSize="md">
-													{file.name.length > 30 ? `${file.name.substring(0, 30)}...` : file.name}
+													{file.name.length > 30
+														? `${file.name.substring(0, 30)}...`
+														: file.name}
 												</Text>
 											</Box>
-											
+
 											{/* Action buttons */}
 											<Flex gap={1}>
 												<Button
@@ -909,7 +952,11 @@ export const NetworkingPage = () => {
 													_focus={{ bg: "transparent" }}
 													onClick={() => {
 														if (previewUrl) {
-															window.open(previewUrl, "_blank", "noopener,noreferrer");
+															window.open(
+																previewUrl,
+																"_blank",
+																"noopener,noreferrer",
+															);
 														}
 													}}
 												>
@@ -943,13 +990,7 @@ export const NetworkingPage = () => {
 						</AnimatePresence>
 
 						{mediaValues.resumeRef && !file && (
-							<Box
-								bg="#1f1e2d"
-								borderRadius="4xl"
-								p={4}
-								w="full"
-								mt={3}
-							>
+							<Box bg="#1f1e2d" borderRadius="4xl" p={4} w="full" mt={3}>
 								<Flex align="center" gap={3}>
 									{/* PDF Icon */}
 									<Box
@@ -965,7 +1006,7 @@ export const NetworkingPage = () => {
 											boxSize="30px"
 											objectFit="contain"
 											onError={(e) => {
-												e.currentTarget.style.display = 'none';
+												e.currentTarget.style.display = "none";
 											}}
 										/>
 										<Box
@@ -985,16 +1026,18 @@ export const NetworkingPage = () => {
 											</Text>
 										</Box>
 									</Box>
-									
+
 									{/* Filename */}
 									<Box flex={1}>
 										<Text color="white" fontWeight="medium" fontSize="md">
-											{mediaValues.resumeFilename ? 
-												(mediaValues.resumeFilename.length > 30 ? `${mediaValues.resumeFilename.substring(0, 30)}...` : mediaValues.resumeFilename) 
+											{mediaValues.resumeFilename
+												? mediaValues.resumeFilename.length > 30
+													? `${mediaValues.resumeFilename.substring(0, 30)}...`
+													: mediaValues.resumeFilename
 												: "Resume.pdf"}
 										</Text>
 									</Box>
-									
+
 									{/* Action buttons */}
 									<Flex gap={1}>
 										<Button
@@ -1010,12 +1053,15 @@ export const NetworkingPage = () => {
 											onClick={async () => {
 												if (mediaValues.resumeRef) {
 													try {
-														const url = await getResumeURL(mediaValues.resumeRef);
+														const url = await getResumeURL(
+															mediaValues.resumeRef,
+														);
 														window.open(url, "_blank", "noopener,noreferrer");
 													} catch (error) {
 														toaster.error({
 															title: "Error",
-															description: "Failed to open resume. Please try again.",
+															description:
+																"Failed to open resume. Please try again.",
 														});
 													}
 												}
@@ -1045,7 +1091,9 @@ export const NetworkingPage = () => {
 						{/* Consent checkbox */}
 						<Checkbox.Root
 							checked={resumeConsent}
-							onCheckedChange={(details) => handleConsentChange(details.checked === true)}
+							onCheckedChange={(details) =>
+								handleConsentChange(details.checked === true)
+							}
 							mt={4}
 							alignItems="flex-start"
 						>
@@ -1055,12 +1103,13 @@ export const NetworkingPage = () => {
 								_checked={{
 									bg: "#f9a857",
 									borderColor: "#f9a857",
-									color: "black"
+									color: "black",
 								}}
 							/>
 							<Checkbox.Label>
 								<Text color="gray.300" fontSize="sm" lineHeight="1.4" ml={2}>
-									I consent to SpurHacks giving my resume and connections to recruiters and potential employers
+									I consent to SpurHacks giving my resume and connections to
+									recruiters and potential employers
 								</Text>
 							</Checkbox.Label>
 						</Checkbox.Root>
@@ -1109,16 +1158,24 @@ export const NetworkingPage = () => {
 								px={6}
 								fontWeight="bold"
 								onClick={handleGlobalSave}
-								_hover={{ 
+								_hover={{
 									bg: globalSaveSuccess ? "transparent" : "#e0974d",
-									borderColor: globalSaveSuccess ? "#10b981" : "transparent"
+									borderColor: globalSaveSuccess ? "#10b981" : "transparent",
 								}}
-								boxShadow={globalSaveSuccess ? "none" : "0 0 20px rgba(249, 168, 87, 0.4)"}
+								boxShadow={
+									globalSaveSuccess
+										? "none"
+										: "0 0 20px rgba(249, 168, 87, 0.4)"
+								}
 								loading={isGlobalSaving}
 								disabled={isGlobalSaving || globalSaveSuccess}
 								transition="all 0.3s ease-in-out"
 							>
-								{globalSaveSuccess ? "✓ SAVED!" : isGlobalSaving ? "SAVING..." : "SAVE CHANGES"}
+								{globalSaveSuccess
+									? "✓ SAVED!"
+									: isGlobalSaving
+										? "SAVING..."
+										: "SAVE CHANGES"}
 							</Button>
 						</Flex>
 					</motion.div>
@@ -1127,7 +1184,9 @@ export const NetworkingPage = () => {
 
 			<Dialog.Root
 				open={isResumeSettingsOpened}
-				onOpenChange={(details: { open: boolean }) => !details.open && setIsResumeSettingsOpened(false)}
+				onOpenChange={(details: { open: boolean }) =>
+					!details.open && setIsResumeSettingsOpened(false)
+				}
 			>
 				<Dialog.Backdrop />
 				<Dialog.Positioner>
@@ -1138,9 +1197,9 @@ export const NetworkingPage = () => {
 						<Dialog.Body>
 							<Stack gap={6}>
 								<Box>
-									<Select 
-										label="Resume Visibility" 
-										options={visibilityOptions} 
+									<Select
+										label="Resume Visibility"
+										options={visibilityOptions}
 										value={mapOption(newVisibility)}
 										onChange={(selected) => {
 											if (selected && selected.length > 0) {
@@ -1151,7 +1210,7 @@ export const NetworkingPage = () => {
 									<Text color="fg.muted" fontSize="sm" mt={2}>
 										{visibilityDescription[newVisibility]}
 									</Text>
-								</Box>	
+								</Box>
 							</Stack>
 						</Dialog.Body>
 						<Dialog.CloseTrigger asChild>
