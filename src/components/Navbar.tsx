@@ -1,5 +1,6 @@
 import { DiscordLogo, FullLogo, Logo } from "@/assets";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import type { AccessControlContext } from "@/navigation";
 import {
 	type RouteConfig,
@@ -8,6 +9,7 @@ import {
 	useUser,
 } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
+import { useUserStore } from "@/stores/user.store";
 import {
 	Box,
 	Link as ChakraLink,
@@ -16,52 +18,68 @@ import {
 	Flex,
 	Image,
 	Portal,
+	Presence,
 	Text,
 } from "@chakra-ui/react";
 import {
 	CalendarDaysIcon,
 	CodeBracketIcon,
+	Cog8ToothIcon,
 	HomeIcon,
 	ShareIcon,
+	StarIcon,
 	TicketIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import Hamburger from "hamburger-react";
 import { useEffect, useMemo, useState } from "react";
-import { FiLogOut, FiMapPin } from "react-icons/fi";
-import { RxStar } from "react-icons/rx";
+import { FiChevronUp, FiLogOut, FiMapPin } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import { ProfilePicture } from "./ProfilePicture";
 import { RouterChakraLink } from "./RouterChakraLink";
 import { Button } from "./ui/button";
 
+// Order matters
 const navItems = {
 	[paths.home]: {
 		label: "Home",
 		Icon: HomeIcon,
+		category: "MAIN",
 	},
 	[paths.schedule]: {
 		label: "Schedule",
 		Icon: CalendarDaysIcon,
+		category: "MAIN",
 	},
-	[paths.networking]: {
-		label: "Networking",
-		Icon: ShareIcon,
-	},
-	[paths.myTicket]: {
-		label: "My Ticket",
-		Icon: TicketIcon,
-	},
-	[paths.apply]: {
-		label: "Application",
-		Icon: CodeBracketIcon,
+	[paths.perks]: {
+		label: "Perks",
+		Icon: StarIcon,
+		category: "MAIN",
 	},
 	[paths.myTeam]: {
 		label: "My Team",
 		Icon: UserGroupIcon,
+		category: "SOCIAL",
 	},
-	[paths.perks]: {
-		label: "Perks",
-		Icon: RxStar,
+	[paths.networking]: {
+		label: "Networking",
+		Icon: ShareIcon,
+		category: "SOCIAL",
+	},
+	[paths.myTicket]: {
+		label: "My Ticket",
+		Icon: TicketIcon,
+		category: "SOCIAL",
+	},
+	[paths.myAccount]: {
+		label: "Account",
+		Icon: Cog8ToothIcon,
+		category: "SETTINGS",
+	},
+	[paths.apply]: {
+		label: "Application",
+		Icon: CodeBracketIcon,
+		category: "MAIN",
 	},
 };
 
@@ -150,6 +168,23 @@ const NavbarContent = ({
 	isMobile: boolean;
 }) => {
 	const { logout, currentUser: user } = useAuth();
+	const [showLogout, setShowLogout] = useState(false);
+	const team = useUserStore((state) => state.team);
+
+	const categorizedRoutes = useMemo(() => {
+		const groups: Record<string, { path: string; label: string; Icon: any }[]> =
+			{};
+
+		Object.entries(navItems).forEach(([path, item]) => {
+			if (!availableRoutes.some((r) => r.path === path)) return;
+			const { category = "MAIN", label, Icon } = item;
+			if (!groups[category]) groups[category] = [];
+			groups[category].push({ path, label, Icon });
+		});
+
+		return groups;
+	}, [availableRoutes]);
+
 	return (
 		<>
 			<Flex
@@ -157,10 +192,11 @@ const NavbarContent = ({
 				direction="column"
 				alignItems="start"
 				justifyContent="start"
-				gap="1rem"
+				gap="0.5rem"
 				w="full"
 				pt={5}
 				px={2}
+				fontSize="xs"
 			>
 				<ChakraLink
 					w="full"
@@ -183,56 +219,17 @@ const NavbarContent = ({
 					}
 				>
 					<Flex
-						padding="1rem"
+						padding="0.6rem"
+						pl={6}
 						alignItems="center"
 						justifyContent="start"
 						gap="0.5rem"
 						cursor="pointer"
 					>
-						<FiMapPin size="1.5rem" />
+						<FiMapPin size="1rem" />
 						Location
 					</Flex>
 				</ChakraLink>
-				{availableRoutes
-					// @ts-ignore
-					.filter(({ path }) => path && !!navItems[path])
-					.map(({ path }) => {
-						// @ts-ignore
-						const { label, Icon } = navItems[path];
-						const isActive = location.pathname === path;
-						return (
-							// <Link to={path as string} className="w-full">
-							<RouterChakraLink
-								key={label}
-								as={Link}
-								to={path as string}
-								w="full"
-								textDecoration="none"
-								color="#666484"
-								rounded="full"
-								bg={isActive ? "#1F1E2E" : "transparent"}
-								_hover={{
-									bg: "#1F1E2E",
-								}}
-							>
-								<Flex
-									as="li"
-									padding="1rem"
-									w="full"
-									cursor="pointer"
-									gap="0.5rem"
-									alignItems="center"
-									justifyContent="start"
-								>
-									<Box asChild width="1.5rem" height="1.5rem">
-										<Icon color={isActive ? "#FFA75F" : "#666483"} />
-									</Box>
-									<Text color={isActive ? "#DEEBFF" : "#666484"}>{label}</Text>
-								</Flex>
-							</RouterChakraLink>
-							// </Link>
-						);
-					})}
 				<ChakraLink
 					w="full"
 					href="https://discord.gg/NpnSUrZJQy"
@@ -254,7 +251,8 @@ const NavbarContent = ({
 					}
 				>
 					<Flex
-						padding="1rem"
+						padding="0.6rem"
+						pl={6}
 						alignItems="center"
 						justifyContent="start"
 						gap="0.5rem"
@@ -263,23 +261,152 @@ const NavbarContent = ({
 						<Image
 							src={DiscordLogo}
 							filter="brightness(0) saturate(100%) invert(44%) sepia(6%) saturate(1804%) hue-rotate(205deg) brightness(89%) contrast(93%)"
-							width="1.5rem"
-							height="1.5rem"
+							width="1rem"
+							height="1rem"
 						/>
 						Discord Support
 					</Flex>
 				</ChakraLink>
+				{Object.entries(categorizedRoutes).map(([section, routes]) => (
+					<Box key={section} w="full" gap={2}>
+						<Text fontSize="xs" pl={6} color="#666484" mt={4} mb={2}>
+							{section}
+						</Text>
+						<Flex direction="column" gap={2}>
+							{routes.map(({ path }) => {
+								const { label, Icon } = navItems[path as keyof typeof navItems];
+								const isActive = location.pathname === path;
+								return (
+									<RouterChakraLink
+										key={label}
+										as={Link}
+										to={path as string}
+										w="full"
+										textDecoration="none"
+										color="#666484"
+										rounded="full"
+										bg={isActive ? "#1F1E2E" : "transparent"}
+										_hover={{ bg: "#1F1E2E" }}
+									>
+										<Flex
+											as="li"
+											padding="0.6rem"
+											pl={6}
+											w="full"
+											cursor="pointer"
+											gap="0.5rem"
+											alignItems="center"
+											justifyContent="start"
+										>
+											<Box width="1rem" height="1rem">
+												<Icon color={isActive ? "#FFA75F" : "#666483"} />
+											</Box>
+											<Text
+												fontSize="xs"
+												color={isActive ? "#DEEBFF" : "#666484"}
+											>
+												{label}
+											</Text>
+										</Flex>
+									</RouterChakraLink>
+								);
+							})}
+						</Flex>
+					</Box>
+				))}
 			</Flex>
 			{user && (
-				<Button
-					type="button"
+				<ChakraLink
+					position="relative"
+					w="full"
+					onClick={() => {
+						setShowLogout((prev) => !prev);
+					}}
+					textDecoration="none"
+					color="#666484"
 					rounded="full"
-					textTransform="uppercase"
-					onClick={logout}
+					bg="#1F1E2E"
+					_hover={{
+						bg: "#1F1E2E",
+					}}
+					_focus={
+						isMobile
+							? {}
+							: {
+									boxShadow: "none",
+									outline: "none",
+								}
+					}
 				>
-					<FiLogOut size="1.5rem" color="black" />
-					Sign out
-				</Button>
+					{showLogout && (
+						<Presence
+							present={showLogout}
+							position="absolute"
+							top="-12"
+							right="0"
+							animationName={{
+								_open: "slide-from-bottom, fade-in",
+								_closed: "slide-to-bottom, fade-out",
+							}}
+							animationDuration="slow"
+						>
+							<Button
+								bg="#1F1E2E"
+								color="brand.error"
+								gap={4}
+								type="button"
+								rounded="full"
+								px={6}
+								py={5}
+								onClick={logout}
+							>
+								<FiLogOut size="1rem" />
+								Log out
+							</Button>
+						</Presence>
+					)}
+					<Flex
+						w="full"
+						justify="space-between"
+						alignItems="center"
+						padding="0.5rem"
+						px={6}
+						gap={2}
+					>
+						<Flex flex="1" justifyContent="start" alignItems="center" gap={4}>
+							<ProfilePicture size="2rem" borderRadius="full" />
+							<Flex
+								flex="1"
+								justifyContent="start"
+								alignItems="start"
+								direction="column"
+							>
+								<Text
+									fontSize="xs"
+									color="offwhite.primary"
+									textTransform="none"
+									lineClamp="1"
+								>
+									{team?.teamName ?? "No team"}
+								</Text>
+								<Text
+									fontSize="sm"
+									color="offwhite.primary"
+									textTransform="none"
+								>
+									{user.displayName ?? "Unnamed hacker"}
+								</Text>
+							</Flex>
+						</Flex>
+						<Box
+							marginEnd="auto"
+							transition="transform 0.3s ease"
+							transform={showLogout ? "rotate(180deg)" : "rotate(0deg)"}
+						>
+							<FiChevronUp size="1rem" />
+						</Box>
+					</Flex>
+				</ChakraLink>
 			)}
 		</>
 	);
@@ -289,6 +416,7 @@ export const Navbar = () => {
 	const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 	const { user } = useUser();
 	const applicationsCtx = useApplications();
+	const deadlinesCtx = useDeadlines();
 	const routes = useRouteDefinitions();
 
 	const availableRoutes = useMemo(() => {
@@ -298,6 +426,7 @@ export const Navbar = () => {
 			const ctx: AccessControlContext = {
 				user,
 				applicationsCtx,
+				deadlinesCtx,
 			};
 			try {
 				if (typeof route.accessCheck === "function")
@@ -344,10 +473,10 @@ export const Navbar = () => {
 						background: `radial-gradient(
 							circle at top left,
 							#000000 -100%,
-							#191C26 80%,
-							#26252F 110%,
-							#332D38 130%,
-							#4D3E4A 150%,
+							#191C26 120%,
+							#26252F 130%,
+							#332D38 180%,
+							#4D3E4A 200%,
 							#6B5C6D 170%,
 							#897B90 180%,
 							#C5B8D6 250%
@@ -367,7 +496,7 @@ export const Navbar = () => {
 						direction="column"
 						alignItems="center"
 						justifyContent="space-between"
-						height="83%"
+						height="90%"
 						overflowY="auto"
 					>
 						<NavbarContent

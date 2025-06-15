@@ -1,14 +1,13 @@
 import { firestore, functions } from "@/services/firebase";
-import { TICKETS_COLLECTION } from "@/services/firebase/collections";
 import { logError } from "@/services/firebase/log";
 import type {
 	CloudFunctionResponse,
 	ExtendedTicketData,
 	TicketData,
-	UserTicketData,
 } from "@/services/firebase/types";
-import { addDoc, collection } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
+import { TICKETS_COLLECTION } from "./collections";
 
 export async function getTicketData(id: string) {
 	try {
@@ -40,12 +39,31 @@ export async function getExtendedTicketData(id: string) {
 	}
 }
 
-/**
- * Creates a new ticket entry in the collection 'tickets'.
- * A ticket is a QR code that identifies the user during the hackathon.
- * @returns {Promise<string>} the ticket id
- */
-export async function createTicket(data: UserTicketData): Promise<string> {
-	const docRef = await addDoc(collection(firestore, TICKETS_COLLECTION), data);
-	return docRef.id;
+export async function createTicketDoc() {
+	try {
+		const fn = httpsCallable<unknown, CloudFunctionResponse<string>>(
+			functions,
+			"createTicketDoc",
+		);
+		const { data } = await fn();
+		return data.data;
+	} catch (error) {
+		await logError(error as Error, "create_ticket_doc_error").catch((err) =>
+			console.error("Failed to log error", err),
+		);
+		throw error;
+	}
+}
+
+export async function existsTicketDoc(ticketID: string) {
+	try {
+		const docRef = doc(firestore, TICKETS_COLLECTION, ticketID);
+		const docSnap = await getDoc(docRef);
+		return docSnap.exists();
+	} catch (error) {
+		await logError(error as Error, "get_home_cooked_qr_code_error").catch(
+			(err) => console.error("Failed to log error", err),
+		);
+	}
+	return false;
 }

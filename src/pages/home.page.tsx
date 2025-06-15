@@ -2,15 +2,22 @@ import DiscordLogo from "@/assets/discord.svg";
 import InstagramLogo from "@/assets/instagram.svg";
 import LinkedinLogo from "@/assets/linkedin.svg";
 import TiktokLogo from "@/assets/tiktok.svg";
+import { toaster } from "@/components/ui/toaster";
+import { faqs } from "@/data";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import { paths } from "@/providers/RoutesProvider/data";
-import { getTypeforms } from "@/services/firebase/misc";
+import { verifyRSVP, withdrawRSVP } from "@/services/firebase/rsvp";
 import {
+	Accordion,
+	Alert,
 	Badge,
 	Box,
 	Button,
 	Card,
 	Link as ChakraLink,
+	CloseButton,
+	Dialog,
 	Flex,
 	Heading,
 	Icon,
@@ -20,39 +27,86 @@ import {
 } from "@chakra-ui/react";
 import { PageWrapper } from "@components";
 import { CheckCircle, WarningCircle } from "@phosphor-icons/react";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const importantInfo = [
+	{ day: "FRI", time: "5:00PM", label: "Registration" },
+	{ day: "FRI", time: "8:30PM", label: "Opening Ceremony" },
+	{ day: "SUN", time: "11:00AM", label: "Projects Due" },
+	{ day: "SUN", time: "5:30PM", label: "Closing Ceremony" },
+];
+
+const cardStyles = {
+	maxWidth: { base: "none", xl: "450px" },
+	width: "full",
+	rounded: "4xl",
+};
+
 const HomePage = () => {
-	const { deadlines, current: currentApplication } = useApplications();
+	const { current: currentApplication, refreshApplications } =
+		useApplications();
+	const { deadlines } = useDeadlines();
 	const navigate = useNavigate();
+	const [isRSVPLoading, setIsRSVPLoading] = useState(false);
+	const [openRevokeRSVPDialog, setOpenRevokeRSVPDialog] = useState(false);
 
-	const { data: typeforms, isLoading: isLoadingTypeforms } = useQuery({
-		queryKey: ["typeforms"],
-		queryFn: getTypeforms,
-	});
-
-	const cardStyles = useMemo(() => {
-		if (typeforms && typeforms.mjvURL) {
-			return {
-				maxWidth: { base: "none", xl: "450px" },
-				width: "full",
-				rounded: "4xl",
-			};
+	const handleRSVP = async () => {
+		try {
+			setIsRSVPLoading(true);
+			await verifyRSVP();
+			await refreshApplications();
+		} catch (error) {
+			console.error(error);
+			const msg =
+				(error as Error).message ??
+				"Oops, something went wrong when trying to RSVP. Please try again later. If problem persists, contact us in Discord.";
+			toaster.error({
+				title: "Failed to RSVP",
+				description: msg,
+			});
+		} finally {
+			setIsRSVPLoading(false);
 		}
+	};
 
-		return {
-			maxWidth: { base: "none", md: "300px" },
-			width: "full",
-			rounded: "4xl",
-		};
-	}, [typeforms]);
+	const handleRevokeRSVP = async () => {
+		try {
+			setIsRSVPLoading(true);
+			await withdrawRSVP();
+			await refreshApplications();
+		} catch (error) {
+			console.error(error);
+			const msg =
+				(error as Error).message ??
+				"Oops, something went wrong when trying to revoke RSVP. Please try again later. If the problem persists, contact us in Discord.";
+			toaster.error({
+				title: "Failed to revoke RSVP",
+				description: msg,
+			});
+		} finally {
+			if (openRevokeRSVPDialog) setOpenRevokeRSVPDialog(false);
+			setIsRSVPLoading(false);
+		}
+	};
 
 	return (
 		<PageWrapper>
 			<Box as="section" spaceY="1.5rem">
-				<Flex gap="1.5rem" flexWrap={{ base: "wrap", xl: "nowrap" }}>
+				{/* TODO: this alert needs to be removed once all the features are implemented and released on June 13th. */}
+				{currentApplication?.rsvp &&
+					currentApplication.applicationStatus === "accepted" && (
+						<Alert.Root rounded="4xl">
+							<Alert.Indicator />
+							<Alert.Content>
+								<Alert.Title>
+									June 13th: Schedule drops, tickets go live, teams form! Don't
+									miss out - come back then!
+								</Alert.Title>
+							</Alert.Content>
+						</Alert.Root>
+					)}
+				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
 					{/* Only render if no submission or application status is not accepted and has not rsvp'd */}
 					{(!currentApplication ||
 						currentApplication.applicationStatus !== "accepted" ||
@@ -95,19 +149,17 @@ const HomePage = () => {
 							<Card.Body>
 								{deadlines.inRange && (
 									<Box spaceY="1rem">
-										<Flex alignItems="center" gapX="1rem">
+										<Flex alignItems="center" gapX={4}>
 											<Text color="fg.muted">
-												{!!currentApplication
+												{currentApplication
 													? "Application submitted"
 													: "Application not submitted"}
 											</Text>
 											<Icon
 												size="lg"
-												color={
-													!!currentApplication ? "green.400" : "yellow.400"
-												}
+												color={currentApplication ? "green.400" : "yellow.400"}
 											>
-												{!!currentApplication ? (
+												{currentApplication ? (
 													<CheckCircle />
 												) : (
 													<WarningCircle />
@@ -115,9 +167,15 @@ const HomePage = () => {
 											</Icon>
 										</Flex>
 										<Text color="fg.muted">
-											{!!currentApplication
-												? "You’ll receive a confirmation on your application status in the email you provided."
-												: "Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
+											{!currentApplication &&
+												"Bring your ideas to life, build something bold, and collaborate with passionate peers! All skill levels are welcome."}
+											{currentApplication &&
+												currentApplication.applicationStatus !== "accepted" &&
+												"You'll receive a confirmation on your application status in the email you provided."}
+											{currentApplication &&
+												currentApplication.applicationStatus === "accepted" &&
+												!currentApplication.rsvp &&
+												"Congrats, you're in! Make sure to RSVP to claim your spot!"}
 										</Text>
 									</Box>
 								)}
@@ -128,13 +186,13 @@ const HomePage = () => {
 												Applications have now closed for SpurHacks 2025.
 											</Text>
 										)}
-										{!!currentApplication &&
+										{currentApplication &&
 											currentApplication.applicationStatus === "accepted" &&
 											!currentApplication.rsvp && (
 												<Box spaceY="1rem">
-													<Flex alignItems="center" gapX="1rem">
+													<Flex alignItems="center" gapX={4}>
 														<Text color="fg.muted">
-															Congrats, you’re in! Make sure to RSVP to claim
+															Congrats, you're in! Make sure to RSVP to claim
 															your spot!
 														</Text>
 														<Icon size="lg" color="green.400">
@@ -146,7 +204,7 @@ const HomePage = () => {
 													</Text>
 												</Box>
 											)}
-										{!!currentApplication &&
+										{currentApplication &&
 											currentApplication.applicationStatus !== "accepted" && (
 												<Box spaceY="1rem">
 													<Text color="fg.muted">
@@ -175,14 +233,14 @@ const HomePage = () => {
 										Apply Now
 									</Button>
 								)}
-								{deadlines.afterClose &&
-									!!currentApplication &&
+								{currentApplication &&
 									currentApplication.applicationStatus === "accepted" &&
 									!currentApplication.rsvp && (
 										<Button
+											loading={isRSVPLoading}
 											color="black"
 											colorScheme="brand"
-											onClick={() => console.log("not implemented")}
+											onClick={handleRSVP}
 											marginLeft="auto"
 											size="lg"
 											rounded="full"
@@ -196,50 +254,244 @@ const HomePage = () => {
 						</Card.Root>
 					)}
 
-					{!isLoadingTypeforms && typeforms?.mjvURL && (
-						<Card.Root
-							maxWidth={{ base: "none", xl: "600px" }}
-							width="full"
-							rounded="4xl"
-						>
+					{currentApplication?.rsvp && (
+						<Card.Root {...cardStyles}>
 							<Card.Header>
-								<Card.Title>
-									Join us as a Mentor, Judge, or Volunteer!
-								</Card.Title>
+								<Card.Title>RSVP Status</Card.Title>
 							</Card.Header>
 							<Card.Body>
-								<Text color="fg.muted" mb="1rem">
-									Play a key role in helping the event run smoothly. Whether
-									you’re sharing your expertise or lending a hand, your
-									contributions make a huge difference!
+								<Text color="fg.muted">
+									You've RSVP'd your spot!{" "}
+									<Icon size="md" color="green.400">
+										<CheckCircle />
+									</Icon>
 								</Text>
+								<div>
+									<Dialog.Root
+										role="alertdialog"
+										open={openRevokeRSVPDialog}
+										onOpenChange={(e) => setOpenRevokeRSVPDialog(e.open)}
+									>
+										<Dialog.Trigger asChild>
+											<Button
+												loading={isRSVPLoading}
+												mt={4}
+												ml="auto"
+												display="block"
+												textTransform="uppercase"
+												variant="outline"
+												rounded="full"
+												borderColor="fg.muted"
+												borderWidth="2px"
+												color="fg.muted"
+												bg="transparent"
+												_hover={{
+													borderColor: "red.500",
+													color: "red.500",
+													bg: "transparent",
+												}}
+											>
+												Revoke rsvp
+											</Button>
+										</Dialog.Trigger>
+										<Dialog.Backdrop />
+										<Dialog.Positioner>
+											<Dialog.Content>
+												<Dialog.Header>
+													<Dialog.Title>Are you sure you?</Dialog.Title>
+												</Dialog.Header>
+												<Dialog.Body>
+													<Text>
+														Are you sure you want to revoke RSVP? This will not
+														affect your application status.
+													</Text>
+												</Dialog.Body>
+												<Dialog.Footer>
+													<Dialog.ActionTrigger asChild>
+														<Button rounded="full">Cancel</Button>
+													</Dialog.ActionTrigger>
+													<Button
+														loading={isRSVPLoading}
+														mt={4}
+														ml="auto"
+														display="block"
+														textTransform="uppercase"
+														variant="outline"
+														rounded="full"
+														borderColor="fg.muted"
+														borderWidth="2px"
+														color="fg.muted"
+														_hover={{
+															borderColor: "red.500",
+															color: "red.500",
+															bg: "transparent",
+														}}
+														onClick={handleRevokeRSVP}
+													>
+														revoke rsvp
+													</Button>
+												</Dialog.Footer>
+												<Dialog.CloseTrigger asChild>
+													<CloseButton size="sm" />
+												</Dialog.CloseTrigger>
+											</Dialog.Content>
+										</Dialog.Positioner>
+									</Dialog.Root>
+								</div>
 							</Card.Body>
-							<Card.Footer>
-								<ChakraLink
-									href={typeforms.mjvURL}
-									target="_blank"
-									rel="noopener noreferrer"
-									marginLeft="auto"
-									rounded="full"
-									bg="brand.primary"
-									color="brand.contrast"
-									py="2.5"
-									px="5"
-									textTransform="uppercase"
-									transition="colors"
-									_hover={{ textDecor: "none", bg: "brand.primary/90" }}
-								>
-									apply to join
-								</ChakraLink>
-							</Card.Footer>
 						</Card.Root>
 					)}
+
+					<Card.Root
+						maxWidth={{ base: "none", xl: "450px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>FAQ</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem" fontSize="sm">
+								Quick answers to common questions.
+							</Text>
+							<Box maxHeight="290px" overflowY="auto">
+								<Accordion.Root collapsible multiple>
+									{faqs.map((faq, index) => (
+										<Accordion.Item key={index} value={`item-${index}`}>
+											<Accordion.ItemTrigger>
+												<Text fontWeight="medium" fontSize="sm">
+													{faq.question}
+												</Text>
+												<Accordion.ItemIndicator />
+											</Accordion.ItemTrigger>
+											<Accordion.ItemContent>
+												<Accordion.ItemBody>
+													<Text color="fg.muted" fontSize="sm">
+														{faq.answer}
+													</Text>
+												</Accordion.ItemBody>
+											</Accordion.ItemContent>
+										</Accordion.Item>
+									))}
+								</Accordion.Root>
+							</Box>
+						</Card.Body>
+					</Card.Root>
 				</Flex>
+				{currentApplication?.rsvp && (
+					<Card.Root maxWidth={{ base: "none", xl: "600px" }} rounded="4xl">
+						<Card.Header>
+							<Card.Title>Important Info</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Flex direction="column" gap={4}>
+								{importantInfo.map(({ day, time, label }) => (
+									<Flex key={label} align="center" gap={6}>
+										<Flex
+											px={4}
+											py={2}
+											borderWidth={1}
+											borderColor="#FFA75F"
+											rounded="full"
+											fontSize="sm"
+											justify="space-between"
+											w="130px"
+										>
+											<Text>{day}</Text>
+											<Text>{time}</Text>
+										</Flex>
+										<Text color="gray.200" fontSize="sm">
+											{label}
+										</Text>
+									</Flex>
+								))}
+							</Flex>
+						</Card.Body>
+					</Card.Root>
+				)}
+				<Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
+					<Card.Root
+						maxWidth={{ base: "none", xl: "600px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>Join us as a Mentor, Judge, or Volunteer!</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem">
+								Play a key role in helping the event run smoothly. Whether
+								you're sharing your expertise or lending a hand, your
+								contributions make a huge difference!
+							</Text>
+						</Card.Body>
+						<Card.Footer>
+							<ChakraLink
+								href="https://talent.spurhacks.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								marginLeft="auto"
+								rounded="full"
+								bg="brand.primary"
+								color="brand.contrast"
+								py="2.5"
+								px="5"
+								textTransform="uppercase"
+								transition="colors"
+								_hover={{ textDecor: "none", bg: "brand.primary/90" }}
+							>
+								apply to join
+							</ChakraLink>
+						</Card.Footer>
+					</Card.Root>
+
+					<Card.Root
+						maxWidth={{ base: "none", xl: "600px" }}
+						width="full"
+						rounded="4xl"
+					>
+						<Card.Header>
+							<Card.Title>Traveling to SpurHacks? Let us help!</Card.Title>
+						</Card.Header>
+						<Card.Body>
+							<Text color="fg.muted" mb="1rem">
+								We appreciate your commitment towards attending SpurHacks. If
+								you need travel accomodations, reimbursements, or other
+								inquiries, let us know!
+							</Text>
+						</Card.Body>
+						<Card.Footer>
+							<ChakraLink
+								href="https://travel.spurhacks.com"
+								target="_blank"
+								rel="noopener noreferrer"
+								marginLeft="auto"
+								rounded="full"
+								bg="brand.primary"
+								color="brand.contrast"
+								py="2.5"
+								px="5"
+								textTransform="uppercase"
+								transition="colors"
+								_hover={{ textDecor: "none", bg: "brand.primary/90" }}
+							>
+								submit application
+							</ChakraLink>
+						</Card.Footer>
+					</Card.Root>
+				</Flex>
+
 				<Card.Root {...cardStyles}>
 					<Card.Header>
 						<Heading>Stay Connected</Heading>
 					</Card.Header>
 					<Card.Body>
+						<Text color="fg.muted">
+							Follow us on our socials! Get the latest updates about our current
+							and future events.
+						</Text>
+					</Card.Body>
+					<Card.Footer>
 						<Flex alignItems="center" gap="1rem">
 							<Link
 								href="https://www.instagram.com/spurhacks/"
@@ -270,7 +522,7 @@ const HomePage = () => {
 								<Image src={DiscordLogo} width="1.5rem" height="1.5rem" />
 							</Link>
 						</Flex>
-					</Card.Body>
+					</Card.Footer>
 				</Card.Root>
 			</Box>
 		</PageWrapper>

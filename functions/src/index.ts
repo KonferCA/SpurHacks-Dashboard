@@ -1,7 +1,6 @@
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
-import { getStorage } from "firebase-admin/storage";
 import {
 	log,
 	error as logError,
@@ -11,7 +10,6 @@ import * as functions from "firebase-functions/v1";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Octokit } from "octokit";
-import * as QRCode from "qrcode";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -21,89 +19,6 @@ import { HttpStatus, response } from "./utils";
 initializeApp();
 
 const FE_URL = process.env.FE_URL;
-
-export const fetchOrGenerateTicket = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context || !context.auth) {
-		throw new HttpsError(
-			"permission-denied",
-			"User must be authenticated to initiate this operation.",
-		);
-	}
-
-	const userId = context.auth.uid;
-	const ticketsRef = getFirestore().collection("tickets");
-	const ticketQuery = await ticketsRef
-		.where("userId", "==", userId)
-		.limit(1)
-		.get();
-
-	if (ticketQuery.empty) {
-		let ticketId = "";
-		let createTicket = false;
-		const snap = await getFirestore()
-			.collection("tickets")
-			.where("userId", "==", context.auth.uid)
-			.get();
-		const data = snap.docs[0]?.data();
-		if (!data) {
-			ticketId = uuidv4();
-			createTicket = true;
-		} else {
-			ticketId = data.ticketId;
-		}
-		const qrCodeValue = `${process.env.FE_URL}/ticket/${ticketId}`;
-
-		try {
-			const qrCodeDataURL = await QRCode.toDataURL(qrCodeValue, {
-				width: 256,
-			});
-
-			const base64Data = qrCodeDataURL.split(",")[1];
-			const buffer = Buffer.from(base64Data, "base64");
-
-			const storageRef = getStorage().bucket();
-			const fileRef = storageRef.file(`qrCodes/${userId}/${ticketId}.png`);
-			await fileRef.save(buffer, {
-				metadata: {
-					contentType: "image/png",
-				},
-			});
-
-			await fileRef.makePublic();
-
-			const qrCodeUrl = fileRef.publicUrl();
-
-			if (createTicket) {
-				await ticketsRef.doc(ticketId).set({
-					userId: userId,
-					ticketId: ticketId,
-					qrCodeUrl: qrCodeUrl,
-					foods: [],
-					events: [],
-					timestamp: new Date(),
-				});
-			} else {
-				await getFirestore().collection("tickets").doc(ticketId).update({
-					qrCodeUrl: qrCodeUrl,
-					timestamp: new Date(),
-				});
-			}
-
-			return { qrCodeUrl };
-		} catch (error) {
-			logError("Error generating or uploading QR code:", error);
-			throw new HttpsError(
-				"internal",
-				"Failed to generate or upload QR code",
-				error instanceof Error ? error.message : "Unknown error",
-			);
-		}
-	} else {
-		const ticketData = ticketQuery.docs[0].data();
-		return { qrCodeUrl: ticketData.qrCodeUrl as string };
-	}
-});
 
 // Default on-sign-up Claims function
 export const addDefaultClaims = functions.auth.user().onCreate(async (user) => {
@@ -152,56 +67,61 @@ interface Socials {
 	github: string;
 	linkedin: string;
 	discord: string;
+	website?: string;
 	resumeRef: string;
+	resumeFilename?: string;
+	profilePictureRef?: string;
 	docId: string;
 	uid: string;
 	resumeVisibility: "Public" | "Private" | "Sponsors Only";
+	resumeConsent?: boolean;
 }
 
-export const requestSocials = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context || !context.auth)
+export const requestSocials = onCall(async (req) => {
+	if (!req.auth) {
 		return response(HttpStatus.UNAUTHORIZED, { message: "unauthorized" });
+	}
 
 	const func = "requestSocials";
-
 	logInfo("Getting socials...");
 	let socials: Socials | undefined;
+
 	try {
 		const snap = await getFirestore()
 			.collection("socials")
-			.where("uid", "==", context.auth.uid)
+			.where("uid", "==", req.auth.uid)
 			.get();
 		socials = snap.docs[0]?.data() as Socials;
 	} catch (e) {
 		logError("Failed to get socials.", { error: e, func });
 		return response(HttpStatus.INTERNAL_SERVER_ERROR, {
-			message: "internal (get_socials) ",
+			message: "internal (get_socials)",
 		});
 	}
 
 	if (!socials) {
-		// create a new socials document
-		const app = (
-			await getFirestore()
-				.collection("applications")
-				.where("applicantId", "==", context.auth.uid)
-				.get()
-		).docs[0]?.data();
+		const appSnap = await getFirestore()
+			.collection("applications")
+			.where("applicantId", "==", req.auth.uid)
+			.get();
+		const app = appSnap.docs[0]?.data();
 		const docId = uuidv4();
 
 		if (!app) {
 			logInfo("Creating new socials with default values...");
-			// create with default
 			socials = {
 				instagram: "",
 				github: "",
 				linkedin: "",
 				discord: "",
+				website: "",
 				resumeRef: "",
+				resumeFilename: "",
+				profilePictureRef: "",
 				docId,
-				uid: context.auth.uid,
+				uid: req.auth.uid,
 				resumeVisibility: "Public",
+				resumeConsent: false,
 			};
 		} else {
 			logInfo("Creating new socials with selected application values...");
@@ -210,15 +130,20 @@ export const requestSocials = onCall(async (_, res) => {
 				github: app.githubUrl ?? "",
 				linkedin: app.linkedUrl ?? "",
 				discord: app.discord,
+				website: "",
 				resumeRef:
 					app.participatingAs === "Mentor"
 						? app.mentorResumeRef
 						: app.generalResumeRef,
+				resumeFilename: "",
+				profilePictureRef: "",
 				docId,
-				uid: context.auth.uid,
+				uid: req.auth.uid,
 				resumeVisibility: "Public",
+				resumeConsent: false,
 			};
 		}
+
 		await getFirestore().collection("socials").doc(docId).set(socials);
 		logInfo("Socials saved.");
 	}
@@ -226,49 +151,174 @@ export const requestSocials = onCall(async (_, res) => {
 	return response(HttpStatus.OK, { message: "ok", data: socials });
 });
 
-export const updateSocials = onCall(async (data: any, res) => {
-	const context = res as Context;
-	if (!context || !context.auth) {
+export const updateSocials = onCall(async (req) => {
+	if (!req.auth) {
 		logInfo("Authentication required.");
 		throw new HttpsError("permission-denied", "Not authenticated");
 	}
 
+	const data = req.data;
 	logInfo("Updating socials:", data);
-	logInfo("User ID in Func:", context.auth.uid);
+	logInfo("User ID in Func:", req.auth.uid);
 
 	try {
 		const doc = await getFirestore()
 			.collection("socials")
 			.doc(data.docId)
 			.get();
-		if (!doc.exists)
+
+		if (!doc.exists) {
 			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+		}
 
 		const socials = doc.data() as Socials;
-		if (socials.uid !== context.auth.uid)
+		if (socials.uid !== req.auth.uid) {
 			return response(HttpStatus.UNAUTHORIZED, {
 				message: "cannot update socials",
 			});
+		}
 
 		logInfo("Updating socials for application:", doc.id);
 		logInfo("Data in ref:", doc);
 
 		const db = getFirestore();
-		db.settings({ ignoreUndefinedProperties: true });
-		await db.collection("socials").doc(doc.id).update({
-			instagram: data.instagram,
-			linkedin: data.linkedin,
-			github: data.github,
-			discord: data.discord,
-			resumeRef: data.resumeRef,
-			resumeVisibility: data.resumeVisibility,
-		});
-		logInfo("Socials updated:", data);
+
+		const updateData = {
+			instagram: data.instagram || "",
+			linkedin: data.linkedin || "",
+			github: data.github || "",
+			discord: data.discord || "",
+			website: data.website || "",
+			resumeRef: data.resumeRef || "",
+			resumeFilename: data.resumeFilename || "",
+			profilePictureRef: data.profilePictureRef || "",
+			resumeVisibility: data.resumeVisibility || "Public",
+			resumeConsent: data.resumeConsent ?? false,
+			uid: data.uid,
+			docId: data.docId,
+		};
+
+		logInfo("About to update with data:", updateData);
+
+		await db.collection("socials").doc(doc.id).set(updateData, { merge: true });
+
+		logInfo("Socials updated successfully:", data);
 		return response(HttpStatus.OK, { message: "ok" });
 	} catch (error) {
-		logError("Failed to update socials", { error });
+		logError("Failed to update socials - error:", error);
 		throw new HttpsError("internal", "Failed to update socials", error);
 	}
+});
+// // DELETE IF NEW WORKS
+// export const OLDupdateSocials = onCall(async (data: any, res) => {
+// 	const context = res as Context;
+// 	if (!context || !context.auth) {
+// 		logInfo("Authentication required.");
+// 		throw new HttpsError("permission-denied", "Not authenticated");
+// 	}
+
+// 	logInfo("Updating socials:", data);
+// 	logInfo("User ID in Func:", context.auth.uid);
+
+// 	try {
+// 		const doc = await getFirestore()
+// 			.collection("socials")
+// 			.doc(data.docId)
+// 			.get();
+// 		if (!doc.exists)
+// 			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+
+// 		const socials = doc.data() as Socials;
+// 		if (socials.uid !== context.auth.uid)
+// 			return response(HttpStatus.UNAUTHORIZED, {
+// 				message: "cannot update socials",
+// 			});
+
+// 		logInfo("Updating socials for application:", doc.id);
+// 		logInfo("Data in ref:", doc);
+
+// 		const db = getFirestore();
+// 		db.settings({ ignoreUndefinedProperties: true });
+// 		await db.collection("socials").doc(doc.id).update({
+// 			instagram: data.instagram,
+// 			linkedin: data.linkedin,
+// 			github: data.github,
+// 			discord: data.discord,
+// 			resumeRef: data.resumeRef,
+// 			resumeVisibility: data.resumeVisibility,
+// 		});
+// 		logInfo("Socials updated:", data);
+// 		return response(HttpStatus.OK, { message: "ok" });
+// 	} catch (error) {
+// 		logError("Failed to update socials", { error });
+// 		throw new HttpsError("internal", "Failed to update socials", error);
+// 	}
+// });
+
+export const updatePhoneNumber = onCall(async (req) => {
+	if (!req.auth) {
+		logInfo("Authentication required.");
+		throw new HttpsError("permission-denied", "Not authenticated");
+	}
+
+	try {
+		const phoneSchema = z.object({
+			country: z.string().min(1, "Country code is required"),
+			number: z
+				.string()
+				.regex(/^\d{3}-\d{3}-\d{4}$/, "Invalid phone number format"),
+		});
+
+		const result = phoneSchema.safeParse(req.data.phone);
+		if (!result.success) {
+			throw new HttpsError("invalid-argument", "Invalid phone number format");
+		}
+
+		const applicationSnap = await getFirestore()
+			.collection("applications")
+			.where("applicantId", "==", req.auth.uid)
+			.get();
+		if (applicationSnap.empty)
+			return response(HttpStatus.NOT_FOUND, { message: "not found" });
+
+		const applicationDoc = applicationSnap.docs[0];
+		console.log("Updating phone number for application:", req.data);
+		await getFirestore()
+			.collection("applications")
+			.doc(applicationDoc.id)
+			.update({
+				phone: {
+					country: req.data.phone.country,
+					number: req.data.phone.number,
+				},
+				timestamp: new Date(),
+			});
+		logInfo("Phone number updated successfully:", req.data.phone);
+		return response(HttpStatus.OK, { message: "ok" });
+	} catch (error) {
+		logError("Failed to update phone number", { error });
+		throw new HttpsError("internal", "Failed to update phone number", error);
+	}
+});
+
+export const updateApplicationField = onCall(async (req) => {
+	const { field, value } = req.data;
+	const uid = req.auth?.uid;
+
+	if (!uid) throw new HttpsError("unauthenticated", "Login required");
+
+	const snap = await getFirestore()
+		.collection("applications")
+		.where("applicantId", "==", uid)
+		.limit(1)
+		.get();
+
+	const doc = snap.docs[0];
+	if (!doc) throw new HttpsError("not-found", "No application found");
+
+	await doc.ref.update({ [field]: value });
+
+	return { message: "Field updated" };
 });
 
 /**
@@ -324,32 +374,35 @@ export const verifyGitHubEmail = onCall(async (data: any, res) => {
 	}
 });
 
-export const logEvent = onCall((data: any, res) => {
-	const context = res as Context;
+export const logEvent = onCall(
+	{
+		cors: ["https://dashboard.spurhacks.com"],
+	},
+	(req) => {
+		const uid = req.auth?.uid;
 
-	const uid = context?.auth?.uid;
+		const payloadValidation = z.object({
+			type: z.string().refine((val) => ["error", "info", "log"].includes(val)),
+			data: z.any(),
+		});
 
-	const payloadValidation = z.object({
-		type: z.string().refine((val) => ["error", "info", "log"].includes(val)),
-		data: z.any(),
-	});
-
-	const result = payloadValidation.safeParse(data);
-	if (!result.success) logInfo("Invalid log payload");
-	else {
-		switch (result.data.type) {
-			case "error":
-				logError({ data: result.data.data, uid });
-				break;
-			case "info":
-				logInfo({ data: result.data.data, uid });
-				break;
-			default:
-				log({ data: result.data.data, uid });
-				break;
+		const result = payloadValidation.safeParse(req.data);
+		if (!result.success) logInfo("Invalid log payload");
+		else {
+			switch (result.data.type) {
+				case "error":
+					logError({ data: result.data.data, uid });
+					break;
+				case "info":
+					logInfo({ data: result.data.data, uid });
+					break;
+				default:
+					log({ data: result.data.data, uid });
+					break;
+			}
 		}
-	}
-});
+	},
+);
 
 async function internalGetTicketData(id: string, extended = false) {
 	logInfo("Checking for ticket data...");
@@ -638,18 +691,18 @@ export const applicationCreated = onDocumentCreated(
   <div class="container">
 
       <img src="${FE_URL}/spurhacks-full-logo-white.png" alt="SpurHacks Logo" class="logo" />
-  
+
       <h1>
-        <span>We’ve received</span>
+        <span>We've received</span>
         <span>your application! 💌</span>
       </h1>
-  
+
       <div class="message">
         <strong>Thanks for applying to SpurHacks 2025!</strong><br /><br />
         This email is a confirmation that your application submission was successful. Sit tight—you can expect a status update <strong>early June.</strong><br /><br />
-        If you highlighted travel accommodations or reimbursements in your application, we’ll be sure to contact you with further details.
+        If you highlighted travel accommodations or reimbursements in your application, we'll be sure to contact you with further details.
       </div>
-  
+
       <div class="social">
         In the meantime, stay updated with the latest news on our socials:
         <div class="social-icon">
@@ -693,27 +746,26 @@ export const applicationCreated = onDocumentCreated(
 );
 
 export {
-	isTeamNameAvailable,
 	createTeam,
-	getTeamByUser,
-	inviteMember,
-	updateTeamName,
-	removeMembers,
 	deleteTeam,
-	validateTeamInvitation,
+	getTeam,
+	inviteMember,
+	isTeamNameAvailable,
+	leaveTeam,
 	rejectInvitation,
-	checkInvitation,
-	getUserInvitations,
+	removeMembers,
+	updateTeamName,
+	validateTeamInvitation,
+	getInvitations,
 } from "./teams";
 
 export { createTicket } from "./apple";
 
-export { createPassClass, createPassObject } from "./google";
+export { addToGoogleWallet } from "./google";
 
 export {
 	verifyRSVP,
 	withdrawRSVP,
-	joinWaitlist,
-	// expiredSpotCleanup,
-	// moveToSpots,
 } from "./rsvp";
+
+export { createTicketDoc } from "./ticket";

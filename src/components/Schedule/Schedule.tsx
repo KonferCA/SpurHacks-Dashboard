@@ -99,12 +99,15 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 	const timeSlots = [];
 
 	for (let hour = timeRange.start; hour < timeRange.end; hour++) {
-		const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-		const period = hour < 12 ? "AM" : "PM";
+		const actualHour = hour >= 24 ? hour - 24 : hour;
+		const displayHour = actualHour === 0 ? 12 : actualHour > 12 ? actualHour - 12 : actualHour;
+		const period = actualHour < 12 ? "AM" : "PM";
+		
+		const dayIndicator = hour >= 24 ? " (+1)" : "";
 
 		timeSlots.push({
 			hour,
-			display: hour === 0 ? "12:00 AM" : `${displayHour}:00 ${period}`,
+			display: actualHour === 0 ? `12:00 AM${dayIndicator}` : `${displayHour}:00 ${period}${dayIndicator}`,
 		});
 	}
 
@@ -171,8 +174,6 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 						top="0"
 						zIndex={40}
 						bg="bg"
-						borderBottom="1px solid"
-						borderColor="gray.700"
 						boxShadow="0 2px 8px rgba(0,0,0,0.3)"
 					>
 						<Box
@@ -180,6 +181,8 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 							minW={`${timelineWidth}px`}
 							h={DESKTOP_TIME_INDICATOR_HEIGHT}
 							px={4}
+							borderBottom="1px solid"
+							borderColor="gray.700"
 						>
 							{timeSlots.map((slot, i) => {
 								const offset = 16 + (i / totalHours) * (timelineWidth - 32);
@@ -206,7 +209,6 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 						<Box
 							minW={`${timelineWidth}px`}
 							position="relative"
-							px={4}
 							pt={4}
 							pb={4}
 							h="100%"
@@ -630,11 +632,15 @@ function scheduleColumnHelper(time: TimeType): number {
 	return hour + minute / 60;
 }
 
-export function format12HourTime(time: TimeType): string {
+export function format12HourTime(time: TimeType, showDayIndicator = true): string {
 	const [hour, minute] = time.split(":").map(Number);
-	const period = hour >= 12 ? "PM" : "AM";
-	const formattedHour = hour % 12 || 12;
+	
+	const actualHour = hour >= 24 ? hour - 24 : hour;
+	const period = actualHour >= 12 ? "PM" : "AM";
+	const formattedHour = actualHour % 12 || 12;
 	const formattedMinute = minute.toString().padStart(2, "0");
+	
+	const dayIndicator = showDayIndicator && hour >= 24 ? " (+1)" : "";
 
-	return `${formattedHour}:${formattedMinute} ${period}`;
+	return `${formattedHour}:${formattedMinute} ${period}${dayIndicator}`;
 }

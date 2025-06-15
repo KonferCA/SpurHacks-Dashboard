@@ -1,12 +1,16 @@
-import axios from "axios";
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { error as logError, info as logInfo } from "firebase-functions/logger";
-import { HttpsError, onCall } from "firebase-functions/v2/https";
+import {
+	type CallableRequest,
+	HttpsError,
+	onCall,
+} from "firebase-functions/v2/https";
 import { PKPass } from "passkit-generator";
 import { v4 as uuidv4 } from "uuid";
-import type { Context } from "./types";
 
 const signerCert = process.env.APPLE_WALLET_CERTS_SIGNER_CERT;
 const signerKey = process.env.APPLE_WALLET_CERTS_SIGNER_KEY;
@@ -16,14 +20,16 @@ const signerKeyPassphrase =
 const teamIdentifier = process.env.APPLE_WALLET_CERTS_TEAM_ID;
 
 // apple wallet ticket
-export const createTicket = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context?.auth) {
+export const createTicket = onCall(async (request: CallableRequest) => {
+	if (!request.auth) {
+		logError("createTicket: Not authenticated - request.auth is missing.");
 		throw new HttpsError("permission-denied", "Not authenticated");
 	}
+	const contextAuth = request.auth;
+	logInfo("createTicket: Auth context present:", contextAuth);
 
 	try {
-		const userId = context.auth.uid;
+		const userId = contextAuth.uid;
 
 		const user = await getAuth().getUser(userId);
 		const app = (
@@ -32,6 +38,8 @@ export const createTicket = onCall(async (_, res) => {
 				.where("applicantId", "==", userId)
 				.get()
 		).docs[0]?.data();
+
+		const role = app?.participatingAs ?? "Hacker";
 
 		let firstName = app?.firstName;
 		let lastName = app?.lastName;
@@ -73,16 +81,15 @@ export const createTicket = onCall(async (_, res) => {
 
 		const passJsonBuffer = Buffer.from(
 			JSON.stringify({
-				passTypeIdentifier: "pass.com.dashboard.hawkhacks",
+				passTypeIdentifier: "pass.pass.com.spurhacks.eventticket",
 				formatVersion: 1,
 				teamIdentifier: teamIdentifier,
 				organizationName: "SpurHacks",
 				serialNumber: ticketId,
-				description: "Access to SpurHacks 2024",
+				description: "SpurHacks 2025 Event Pass",
 				foregroundColor: "rgb(255, 255, 255)",
-				backgroundColor: "rgb(12, 105, 117)",
-				labelColor: "rgb(255, 255, 255)",
-				logoText: "SpurHacks",
+				backgroundColor: "rgb(19, 21, 28)",
+				labelColor: "rgb(170, 170, 185)",
 				barcodes: [
 					{
 						message: `${process.env.FE_URL}/ticket/${ticketId}`,
@@ -92,49 +99,45 @@ export const createTicket = onCall(async (_, res) => {
 				],
 				locations: [
 					{
-						latitude: 51.50506,
-						longitude: -0.0196,
-						relevantText: "Event Entrance",
+						latitude: 29.584,
+						longitude: -98.6194,
+						relevantText: "SpurHacks Event Entrance",
 					},
 				],
-				generic: {
+				eventTicket: {
 					headerFields: [
 						{
-							key: "eventHeader",
-							label: "Event Date",
-							value: "May 17, 2024",
+							key: "userRole",
+							label: "",
+							value: role,
 						},
 					],
-					primaryFields: [
+					primaryFields: [],
+					secondaryFields: [
 						{
-							key: "eventName",
-							label: "Participant",
+							key: "attendeeName",
+							label: "ATTENDEE",
 							value: `${firstName} ${lastName}`,
-						},
-						{
-							key: "teamName",
-							label: "Team",
-							value: "Team Here",
 						},
 					],
 					auxiliaryFields: [
 						{
-							key: "location",
-							label: "Location",
-							value: "Wilfrid Laurier University",
+							key: "eventLocation",
+							label: "EVENT ADDRESS",
+							value: "SPUR Campus, Rim C",
 						},
 						{
-							key: "startTime",
-							label: "Start Time",
-							value: "6:00 PM",
+							key: "eventDate",
+							label: "DATE",
+							value: "2025-06-20",
+							textAlignment: "PKTextAlignmentRight",
 						},
 					],
 					backFields: [
 						{
 							key: "moreInfo",
 							label: "More Info",
-							value:
-								"For more details, visit our website at hawkhacks.ca or contact support@hawkhacks.ca",
+							value: "For more details, visit our website at spurhacks.com",
 						},
 						{
 							key: "emergencyContact",
@@ -150,74 +153,73 @@ export const createTicket = onCall(async (_, res) => {
 					"logo@2x": {
 						filename: "logo@2x.png",
 					},
+					icon: {
+						filename: "icon.png",
+					},
+					"icon@2x": {
+						filename: "icon@2x.png",
+					},
+					strip: {
+						filename: "strip.png",
+					},
+					"strip@2x": {
+						filename: "strip@2x.png",
+					},
 				},
 			}),
 		);
 
-		const iconResponse = await axios.get("https://hawkhacks.ca/icon.png", {
-			responseType: "arraybuffer",
-		});
-		const icon2xResponse = await axios.get("https://hawkhacks.ca/icon.png", {
-			responseType: "arraybuffer",
-		});
-		const iconBuffer = iconResponse.data;
-		const icon2xBuffer = icon2xResponse.data;
-
-		const ipadHawkResponse = await axios.get(
-			"https://portal.hawkhacks.ca/thumbnail@3x.png",
-			{ responseType: "arraybuffer" },
+		// load all required images
+		const assetsDir = path.join(__dirname, "..", "assets");
+		const logoBuffer = fs.readFileSync(path.join(assetsDir, "logo-banner.png"));
+		const iconBuffer = fs.readFileSync(path.join(assetsDir, "spur-icon.png"));
+		const icon2xBuffer = fs.readFileSync(
+			path.join(assetsDir, "spur-icon@2x.png"),
 		);
-		const ipadHawk = ipadHawkResponse.data;
+		const stripBuffer = fs.readFileSync(
+			path.join(assetsDir, "dark-theme", "strip.png"),
+		);
+		const strip2xBuffer = fs.readFileSync(
+			path.join(assetsDir, "dark-theme", "strip@2x.png"),
+		);
 
+		// validate certificates
 		if (!signerCert || !signerKey || !wwdr) {
-			logError("Missing required Apple certificates", {
-				signerCert: !!signerCert,
-				signerKey: !!signerKey,
-				wwdr: !!wwdr,
-			});
-			throw new HttpsError(
-				"internal",
-				"Server Configuration Error: Missing required certificates",
-			);
+			throw new HttpsError("internal", "missing apple wallet certificates");
 		}
 
-		const pass = new PKPass(
-			{
-				"pass.json": passJsonBuffer,
-				"icon.png": iconBuffer,
-				"icon@2x.png": icon2xBuffer,
-				"logo.png": iconBuffer,
-				"logo@2x.png": icon2xBuffer,
-				"thumbnail@3x.png": ipadHawk,
-			},
-			{
-				signerCert: signerCert,
-				signerKey: signerKey,
-				wwdr: wwdr,
-				signerKeyPassphrase: signerKeyPassphrase,
-			},
-		);
+		// prepare pass files
+		const passTemplateFiles: { [key: string]: Buffer } = {
+			"pass.json": passJsonBuffer,
+			"icon.png": iconBuffer,
+			"icon@2x.png": icon2xBuffer,
+			"logo.png": logoBuffer,
+			"logo@2x.png": logoBuffer,
+			"strip.png": stripBuffer,
+			"strip@2x.png": strip2xBuffer,
+		};
 
+		// prepare certificates
+		const certificatesPayload = {
+			signerCert,
+			signerKey,
+			wwdr,
+			...(signerKeyPassphrase && { signerKeyPassphrase }),
+		};
+
+		// generate and upload pass
+		const pass = new PKPass(passTemplateFiles, certificatesPayload);
 		const buffer = pass.getAsBuffer();
 
-		const storageRef = getStorage().bucket();
-		const fileRef = storageRef.file(`passes/${userId}/pass.pkpass`);
+		const fileRef = getStorage().bucket().file(`passes/${userId}/pass.pkpass`);
 		await fileRef.save(buffer, {
-			metadata: {
-				contentType: "application/vnd.apple.pkpass",
-			},
+			metadata: { contentType: "application/vnd.apple.pkpass" },
 		});
-
 		await fileRef.makePublic();
-		const passUrl = fileRef.publicUrl();
 
-		return { url: passUrl };
+		return { url: fileRef.publicUrl() };
 	} catch (error) {
-		logError("Error creating ticket:", { error });
-		throw new HttpsError(
-			"internal",
-			"Failed to create ticket",
-			error instanceof Error ? error.message : "Unknown error",
-		);
+		logError("failed to create apple wallet pass:", error);
+		throw new HttpsError("internal", "failed to create ticket");
 	}
 });

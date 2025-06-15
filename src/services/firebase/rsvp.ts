@@ -6,13 +6,7 @@ import type { CloudFunctionResponse } from "./types";
 export async function verifyRSVP() {
 	const verifyFn = httpsCallable(functions, "verifyRSVP");
 	try {
-		const res = await verifyFn();
-		const data = res.data as {
-			status: number;
-			verified: boolean;
-			message?: string;
-		};
-		return data;
+		await verifyFn();
 	} catch (e) {
 		logEvent("error", {
 			event: "verify_rsvp",
@@ -20,11 +14,7 @@ export async function verifyRSVP() {
 			name: (e as Error).name,
 			stack: (e as Error).stack,
 		});
-		return {
-			status: 500,
-			verified: false,
-			message: "Internal server error",
-		};
+		throw e; // pass it down for caller to handle
 	}
 }
 
@@ -34,11 +24,9 @@ export async function withdrawRSVP() {
 		"withdrawRSVP",
 	);
 	try {
-		const res = await fn();
-		const data = res.data;
-		return data;
+		await fn();
 	} catch (error) {
-		logError(error as Error, "error_dismissing_rsvp");
+		logError(error as Error, "error_revoking_rsvp");
 		throw error;
 	}
 }

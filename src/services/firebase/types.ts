@@ -12,6 +12,7 @@ export interface MemberData {
 	lastName: string;
 	email: string;
 	status: "pending" | "rejected" | "accepted";
+	profilePictureRef?: string;
 }
 
 export interface TeamData {
@@ -19,6 +20,7 @@ export interface TeamData {
 	members: MemberData[]; // the uid of all the members
 	teamName: string;
 	isOwner: boolean;
+	ownerEmail: string; // email of the team owner
 }
 
 export interface CloudFunctionResponse<T> {
@@ -40,10 +42,14 @@ export interface Socials {
 	github: string;
 	linkedin: string;
 	discord: string;
+	website?: string;
 	resumeRef: string;
+	resumeFilename?: string;
+	profilePictureRef?: string;
 	docId: string;
 	uid: string;
 	resumeVisibility?: ResumeVisibility;
+	resumeConsent?: boolean;
 }
 
 export interface TicketData {

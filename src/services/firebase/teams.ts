@@ -11,11 +11,11 @@ import type {
 /**
  * Get the team the authenticated user belongs to.
  */
-export async function getTeamByUser() {
+export async function getTeam() {
 	try {
 		const fn = httpsCallable<unknown, CloudFunctionResponse<TeamData>>(
 			functions,
-			"getTeamByUser",
+			"getTeam",
 		);
 		const { data } = await fn();
 		return data;
@@ -68,13 +68,13 @@ export async function createTeam(name: string) {
 /**
  * Calls the cloud function that sends emails to the given members.
  */
-export async function inviteMember(email: string) {
+export async function inviteMember(emails: string[]) {
 	try {
 		const fn = httpsCallable<unknown, CloudFunctionResponse<MemberData>>(
 			functions,
 			"inviteMember",
 		);
-		const { data } = await fn({ email });
+		const { data } = await fn({ emails });
 		return data;
 	} catch (e) {
 		await logError(e as Error, "invite_members_error");
@@ -113,6 +113,23 @@ export async function removeMembers(emails: string[]) {
 		return data;
 	} catch (e) {
 		await logError(e as Error, "remove_members_error");
+		throw e;
+	}
+}
+
+/**
+ * Calls the cloud function 'leaveTeam' that allows any team member to leave their current team
+ */
+export async function leaveTeam() {
+	try {
+		const fn = httpsCallable<unknown, CloudFunctionResponse<void>>(
+			functions,
+			"leaveTeam",
+		);
+		const { data } = await fn();
+		return data;
+	} catch (e) {
+		await logError(e as Error, "leave_team_error");
 		throw e;
 	}
 }
@@ -190,11 +207,11 @@ export async function checkInvitation(code: string) {
 /**
  * Facilitate users to accept team invitations when they didn't receive an email
  */
-export async function getUserInviations() {
+export async function getInvitations() {
 	try {
 		const fn = httpsCallable<unknown, CloudFunctionResponse<Invitation[]>>(
 			functions,
-			"getUserInvitations",
+			"getInvitations",
 		);
 		const { data } = await fn();
 		return data;

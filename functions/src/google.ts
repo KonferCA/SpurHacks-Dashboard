@@ -6,7 +6,7 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { GoogleAuth } from "google-auth-library";
 import * as jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import type { Context } from "./types";
+import { cors } from "./cors";
 
 const credentials = {
 	type: process.env.GOOGLE_WALLET_TYPE,
@@ -29,132 +29,14 @@ const httpClient = new GoogleAuth({
 	scopes: "https://www.googleapis.com/auth/wallet_object.issuer",
 });
 
-//Google wallet class
-export const createPassClass = onCall(async (_, res) => {
-	const context = res as Context;
-	if (!context?.auth) {
-		return {
-			status: 401,
-			message: "Unauthorized",
-		};
-	}
-
-	const baseUrl = "https://walletobjects.googleapis.com/walletobjects/v1";
-	const issuerid = process.env.GOOGLE_WALLET_ISSUERID;
-
-	const classId = `${issuerid}.hawkhacks-ticket`; //dont put uuidv4 in the classId for pass class it breaks it
-
-	const updatedClass = {
-		id: classId,
-		classTemplateInfo: {
-			cardTemplateOverride: {
-				cardRowTemplateInfos: [
-					{
-						twoItems: {
-							startItem: {
-								firstValue: {
-									fields: [
-										{
-											fieldPath: "object.textModulesData['NAME']",
-										},
-									],
-								},
-							},
-							endItem: {
-								firstValue: {
-									fields: [
-										{
-											fieldPath: "object.textModulesData['EMAIL']",
-										},
-									],
-								},
-							},
-						},
-					},
-					{
-						threeItems: {
-							startItem: {
-								firstValue: {
-									fields: [
-										{
-											fieldPath: "object.textModulesData['TYPE']",
-										},
-									],
-								},
-							},
-							middleItem: {
-								firstValue: {
-									fields: [
-										{
-											fieldPath: "object.textModulesData['FROM']",
-										},
-									],
-								},
-							},
-							endItem: {
-								firstValue: {
-									fields: [
-										{
-											fieldPath: "object.textModulesData['TO']",
-										},
-									],
-								},
-							},
-						},
-					},
-				],
-			},
-		},
-		linksModuleData: {
-			uris: [
-				{
-					uri: "https://hawkhacks.ca/",
-					description: "Hawkhacks 2024",
-					id: "official_site",
-				},
-			],
-		},
-	};
-
-	try {
-		// Try to get the class, if it exists
-		const response = await httpClient.request({
-			url: `${baseUrl}/genericClass/${classId}`,
-			method: "PUT",
-			data: updatedClass,
-		});
-
-		return {
-			result: "Class updated successfully",
-			details: response.data,
-		};
-	} catch (error) {
-		if (error instanceof Response && error.status === 404) {
-			// Class does not exist, create it
-			const createResponse = await httpClient.request({
-				url: `${baseUrl}/genericClass`,
-				method: "POST",
-				data: updatedClass,
-			});
-
-			return {
-				result: "Class created",
-				details: createResponse.data,
-			};
-		}
-		logInfo(error);
-		throw new HttpsError("unknown", "Failed to handle request", error);
-	}
-});
-
 //Google wallet Object
-export const createPassObject = onCall(async (data: any, res) => {
-	const context = res as Context;
-	if (!context?.auth) {
+export const addToGoogleWallet = onCall({ cors }, async (req) => {
+	if (!req.auth) {
 		throw new HttpsError("permission-denied", "Not authenticated");
 	}
-	const func = "createPassObject";
-	const userId = context.auth.uid;
+
+	const func = "addToGooleWallet";
+	const userId = req.auth.uid;
 
 	const user = await getAuth().getUser(userId);
 	const app = (
@@ -164,17 +46,19 @@ export const createPassObject = onCall(async (data: any, res) => {
 			.get()
 	).docs[0]?.data();
 
-	let firstName = app?.firstName;
-	let lastName = app?.lastName;
-	const type = user.customClaims?.type ?? "N/A";
+	if (!app) {
+		throw new HttpsError("invalid-argument", "No application");
+	}
+
+	let firstName = app.firstName;
+	let lastName = app.lastName;
+	const type = parseUserType(user.customClaims?.type);
+
 	if (!app) {
 		logInfo(
 			"No application found for user. Will try to get name from user record.",
 		);
-		const [f, l] = user?.displayName?.split(" ") ?? [
-			user.customClaims?.type ?? "N/A",
-			"N/A",
-		];
+		const [f, l] = user?.displayName?.split(" ") ?? ["Unknown", "Hacker"];
 		firstName = f;
 		lastName = l;
 	}
@@ -203,20 +87,20 @@ export const createPassObject = onCall(async (data: any, res) => {
 		});
 	}
 
-	const userEmail = context.auth.token?.email || data.email;
+	const userEmail = app.email;
 
 	const objectSuffix = userEmail.replace(/[^\w.-]/g, "_");
 	const objectId = `${process.env.GOOGLE_WALLET_ISSUERID}.${objectSuffix}`;
-	const classId = `${process.env.GOOGLE_WALLET_ISSUERID}.hawkhacks-ticket`;
+	const classId = `${process.env.GOOGLE_WALLET_ISSUERID}.spurhacks-generic-ticket`;
 	const baseUrl = "https://walletobjects.googleapis.com/walletobjects/v1";
+	const qrCodeValue = `https://dashboard.spurhacks.com/ticket/${ticketId}`;
 
 	const updatedGenericObject = {
 		id: `${objectId}`,
 		classId: `${classId}`,
-		genericType: "GENERIC_TYPE_UNSPECIFIED",
 		logo: {
 			sourceUri: {
-				uri: "https://hawkhacks.ca/icon.png",
+				uri: "https://dashboard.spurhacks.com/gradient-icon.png",
 			},
 			contentDescription: {
 				defaultValue: {
@@ -228,65 +112,57 @@ export const createPassObject = onCall(async (data: any, res) => {
 		cardTitle: {
 			defaultValue: {
 				language: "en-US",
-				value: "SpurHacks 2024",
+				value: "SpurHacks 2025",
 			},
 		},
 		subheader: {
 			defaultValue: {
 				language: "en-US",
-				value: "Wilfrid Laurier University",
+				value: "Attendee",
 			},
 		},
 		header: {
 			defaultValue: {
 				language: "en-US",
-				value: "SpurHacks 2024",
+				value: `${firstName} ${lastName}`,
 			},
-		},
-		linksModuleData: {
-			uris: [
-				{
-					kind: "walletobjects#uri",
-					uri: "https://www.hawkhacks.ca",
-					description: "Visit SpurHacks",
-				},
-			],
 		},
 		textModulesData: [
 			{
-				id: "NAME",
-				header: "Name",
-				body: `${firstName} ${lastName}`,
+				id: "event_address",
+				header: "Event Address",
+				body: "SPUR Campus",
 			},
 			{
-				id: "TYPE",
+				id: "building",
+				header: "Building",
+				body: "Rim C",
+			},
+			{
+				id: "type",
 				header: "Type",
-				body: type[0].toUpperCase() + type.substring(1),
+				body: type,
 			},
 			{
-				id: "EMAIL",
-				header: "Email",
-				body: `${userEmail}`,
+				id: "date",
+				header: "Date",
+				body: "6/20-6/22",
 			},
 			{
-				id: "FROM",
-				header: "From",
-				body: "May 17th",
-			},
-			{
-				id: "TO",
-				header: "To",
-				body: "May 19th",
+				id: "start_time",
+				header: "Start Time",
+				body: "5:00PM",
 			},
 		],
 		barcode: {
 			type: "QR_CODE",
-			value: `${process.env.FE_URL}/ticket/${ticketId}`,
+			value: qrCodeValue,
+			alternateText: "",
 		},
-		hexBackgroundColor: "#27393F",
+		hexBackgroundColor: "#13151c",
 		heroImage: {
 			sourceUri: {
-				uri: "https://storage.googleapis.com/spurhacks-dashboard.appspot.com/uploads%2Fwallet-banner.png",
+				uri: "https://dashboard.spurhacks.com/google-wallet-header-pic.png",
 			},
 			contentDescription: {
 				defaultValue: {
@@ -368,3 +244,14 @@ export const createPassObject = onCall(async (data: any, res) => {
 
 	return { url: saveUrl };
 });
+
+function parseUserType(userType?: string) {
+	// Default to N/A
+	if (!userType) return "N/A";
+
+	// Capitalize
+	return userType
+		.split(" ")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join(" ");
+}

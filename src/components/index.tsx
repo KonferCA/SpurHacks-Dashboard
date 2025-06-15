@@ -48,13 +48,6 @@ export { LoadingAnimation } from "./LoadingAnimation";
 
 /*
  *
- * @component Card
- *
- */
-export { Card } from "./Card/Card";
-
-/*
- *
  * @component Accordion
  *
  */
@@ -87,3 +80,10 @@ export { Modal } from "./Modal";
  *
  */
 export { RouterChakraLink } from "./RouterChakraLink";
+
+/*
+ *
+ * @component ProfilePicture
+ *
+ */
+export { ProfilePicture } from "./ProfilePicture";

@@ -234,6 +234,11 @@ export const validations: {
 				.safeParse(v),
 		),
 
+	// Referral/Give Away
+	enterGiveAway: (v) =>
+		formatResult(z.enum(["Yes", "No", ""]).optional().safeParse(v)),
+	referredBy: (v) => formatResult(z.string().optional().safeParse(v)),
+
 	// Optionals or auto filled
 	email: () => null,
 	generalResumeRef: () => null,

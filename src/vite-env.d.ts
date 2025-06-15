@@ -20,4 +20,5 @@ interface ImportMetaEnv {
 	VITE_STORAGE_EMU_PORT: string;
 	VITE_FUNCTIONS_EMU_PORT: string;
 	VITE_APP_VERSION: string;
+	VITE_BASE_URL: string;
 }

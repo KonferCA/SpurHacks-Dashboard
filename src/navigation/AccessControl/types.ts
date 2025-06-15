@@ -1,4 +1,5 @@
-import type { ApplicationsHookValue } from "@/hooks/use-applications";
+import type { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import type { UserWithClaims } from "@/providers";
 import { ReactNode } from "react";
 
@@ -8,7 +9,8 @@ import { ReactNode } from "react";
  */
 export interface AccessControlContext {
 	user: UserWithClaims | null;
-	applicationsCtx: ApplicationsHookValue;
+	applicationsCtx: ReturnType<typeof useApplications>;
+	deadlinesCtx: ReturnType<typeof useDeadlines>;
 }
 
 /**

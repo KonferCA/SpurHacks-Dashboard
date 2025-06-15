@@ -10,6 +10,7 @@ import {
 
 import { LoadingAnimation } from "@/components";
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import { AccessControl } from "@/navigation/AccessControl/AccessControl";
 import { useAuth } from "@/providers";
 
@@ -34,13 +35,15 @@ import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
 import { VerifyEmailPage } from "@/pages/miscellaneous/verify-email.page";
-import { VerifyRSVP } from "@/pages/miscellaneous/verify-rsvp.page";
-import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
+// NOTE: Uncomment this when the page is ready
+// import { ViewTicketPage } from "@/pages/miscellaneous/view-ticket.page";
 
 import { Redirect } from "@/navigation/redirect";
 
+import { AccountPage } from "@/pages/account.page";
 // Local imports
 import {
+	disable,
 	hasApplied,
 	hasRSVP,
 	hasVerifiedEmail,
@@ -127,6 +130,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 	// Get current user and application data
 	const { isLoading: loadingAuth } = useAuth();
 	const { isLoading: loadingApplications } = useApplications();
+	const { isLoading: loadingDeadlines } = useDeadlines();
 
 	// State for storing generated routes
 	const routes = useMemo(() => {
@@ -140,10 +144,12 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				path: paths.notFound,
 				element: <NotFoundPage />,
 			},
-			{
-				path: paths.ticket,
-				element: <ViewTicketPage />,
-			},
+			// NOTE: This page has been removed for now since they won't be scanning it any time soon.
+			//       The page needs an update on how it fetches the ticket and renders the information.
+			// {
+			// 	path: paths.ticket,
+			// 	element: <ViewTicketPage />,
+			// },
 		];
 
 		// Routes requiring basic authentication
@@ -170,17 +176,35 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.schedule,
 				element: <SchedulePage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+
+				],
 			},
 			{
 				path: paths.networking,
 				element: <NetworkingPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.myTicket,
 				element: <MyTicketPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.apply,
@@ -196,24 +220,42 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				],
 			},
 			{
-				path: paths.verifyRSVP,
-				element: <VerifyRSVP />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
-			},
-			{
 				path: paths.myTeam,
 				element: <MyTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.joinTeam,
 				element: <JoinTeamPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
 			},
 			{
 				path: paths.perks,
 				element: <PerksPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					isAccepted,
+					hasRSVP,
+					disable,
+				],
+			},
+			{
+				path: paths.myAccount,
+				element: <AccountPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail],
 			},
 		];
 
@@ -257,7 +299,12 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		// Clear any existing timeout
 		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 
-		if (routes.length && !loadingApplications && !loadingAuth) {
+		if (
+			routes.length &&
+			!loadingApplications &&
+			!loadingAuth &&
+			!loadingDeadlines
+		) {
 			// Prevent random flashes in the DOM due to updates
 			timeoutRef.current = window.setTimeout(
 				() => setLoadingRoutes(false),
@@ -270,7 +317,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 		timeoutRef.current = window.setTimeout(() => setLoadingRoutes(false), 1500);
 
 		return cleanUp;
-	}, [loadingAuth, routes, loadingApplications]);
+	}, [loadingAuth, routes, loadingApplications, loadingDeadlines]);
 
 	return (
 		<RoutesContext.Provider

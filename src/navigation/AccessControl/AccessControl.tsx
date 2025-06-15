@@ -1,4 +1,5 @@
 import { useApplications } from "@/hooks/use-applications";
+import { useDeadlines } from "@/hooks/use-deadlines";
 import { useUser } from "@/providers";
 import { type FC, useMemo } from "react";
 import { Navigate } from "react-router-dom";
@@ -22,6 +23,7 @@ export const AccessControl: FC<AccessControlProps> = ({
 	// Get current user and application data from context
 	const { user } = useUser();
 	const applicationsCtx = useApplications();
+	const deadlinesCtx = useDeadlines();
 	const accessOpts = useMemo(() => {
 		// If no access check is provided, allow access
 		if (typeof accessCheck === "undefined") {
@@ -31,6 +33,7 @@ export const AccessControl: FC<AccessControlProps> = ({
 		const ctx: AccessControlContext = {
 			user,
 			applicationsCtx,
+			deadlinesCtx,
 		};
 
 		try {
@@ -54,7 +57,7 @@ export const AccessControl: FC<AccessControlProps> = ({
 			// Throw the error if is not a redirect
 			throw e;
 		}
-	}, [user, applicationsCtx, accessCheck]);
+	}, [user, applicationsCtx, accessCheck, deadlinesCtx]);
 
 	// Check if user meets access requirements, redirect if they don't
 	if (!accessOpts.allow) {
