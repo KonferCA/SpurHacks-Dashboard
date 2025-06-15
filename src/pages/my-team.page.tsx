@@ -632,15 +632,15 @@ export const MyTeamPage = () => {
 												justify="space-between"
 												align="center"
 												py={3}
-												px={4}
+												px={{ base: 3, md: 4 }}
 												bg="#1f1e2d"
 												borderRadius="2xl"
 												mb={2}
 											>
-												<Flex align="center" gap={3}>
+												<Flex align="center" gap={{ base: 2, md: 3 }}>
 													{/* Profile Picture */}
 													<Box
-														boxSize="40px"
+														boxSize={{ base: "36px", md: "40px" }}
 														borderRadius="full"
 														bg="#1f1e2d"
 														display="flex"
@@ -704,12 +704,19 @@ export const MyTeamPage = () => {
 																</Tooltip>
 															)}
 														</Flex>
-														<Text color="fg.muted" fontSize="sm">
+														<Text 
+															color="fg.muted" 
+															fontSize="sm"
+															overflow="hidden"
+															textOverflow="ellipsis"
+															whiteSpace="nowrap"
+															maxWidth={{ base: "120px", sm: "160px", md: "200px", lg: "none" }}
+														>
 															{member.email}
 														</Text>
 													</Box>
 												</Flex>
-												<Flex align="center" gap={2}>
+												<Flex align="center" gap={{ base: 1, md: 2 }}>
 													{team.isOwner && member.email !== currentUser?.email && (
 														<Box
 															cursor="pointer"
@@ -717,13 +724,13 @@ export const MyTeamPage = () => {
 															_hover={{ color: "red.400" }}
 															color="red.400"
 														>
-															<Icon as={FaRegCircleXmark} fontSize="2xl" />
+															<Icon as={FaRegCircleXmark} fontSize={{ base: "xl", md: "2xl" }} />
 														</Box>
 													)}
 													{member.status === "accepted" ? (
 														<Icon 
 															as={FaRegCheckCircle} 
-															fontSize="2xl" 
+															fontSize={{ base: "xl", md: "2xl" }}
 															color="green.400"
 															display={{ base: "none", md: "block" }}
 														/>
@@ -751,7 +758,7 @@ export const MyTeamPage = () => {
 													justify="space-between"
 													align="center"
 													py={3}
-													px={4}
+													px={{ base: 3, md: 4 }}
 													bg="#1f1e2d"
 													borderRadius="2xl"
 													mb={2}
@@ -797,16 +804,16 @@ export const MyTeamPage = () => {
 											borderColor="#1f1e2d"
 											mt={2}
 										>
-											<Flex align="center" gap={3}>
+											<Flex align="center" gap={{ base: 2, md: 3 }}>
 												{/* User Plus Icon */}
 												<Box
-													boxSize="40px"
+													boxSize={{ base: "36px", md: "40px" }}
 													display="flex"
 													alignItems="center"
 													justifyContent="center"
 													flexShrink={0}
 												>
-													<Icon as={PiUserCirclePlusFill} color="#686486" fontSize="3xl" />
+													<Icon as={PiUserCirclePlusFill} color="#686486" fontSize={{ base: "2xl", md: "3xl" }} />
 												</Box>
 												
 												<Box>
@@ -822,7 +829,7 @@ export const MyTeamPage = () => {
 													onInviteOpen();
 												}}
 											>
-												<Icon as={PiPlusCircleBold} color="#686486" fontSize="2xl" />
+												<Icon as={PiPlusCircleBold} color="#686486" fontSize={{ base: "xl", md: "2xl" }} />
 											</Box>
 										</Flex>
 									)}
