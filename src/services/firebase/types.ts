@@ -13,6 +13,7 @@ export interface MemberData {
 	email: string;
 	status: "pending" | "rejected" | "accepted";
 	profilePictureRef?: string;
+	providerPhotoURL?: string; // Google/OAuth profile picture
 }
 
 export interface TeamData {

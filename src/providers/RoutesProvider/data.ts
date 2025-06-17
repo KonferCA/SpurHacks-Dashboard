@@ -24,6 +24,7 @@ export const paths = {
 	ticket: "/ticket/:ticketId",
 	perks: "/perks",
 	myAccount: "/my-account",
+	scan: "/scan",
 } as const;
 
 /**
@@ -84,5 +85,9 @@ export const titles: Record<string, HeaderInfo> = {
 	[paths.myAccount]: {
 		title: "My Account",
 		subTitle: "Manage your account details here",
+	},
+	[paths.scan]: {
+		title: "QR Code Scanner",
+		subTitle: "QR code scanning will be available during the event",
 	},
 };

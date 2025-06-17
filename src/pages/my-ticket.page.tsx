@@ -1,5 +1,6 @@
 import { AppleWalletBadge, GoogleWalletBadge } from "@/assets";
 import { PageWrapper } from "@/components";
+import { toaster } from "@/components/ui/toaster";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
@@ -23,10 +24,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate } from "react-router-dom";
 
 export const MyTicketPage = () => {
-	const [isLoading, setIsLoading] = useState(false);
-	const functions = getFunctions();
 	const { currentUser } = useAuth();
+	const [isLoading, setIsLoading] = useState(false);
 	const { current: userApp } = useApplications();
+	const functions = getFunctions();
 	const { data: qrCodeValue, isLoading: isLoadingQRCode } = useQuery({
 		queryKey: ["my-ticket", currentUser],
 		queryFn: async () => {
@@ -87,6 +88,7 @@ export const MyTicketPage = () => {
 
 	const handleCreatePassObject = async (service: "apple" | "google") => {
 		setIsLoading(true);
+		
 		try {
 			const createTicket = httpsCallable(
 				functions,
@@ -99,8 +101,25 @@ export const MyTicketPage = () => {
 					: (userApp?.pronouns ?? "Not specified"),
 			});
 			const ticketData = ticketResult.data as { url: string };
+			
 			if (ticketData.url) {
-				window.open(ticketData.url, "_blank");
+				if (service === "apple") {
+					const userAgent = navigator.userAgent.toLowerCase();
+					const isSafariIOS = /iphone|ipad|ipod/.test(userAgent) && /safari/.test(userAgent) && !/crios|fxios/.test(userAgent);
+					
+					if (isSafariIOS) {
+						toaster.create({
+							title: "Opening Apple Wallet",
+							description: "Your pass is being added to Apple Wallet...",
+							duration: 3000,
+						});
+						window.location.href = ticketData.url;
+					} else {
+						window.open(ticketData.url, "_blank");
+					}
+				} else {
+					window.open(ticketData.url, "_blank");
+				}
 			} else {
 				alert(
 					`Ticket has been issued but could not generate ${

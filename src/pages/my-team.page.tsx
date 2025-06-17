@@ -79,6 +79,10 @@ export const MyTeamPage = () => {
 	const [memberProfilePictures, setMemberProfilePictures] = useState<
 		Record<string, string | null>
 	>({});
+	// holds failed profile picture loads for fallback handling
+	const [failedProfilePictures, setFailedProfilePictures] = useState<
+		Record<string, boolean>
+	>({});
 	const { currentUser } = useAuth();
 	const debounce = useDebounce(
 		//@ts-ignore
@@ -375,6 +379,16 @@ export const MyTeamPage = () => {
 					});
 					return updated;
 				});
+
+				// clear failed profile picture states for removed members
+				setFailedProfilePictures((prev) => {
+					const updated = { ...prev };
+					toBeRemovedTeammates.forEach((email) => {
+						delete updated[email];
+						delete updated[`${email}-provider`];
+					});
+					return updated;
+				});
 			}
 
 			closeTeammatesDialog();
@@ -415,6 +429,14 @@ export const MyTeamPage = () => {
 				setMemberProfilePictures((prev) => {
 					const updated = { ...prev };
 					delete updated[memberToRemove.email];
+					return updated;
+				});
+
+				// clear failed profile picture state for removed member
+				setFailedProfilePictures((prev) => {
+					const updated = { ...prev };
+					delete updated[memberToRemove.email];
+					delete updated[`${memberToRemove.email}-provider`];
 					return updated;
 				});
 
@@ -666,15 +688,33 @@ export const MyTeamPage = () => {
 														overflow="hidden"
 														flexShrink={0}
 													>
-														{memberProfilePictures[member.email] ? (
+														{memberProfilePictures[member.email] && !failedProfilePictures[member.email] ? (
 															<Image
-																src={
-																	memberProfilePictures[member.email] as string
-																}
+																src={memberProfilePictures[member.email] as string}
 																alt={`${member.firstName} ${member.lastName}`}
 																boxSize="full"
 																borderRadius="full"
 																objectFit="cover"
+																onError={() => {
+																	setFailedProfilePictures((prev) => ({
+																		...prev,
+																		[member.email]: true,
+																	}));
+																}}
+															/>
+														) : member.providerPhotoURL && !failedProfilePictures[`${member.email}-provider`] ? (
+															<Image
+																src={member.providerPhotoURL}
+																alt={`${member.firstName} ${member.lastName}`}
+																boxSize="full"
+																borderRadius="full"
+																objectFit="cover"
+																onError={() => {
+																	setFailedProfilePictures((prev) => ({
+																		...prev,
+																		[`${member.email}-provider`]: true,
+																	}));
+																}}
 															/>
 														) : (
 															<Box
