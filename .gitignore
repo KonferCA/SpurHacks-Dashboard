@@ -39,3 +39,4 @@ environment
 .runtimeconfig.json
 hawkhacks-googleWallet-key.json
 *.tsbuildinfo
+spurhacksServiceAcc.json

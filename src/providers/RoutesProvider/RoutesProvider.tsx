@@ -16,6 +16,7 @@ import { useAuth } from "@/providers";
 
 // Public pages
 import { LoginPage } from "@/pages/login.page";
+import { ScanPage } from "@/pages/scan.page";
 
 import { ApplyPage } from "@/pages/apply.page";
 import { HomePage } from "@/pages/home.page";
@@ -141,6 +142,14 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				element: <LoginPage />,
 			},
 			{
+				path: paths.scan,
+				element: <ScanPage />,
+			},
+			{
+				path: paths.ticket,
+				element: <ScanPage />,
+			},
+			{
 				path: paths.notFound,
 				element: <NotFoundPage />,
 			},
@@ -191,7 +200,6 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 					hasVerifiedEmail,
 					isAccepted,
 					hasRSVP,
-					disable,
 				],
 			},
 			{

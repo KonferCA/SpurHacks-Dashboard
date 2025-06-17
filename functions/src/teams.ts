@@ -32,6 +32,7 @@ interface MemberData {
 	email: string;
 	status: InvitationStatus;
 	profilePictureRef?: string;
+	providerPhotoURL?: string;
 }
 
 // return schema to client
@@ -143,12 +144,25 @@ async function internalGetMembersByTeam(teamId: string): Promise<MemberData[]> {
 			});
 		}
 
+		// get provider photo URL from user auth record
+		let providerPhotoURL: string | undefined;
+		try {
+			const userRecord = await getAuth().getUser(data.uid);
+			providerPhotoURL = userRecord.photoURL || undefined;
+		} catch (e) {
+			logError("Failed to get provider photo URL for member", {
+				uid: data.uid,
+				error: e,
+			});
+		}
+
 		members.push({
 			firstName: data.firstName,
 			lastName: data.lastName,
 			email: data.email,
 			status: "accepted", // everyone who is in the team already must have accepted the team invitation
 			profilePictureRef,
+			providerPhotoURL,
 		});
 	}
 
@@ -175,6 +189,8 @@ async function internalGetInvitedMembersByTeam(
 
 		// get profile picture from socials collection using userId if available
 		let profilePictureRef: string | undefined;
+		let providerPhotoURL: string | undefined;
+		
 		if (data.userId) {
 			try {
 				const socialsSnap = await getFirestore()
@@ -193,6 +209,17 @@ async function internalGetInvitedMembersByTeam(
 					error: e,
 				});
 			}
+
+			// get provider photo URL from user auth record
+			try {
+				const userRecord = await getAuth().getUser(data.userId);
+				providerPhotoURL = userRecord.photoURL || undefined;
+			} catch (e) {
+				logError("Failed to get provider photo URL for invited member", {
+					uid: data.userId,
+					error: e,
+				});
+			}
 		}
 
 		members.push({
@@ -201,6 +228,7 @@ async function internalGetInvitedMembersByTeam(
 			email: data.email,
 			status: data.status,
 			profilePictureRef,
+			providerPhotoURL,
 		});
 	}
 
