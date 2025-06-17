@@ -609,8 +609,10 @@ export const MyTeamPage = () => {
 										</Flex>
 									) : (
 										<Flex align="center" justify="space-between" w="full">
-											<Flex align="center">
-												<Heading size="lg">{team.teamName}</Heading>
+											<Flex align="center" w="full">
+												<Heading size="lg" lineClamp={2} truncate maxW="full">
+													{team.teamName}
+												</Heading>
 												{team.isOwner && (
 													<Button
 														onClick={() => {
