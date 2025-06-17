@@ -32,7 +32,7 @@ export const LoadingAnimation: React.FC<LoadingAnimationProps> = ({ text }) => {
 			<Image
 				src={Logo}
 				alt="Loading Animation"
-				boxSize={{ base: "12", md: "16" }}
+				w={{ base: "12", md: "16" }}
 				animation={bounceAnimation}
 				mb={4}
 			/>
