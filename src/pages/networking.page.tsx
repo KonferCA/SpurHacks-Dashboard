@@ -182,6 +182,7 @@ export const NetworkingPage = () => {
 			setIsLoading(false);
 			setMediaValues({ ...socials });
 			setResumeConsent(socials.resumeConsent ?? false);
+			setNewVisibility(socials.resumeVisibility ?? "Public");
 			if (socials.profilePictureRef) {
 				getProfilePictureURL(socials.profilePictureRef).then((url) => {
 					if (url) setProfilePictureUrl(url);
@@ -204,6 +205,7 @@ export const NetworkingPage = () => {
 				setSocials(data);
 				setMediaValues(data);
 				setResumeConsent(data.resumeConsent ?? false);
+				setNewVisibility(data.resumeVisibility ?? "Public");
 				// load profile picture url if available
 				if (data.profilePictureRef) {
 					const url = await getProfilePictureURL(data.profilePictureRef);
@@ -799,21 +801,19 @@ export const NetworkingPage = () => {
 									optional
 								</Text>
 							</Flex>
-							{mediaValues.resumeRef && (
-								<Button
-									size="sm"
-									variant="ghost"
-									color="gray.400"
-									p={2}
-									minW="auto"
-									bg="transparent"
-									_hover={{ bg: "gray.600" }}
-									onClick={() => setIsResumeSettingsOpened(true)}
-									title="Resume Settings"
-								>
-									<Icon as={Cog6ToothIcon} boxSize={5} />
-								</Button>
-							)}
+							<Button
+								size="sm"
+								variant="ghost"
+								color="gray.400"
+								p={2}
+								minW="auto"
+								bg="transparent"
+								_hover={{ bg: "gray.600" }}
+								onClick={() => setIsResumeSettingsOpened(true)}
+								title="Resume Settings"
+							>
+								<Icon as={Cog6ToothIcon} boxSize={5} />
+							</Button>
 						</Flex>
 
 						<FileUpload.Root accept=".pdf" w="full">
