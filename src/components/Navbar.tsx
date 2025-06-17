@@ -386,6 +386,8 @@ const NavbarContent = ({
 									color="offwhite.primary"
 									textTransform="none"
 									lineClamp="1"
+									maxW="130px"
+									truncate
 								>
 									{team?.teamName ?? "No team"}
 								</Text>
