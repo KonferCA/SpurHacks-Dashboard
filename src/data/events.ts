@@ -123,6 +123,16 @@ export const schedule = [
 		row: 3,
 	},
 	{
+		id: "sat-innovation-workshop",
+		startDate: new Date("2025-06-21T13:00:00"),
+		endTime: new Date("2025-06-21T14:00:00"),
+		color: "blue",
+		title: "Innovation Isn’t a Feature - It’s a Decision Engine w/ Hadi Ismail",
+		location: "Workshop Room",
+		description: "Workshop on innovation as a decision-making framework",
+		row: 3,
+	},
+	{
 		id: "sat-ai-panel",
 		startDate: new Date("2025-06-21T13:00:00"),
 		endTime: new Date("2025-06-21T14:00:00"),
