@@ -316,31 +316,16 @@ function ScheduleCurrentTimeLine({
 	}
 
 	return (
-		<>
-			<Box
-				position="absolute"
-				left={`${16 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
-				top="-40px"
-				w="2px"
-				bg="white"
-				zIndex={50}
-				h="calc(100% + 40px)"
-				opacity={0.9}
-				boxShadow="0 0 4px rgba(255,255,255,0.5)"
-			/>
-
-			<Box
-				position="absolute"
-				left={`${14 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
-				top="-42px"
-				w="6px"
-				h="6px"
-				bg="white"
-				borderRadius="50%"
-				zIndex={51}
-				boxShadow="0 0 8px rgba(255,255,255,0.8)"
-			/>
-		</>
+		<Box
+			position="absolute"
+			left={`${16 + (progressPercentage / 100) * (timelineWidth - 32)}px`}
+			top="0"
+			w="2px"
+			bg="white"
+			zIndex={50}
+			h="100%"
+			opacity={0.9}
+		/>
 	);
 }
 
