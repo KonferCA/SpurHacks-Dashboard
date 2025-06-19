@@ -433,6 +433,7 @@ async function internalGetTicketData(id: string, extended = false) {
 	let github = "";
 	let resumeRef = "";
 	let allergies: string[] = [];
+	let aboutMe = "";
 
 	if (!app) {
 		// grab from user record
@@ -453,6 +454,7 @@ async function internalGetTicketData(id: string, extended = false) {
 				? app.mentorResumeRef
 				: app.generalResumeRef;
 		allergies = app.allergies ?? [];
+		aboutMe = app.aboutMe ?? "";
 	}
 
 	// get social ticket
@@ -476,31 +478,56 @@ async function internalGetTicketData(id: string, extended = false) {
 		} as Socials;
 	}
 
+	if (!extended) {
+		const publicData: any = {
+			firstName,
+			lastName,
+		};
+
+		if (pronouns && pronouns.length > 0) publicData.pronouns = pronouns;
+		if (aboutMe) publicData.aboutMe = aboutMe;
+		if (socials.instagram) publicData.instagram = socials.instagram;
+		if (socials.github) publicData.github = socials.github;
+		if (socials.linkedin) publicData.linkedin = socials.linkedin;
+		if (socials.discord) publicData.discord = socials.discord;
+		if (socials.website) publicData.website = socials.website;
+		if (socials.profilePictureRef) publicData.profilePictureRef = socials.profilePictureRef;
+		
+		if (socials.resumeConsent && socials.resumeRef) {
+			publicData.resumeRef = socials.resumeRef;
+			publicData.resumeVisibility = socials.resumeVisibility;
+			if (socials.resumeFilename) publicData.resumeFilename = socials.resumeFilename;
+		}
+
+		return publicData;
+	}
+
+	// For admin, return all data
 	const data = {
 		firstName,
 		lastName,
 		pronouns,
-		foods: [] as string[],
-		events: [] as string[],
+		aboutMe,
+		foods: ticket.foods,
+		events: ticket.events,
 		allergies,
 		...socials,
 	};
 
-	if (extended) {
-		data.foods = ticket.foods;
-		data.events = ticket.events;
-	}
-
 	return data;
 }
 
-export const getTicketData = onCall(async (data: any) => {
-	if (!z.string().uuid().safeParse(data.id).success) {
+export const getTicketData = onCall(async (request) => {
+	const ticketIdSchema = z.string().refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
+		message: "Invalid ticket ID format",
+	});
+
+	if (!ticketIdSchema.safeParse(request.data.id).success) {
 		return response(HttpStatus.BAD_REQUEST, { message: "bad request" });
 	}
 
 	try {
-		const ticketData = await internalGetTicketData(data.id);
+		const ticketData = await internalGetTicketData(request.data.id);
 		return response(HttpStatus.OK, {
 			message: "ok",
 			data: ticketData,
@@ -513,13 +540,17 @@ export const getTicketData = onCall(async (data: any) => {
 	}
 });
 
-export const getExtendedTicketData = onCall(async (data: any) => {
-	if (!z.string().uuid().safeParse(data.id).success) {
+export const getExtendedTicketData = onCall(async (request) => {
+	const ticketIdSchema = z.string().refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
+		message: "Invalid ticket ID format",
+	});
+
+	if (!ticketIdSchema.safeParse(request.data.id).success) {
 		return response(HttpStatus.BAD_REQUEST, { message: "bad request" });
 	}
 
 	try {
-		const ticketData = await internalGetTicketData(data.id, true);
+		const ticketData = await internalGetTicketData(request.data.id, true);
 
 		return response(HttpStatus.OK, {
 			message: "ok",

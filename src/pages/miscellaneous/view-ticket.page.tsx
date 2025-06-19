@@ -1,118 +1,440 @@
 import { LoadingAnimation, PageWrapper } from "@/components";
 import { toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/providers";
-import { getResume } from "@/services/firebase/files";
+import { getProfilePictureURL, getResume } from "@/services/firebase/files";
 import { getTicketData } from "@/services/firebase/ticket";
 import type { TicketData } from "@/services/firebase/types";
-import { Button } from "@chakra-ui/react";
+import {
+	Badge,
+	Box,
+	Button,
+	Card,
+	Flex,
+	Heading,
+	Icon,
+	Image,
+	Link,
+	Text,
+	VStack,
+} from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
+import {
+	FaDownload,
+	FaExternalLinkAlt,
+	FaGlobe,
+} from "react-icons/fa";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
-type TicketDataKey = keyof TicketData;
+type SocialKey = "linkedin" | "instagram" | "github" | "discord";
 
-const socialKeys: TicketDataKey[] = [
-	"instagram",
-	"github",
-	"linkedin",
-	"discord",
-];
+const socialInfo: Record<
+	SocialKey,
+	{ name: string; iconSrc: string; color: string; baseUrl?: string }
+> = {
+	linkedin: {
+		name: "LinkedIn",
+		iconSrc: "/socialIcons/linkedin.svg",
+		color: "#0077B5",
+		baseUrl: "https://linkedin.com/in/",
+	},
+	instagram: {
+		name: "Instagram",
+		iconSrc: "/socialIcons/instagram.svg",
+		color: "#E4405F",
+		baseUrl: "https://instagram.com/",
+	},
+	github: {
+		name: "GitHub",
+		iconSrc: "/socialIcons/github.png",
+		color: "#333",
+		baseUrl: "https://github.com/",
+	},
+	discord: {
+		name: "Discord",
+		iconSrc: "/socialIcons/discord.svg",
+		color: "#5865F2",
+	},
+};
 
 export const ViewTicketPage = () => {
 	const [isLoading, setIsLoading] = useState(true);
 	const { ticketId } = useParams();
 	const navigate = useNavigate();
 	const { currentUser } = useAuth();
-	const timeoutRef = useRef<number | null>(null);
+	const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [ticketData, setTicketData] = useState<TicketData | null>(null);
+	const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(
+		null,
+	);
 	const [showResume, setShowResume] = useState(false);
 
 	useEffect(() => {
-		if (!ticketId) return;
-		if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-		timeoutRef.current = window.setTimeout(() => setIsLoading(false), 1500);
+		if (!ticketId) {
+			setIsLoading(false);
+			return;
+		}
 
-		(async () => {
+		if (timeoutRef.current) clearTimeout(timeoutRef.current);
+		timeoutRef.current = setTimeout(() => {
+			if (isLoading) {
+				setIsLoading(false);
+				toaster.error({
+					title: "Request Timed Out",
+					description: "Could not fetch ticket data.",
+				});
+			}
+		}, 5000);
+
+		const fetchTicket = async () => {
 			if (
 				currentUser &&
 				(currentUser.hawkAdmin ||
 					(currentUser.type === "volunteer" && currentUser.rsvpVerified))
 			) {
-				if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
 				navigate(`/admin/ticket/${ticketId}`);
-			} else {
-				if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-				// fetch user ticket data
+				return;
+			}
+
+			try {
 				const res = await getTicketData(ticketId);
 				if (res.status === 200) {
-					setTicketData(res.data);
+					const data = res.data as any;
+					setTicketData(data);
 					setShowResume(
-						!res.data.resumeVisibility ||
-							res.data.resumeVisibility === "Public" ||
-							(res.data.resumeVisibility === "Sponsors Only" &&
+						!data.resumeVisibility ||
+							data.resumeVisibility === "Public" ||
+							(data.resumeVisibility === "Sponsors Only" &&
 								currentUser !== null &&
 								currentUser.type === "sponsor"),
 					);
+
+					if (data.profilePictureRef) {
+						try {
+							const url = await getProfilePictureURL(data.profilePictureRef);
+							setProfilePictureUrl(url);
+						} catch (e) {
+							console.error("Failed to load profile picture", e);
+						}
+					}
 				} else {
 					toaster.error({
 						title: "Failed to load ticket",
 						description: res.message,
 					});
 				}
+			} catch (error) {
+				toaster.error({
+					title: "An Error Occurred",
+					description: "Could not process ticket information.",
+				});
+			} finally {
 				setIsLoading(false);
+				if (timeoutRef.current) clearTimeout(timeoutRef.current);
 			}
-		})();
+		};
+
+		fetchTicket();
 
 		return () => {
-			if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+			if (timeoutRef.current) clearTimeout(timeoutRef.current);
 		};
-	}, [currentUser, ticketId]);
-
-	if (!ticketId) return <Navigate to="/not-found" />;
+	}, [currentUser, ticketId, navigate]);
 
 	if (isLoading) return <LoadingAnimation />;
 
-	if (!ticketData) return <Navigate to="/not-found" />;
+	if (!ticketId) return <Navigate to="/not-found" />;
+	if (!ticketData) {
+		return (
+			<PageWrapper>
+				<Flex direction="column" align="center" justify="center" minH="50vh">
+					<Heading>Ticket Not Found</Heading>
+					<Text mt={4}>
+						The ticket you are looking for does not exist or could not be
+						loaded.
+					</Text>
+					<Button mt={6} onClick={() => navigate("/home")}>
+						Go to Dashboard
+					</Button>
+				</Flex>
+			</PageWrapper>
+		);
+	}
 
-	// give the app a chance to decide what to display
+	const formatSocialValue = (key: string, value: string) => {
+		// remove common prefixes
+		const cleanValue = value
+			.replace(/^https?:\/\/(www\.)?/, "")
+			.replace(/^(instagram\.com\/|github\.com\/|linkedin\.com\/in\/)/, "")
+			.replace(/\/$/, "");
+		return cleanValue;
+	};
+
+	const getSocialUrl = (socialConfig: any, value: string) => {
+		if (!value) return "#";
+		if (value.startsWith("http")) return value;
+		if (socialConfig.baseUrl) {
+			const cleanValue = formatSocialValue(socialConfig.key, value);
+			return `${socialConfig.baseUrl}${cleanValue}`;
+		}
+		return `https://${value}`;
+	};
+
+	const socialLinks = Object.entries(ticketData)
+		.filter(
+			([key, value]) => socialInfo[key as SocialKey] && typeof value === "string" && value,
+		)
+		.map(([key, value]) => ({
+			...(socialInfo[key as SocialKey]),
+			key: key as SocialKey,
+			value: value as string,
+		}));
+
+	const extendedData = ticketData as any;
+	const aboutMe = extendedData?.aboutMe;
+	const website = extendedData?.website;
+
 	return (
 		<PageWrapper>
-			<div className="flex items-center gap-10">
-				<h1 className="font-bold text-2xl">
-					{`${ticketData.firstName} ${ticketData.lastName}`}
-				</h1>
-				<p>{ticketData.pronouns}</p>
-			</div>
-			<div className="flex flex-col max-w-md gap-5 mt-12">
-				{socialKeys.map((key) =>
-					ticketData[key] ? (
-						<div
-							className="bg-white shadow-md p-4 rounded-xl flex flex-col"
-							key={key}
-						>
-							<div className="mb-2 flex justify-between items-center">
-								<p className="flex-1 capitalize">{key}</p>
-							</div>
-							<p>{ticketData[key]}</p>
-						</div>
-					) : null,
-				)}
-				{ticketData.resumeRef && showResume && (
-					<div className="bg-white shadow-md p-4 rounded-xl flex flex-col">
-						<div className="mb-2 flex justify-between items-center">
-							<p className="flex-1 capitalize">Resume</p>
-						</div>
-						<div>
-							<Button
-								onClick={() => {
-									getResume(ticketData.resumeRef);
-								}}
+			<Flex direction="column" maxW="500px" gap={6}>
+				<Card.Root rounded="4xl" bg="#1F1E2E" overflow="hidden">
+					<Card.Header>
+						<Flex align="center" gap={4}>
+							<Box
+								boxSize="80px"
+								borderRadius="full"
+								bg="gray.600"
+								display="flex"
+								alignItems="center"
+								justifyContent="center"
+								overflow="hidden"
+								flexShrink={0}
 							>
-								Download
-							</Button>
-						</div>
-					</div>
-				)}
-			</div>
+								<Image
+									src={profilePictureUrl || "/default-profile.png"}
+									alt="Profile Picture"
+									boxSize="full"
+									objectFit="cover"
+								/>
+							</Box>
+							<Box>
+								<Heading size="lg">
+									{ticketData.firstName} {ticketData.lastName}
+								</Heading>
+								{ticketData.pronouns && (
+									<Badge
+										bg="bg.hover"
+										borderStyle="none"
+										color="fg.muted"
+										size="lg"
+										rounded="full"
+										px={3}
+										py={1}
+										mt={1}
+									>
+										{ticketData.pronouns}
+									</Badge>
+								)}
+							</Box>
+						</Flex>
+					</Card.Header>
+
+					<Card.Body>
+						<VStack gap={8} align="stretch">
+							{aboutMe && (
+								<Box>
+									<Heading
+										size="md"
+										color="fg.muted"
+										textTransform="uppercase"
+										mb={3}
+									>
+										About Me
+									</Heading>
+									<Text color="white" lineHeight="1.6">{aboutMe}</Text>
+								</Box>
+							)}
+
+							<Box>
+								<Heading
+									size="md"
+									color="fg.muted"
+									textTransform="uppercase"
+									mb={3}
+								>
+									Connections
+								</Heading>
+								{socialLinks.length > 0 ? (
+									<Flex direction="column" gap={3}>
+										{socialLinks.map((social) => (
+											<Flex
+												key={social.key}
+												justify="space-between"
+												align="center"
+												py={3}
+												px={4}
+												bg="#2D2A3D"
+												borderRadius="2xl"
+											>
+												<Flex align="center" gap={3}>
+													<Box
+														boxSize="40px"
+														display="flex"
+														alignItems="center"
+														justifyContent="center"
+														flexShrink={0}
+													>
+														<Image 
+															src={social.iconSrc} 
+															alt={social.name} 
+															boxSize="32px"
+														/>
+													</Box>
+													<Box>
+														<Text fontWeight="medium" color="white">
+															{social.name}
+														</Text>
+														<Text
+															color="fg.muted"
+															fontSize="sm"
+															overflow="hidden"
+															textOverflow="ellipsis"
+															whiteSpace="nowrap"
+															maxWidth={{ base: "150px", md: "200px" }}
+														>
+															{formatSocialValue(social.key, social.value)}
+														</Text>
+													</Box>
+												</Flex>
+												<Link
+													href={getSocialUrl(social, social.value)}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<Icon
+														as={FaExternalLinkAlt}
+														fontSize="lg"
+														color="fg.muted"
+														_hover={{ color: "white" }}
+													/>
+												</Link>
+											</Flex>
+										))}
+									</Flex>
+								) : (
+									<Text color="fg.muted">No social links provided.</Text>
+								)}
+							</Box>
+
+							<Box>
+								<Heading
+									size="md"
+									color="fg.muted"
+									textTransform="uppercase"
+									mb={3}
+								>
+									Portfolio
+								</Heading>
+								<Flex direction="column" gap={3}>
+									{website && (
+										<Link href={getSocialUrl({key: "website"}, website)} target="_blank" rel="noopener noreferrer" _hover={{textDecoration: "none"}}>
+										<Flex
+											justify="space-between"
+											align="center"
+											py={3}
+											px={4}
+											bg="#2D2A3D"
+											borderRadius="2xl"
+											w="full"
+										>
+											<Flex align="center" gap={3}>
+												<Box
+													boxSize="40px"
+													display="flex"
+													alignItems="center"
+													justifyContent="center"
+													flexShrink={0}
+													borderRadius="lg"
+													bg="brand.primary"
+												>
+													<Icon as={FaGlobe} color="black" fontSize="xl" />
+												</Box>
+												<Box>
+													<Text fontWeight="medium" color="white">
+														Website
+													</Text>
+													<Text
+														color="fg.muted"
+														fontSize="sm"
+														overflow="hidden"
+														textOverflow="ellipsis"
+														whiteSpace="nowrap"
+														maxWidth={{ base: "150px", md: "200px" }}
+													>
+														{formatSocialValue("website", website)}
+													</Text>
+												</Box>
+											</Flex>
+											<Icon
+												as={FaExternalLinkAlt}
+												fontSize="lg"
+												color="fg.muted"
+												_hover={{ color: "white" }}
+											/>
+										</Flex>
+										</Link>
+									)}
+									{ticketData.resumeRef && showResume && (
+										<Flex
+											as="button"
+											onClick={() => ticketData.resumeRef && getResume(ticketData.resumeRef)}
+											justify="space-between"
+											align="center"
+											py={3}
+											px={4}
+											bg="#2D2A3D"
+											borderRadius="2xl"
+											w="full"
+										>
+											<Flex align="center" gap={3}>
+												<Box
+													boxSize="40px"
+													display="flex"
+													alignItems="center"
+													justifyContent="center"
+													flexShrink={0}
+													borderRadius="lg"
+													bg="#dc2626"
+												>
+													<Text color="white" fontSize="xs" fontWeight="bold">
+														PDF
+													</Text>
+												</Box>
+												<Box textAlign="left">
+													<Text fontWeight="medium" color="white">
+														Resume
+													</Text>
+													<Text color="fg.muted" fontSize="sm">
+														Click to download
+													</Text>
+												</Box>
+											</Flex>
+											<Icon
+												as={FaDownload}
+												fontSize="lg"
+												color="fg.muted"
+												_hover={{ color: "white" }}
+											/>
+										</Flex>
+									)}
+									{!website && (!ticketData.resumeRef || !showResume) && (
+										<Text color="fg.muted">No portfolio items available.</Text>
+									)}
+								</Flex>
+							</Box>
+						</VStack>
+					</Card.Body>
+				</Card.Root>
+			</Flex>
 		</PageWrapper>
 	);
 };
