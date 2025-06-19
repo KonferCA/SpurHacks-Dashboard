@@ -434,11 +434,15 @@ async function internalGetTicketData(id: string, extended = false) {
 	let resumeRef = "";
 	let allergies: string[] = [];
 	let aboutMe = "";
+	let providerPhotoURL = "";
+
+	// always get user record for provider photo URL
+	const user = await getAuth().getUser(ticket.userId);
+	providerPhotoURL = user.photoURL ?? "";
 
 	if (!app) {
 		// grab from user record
 		logInfo("No application data, taking name from user record.");
-		const user = await getAuth().getUser(ticket.userId);
 		const parts = user.displayName?.split(" ") ?? ["", ""];
 		firstName = parts[0];
 		lastName = parts[1];
@@ -492,6 +496,7 @@ async function internalGetTicketData(id: string, extended = false) {
 		if (socials.discord) publicData.discord = socials.discord;
 		if (socials.website) publicData.website = socials.website;
 		if (socials.profilePictureRef) publicData.profilePictureRef = socials.profilePictureRef;
+		if (providerPhotoURL) publicData.providerPhotoURL = providerPhotoURL;
 		
 		if (socials.resumeConsent && socials.resumeRef) {
 			publicData.resumeRef = socials.resumeRef;

@@ -66,6 +66,8 @@ export const ViewTicketPage = () => {
 	const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(
 		null,
 	);
+	const [failedProfilePicture, setFailedProfilePicture] = useState(false);
+	const [failedProviderPicture, setFailedProviderPicture] = useState(false);
 	const [showResume, setShowResume] = useState(false);
 
 	useEffect(() => {
@@ -114,6 +116,7 @@ export const ViewTicketPage = () => {
 							setProfilePictureUrl(url);
 						} catch (e) {
 							console.error("Failed to load profile picture", e);
+							setProfilePictureUrl(null);
 						}
 					}
 				} else {
@@ -160,7 +163,7 @@ export const ViewTicketPage = () => {
 		);
 	}
 
-	const formatSocialValue = (key: string, value: string) => {
+	const formatSocialValue = (_: string, value: string) => {
 		// remove common prefixes
 		const cleanValue = value
 			.replace(/^https?:\/\/(www\.)?/, "")
@@ -179,6 +182,10 @@ export const ViewTicketPage = () => {
 		return `https://${value}`;
 	};
 
+	const extendedData = ticketData as any;
+	const aboutMe = extendedData?.aboutMe;
+	const website = extendedData?.website;
+
 	const socialLinks = Object.entries(ticketData)
 		.filter(
 			([key, value]) => socialInfo[key as SocialKey] && typeof value === "string" && value,
@@ -188,10 +195,6 @@ export const ViewTicketPage = () => {
 			key: key as SocialKey,
 			value: value as string,
 		}));
-
-	const extendedData = ticketData as any;
-	const aboutMe = extendedData?.aboutMe;
-	const website = extendedData?.website;
 
 	return (
 		<PageWrapper>
@@ -209,12 +212,39 @@ export const ViewTicketPage = () => {
 								overflow="hidden"
 								flexShrink={0}
 							>
-								<Image
-									src={profilePictureUrl || "/default-profile.png"}
-									alt="Profile Picture"
-									boxSize="full"
-									objectFit="cover"
-								/>
+								{profilePictureUrl && !failedProfilePicture ? (
+									<Image
+										src={profilePictureUrl}
+										alt="Profile Picture"
+										boxSize="full"
+										borderRadius="full"
+										objectFit="cover"
+										onError={() => setFailedProfilePicture(true)}
+									/>
+								) : extendedData.providerPhotoURL && !failedProviderPicture ? (
+									<Image
+										src={extendedData.providerPhotoURL}
+										alt="Profile Picture"
+										boxSize="full"
+										borderRadius="full"
+										objectFit="cover"
+										onError={() => setFailedProviderPicture(true)}
+									/>
+								) : (
+									<Box
+										boxSize="full"
+										bg="gray.600"
+										display="flex"
+										alignItems="center"
+										justifyContent="center"
+										color="gray.300"
+										fontSize="xl"
+										fontWeight="bold"
+									>
+										{ticketData.firstName.charAt(0)}
+										{ticketData.lastName.charAt(0)}
+									</Box>
+								)}
 							</Box>
 							<Box>
 								<Heading size="lg">
