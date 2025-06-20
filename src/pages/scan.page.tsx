@@ -1,8 +1,20 @@
 import { FullLogo, Knots } from "@/assets";
+import { useAuth } from "@/providers";
 import { paths } from "@/providers/RoutesProvider/data";
 import { Box, Button, Flex, Image, Link, Text, VStack } from "@chakra-ui/react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const ScanPage = () => {
+	const { currentUser } = useAuth();
+	const navigate = useNavigate();
+
+	// redirect admins to admin scan page
+	useEffect(() => {
+		if (currentUser?.hawkAdmin) {
+			navigate(paths.adminScan);
+		}
+	}, [currentUser, navigate]);
 	return (
 		<Box
 			minH="100vh"

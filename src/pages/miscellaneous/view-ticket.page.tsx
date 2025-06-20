@@ -335,18 +335,20 @@ export const ViewTicketPage = () => {
 														</Text>
 													</Box>
 												</Flex>
-												<Link
-													href={getSocialUrl(social, social.value)}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
-													<Icon
-														as={FaExternalLinkAlt}
-														fontSize="lg"
-														color="fg.muted"
-														_hover={{ color: "white" }}
-													/>
-												</Link>
+												{social.key !== "discord" && (
+													<Link
+														href={getSocialUrl(social, social.value)}
+														target="_blank"
+														rel="noopener noreferrer"
+													>
+														<Icon
+															as={FaExternalLinkAlt}
+															fontSize="lg"
+															color="fg.muted"
+															_hover={{ color: "white" }}
+														/>
+													</Link>
+												)}
 											</Flex>
 										))}
 									</Flex>
@@ -384,9 +386,9 @@ export const ViewTicketPage = () => {
 													justifyContent="center"
 													flexShrink={0}
 													borderRadius="lg"
-													bg="brand.primary"
+													bg="#0891b2"
 												>
-													<Icon as={FaGlobe} color="black" fontSize="xl" />
+													<Icon as={FaGlobe} color="white" fontSize="xl" />
 												</Box>
 												<Box>
 													<Text fontWeight="medium" color="white">

@@ -571,47 +571,57 @@ export const getExtendedTicketData = onCall(async (request) => {
 	}
 });
 
-export const redeemItem = onCall(async (data: any, res) => {
-	const context = res as Context;
-	if (!context || !context.auth)
-		return response(HttpStatus.UNAUTHORIZED, { message: "unauthorized" });
+export const redeemItem = onCall({ cors }, async (req) => {
+	if (!req.auth) {
+		logInfo("Authentication required.");
+		throw new HttpsError("permission-denied", "Not authenticated");
+	}
 
-	const user = await getAuth().getUser(context.auth.uid);
-	if (!user.customClaims?.admin)
-		return response(HttpStatus.UNAUTHORIZED, { message: "unauthorized" });
+	const user = await getAuth().getUser(req.auth.uid);
+	if (!user.customClaims?.admin) {
+		logInfo("Admin permissions required.");
+		throw new HttpsError("permission-denied", "Admin access required");
+	}
 
 	const validateResults = z
 		.object({
 			ticketId: z.string(),
 			itemId: z.string(),
-			action: z.string().refine((v) => v === "check" || "uncheck"),
+			action: z.string().refine((v) => v === "check" || v === "uncheck"),
 		})
-		.safeParse(data);
+		.safeParse(req.data);
+	
 	if (!validateResults.success) {
 		logError("Bad request", {
 			issues: validateResults.error.issues.map((i) => i.path),
 		});
-		return response(HttpStatus.BAD_REQUEST, { message: "bad request" });
+		throw new HttpsError("invalid-argument", "Invalid request data");
 	}
 
-	const ticket = (
-		await getFirestore().collection("tickets").doc(data.ticketId).get()
-	).data();
-	if (!ticket)
-		return response(HttpStatus.NOT_FOUND, { message: "ticket not found" });
+	const { ticketId, itemId, action } = validateResults.data;
+
+	const ticketDoc = await getFirestore().collection("tickets").doc(ticketId).get();
+	if (!ticketDoc.exists) {
+		throw new HttpsError("not-found", "Ticket not found");
+	}
+
+	const ticket = ticketDoc.data();
+	if (!ticket) {
+		throw new HttpsError("not-found", "Ticket data not found");
+	}
 
 	let events = [];
-	if (data.action === "check") {
-		events = [...ticket.events, data.itemId];
+	if (action === "check") {
+		events = [...ticket.events, itemId];
 		await getFirestore()
 			.collection("tickets")
-			.doc(data.ticketId)
+			.doc(ticketId)
 			.update({ events });
 	} else {
-		events = ticket.events.filter((evt: string) => evt !== data.itemId);
+		events = ticket.events.filter((evt: string) => evt !== itemId);
 		await getFirestore()
 			.collection("tickets")
-			.doc(data.ticketId)
+			.doc(ticketId)
 			.update({ events });
 	}
 

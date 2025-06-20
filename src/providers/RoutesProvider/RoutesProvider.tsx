@@ -31,7 +31,7 @@ import { SchedulePage } from "@/pages/schedule.page";
 // Admin pages
 import { AdminPage } from "@/pages/admin/Admin.page";
 import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
-import { AdminViewTicketPage } from "@/pages/admin/view-ticket.page";
+import { AdminScanPage } from "@/pages/admin-scan.page";
 
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";
@@ -266,12 +266,17 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			},
 			{
 				path: paths.adminViewTicket,
-				element: <AdminViewTicketPage />,
+				element: <AdminScanPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
 			},
 			{
 				path: paths.adminManageEvents,
 				element: <AdminManageEventsPage />,
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+			},
+			{
+				path: paths.adminScan,
+				element: <AdminScanPage />,
 				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
 			},
 		];

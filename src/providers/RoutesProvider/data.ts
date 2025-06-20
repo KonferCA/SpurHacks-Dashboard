@@ -7,6 +7,7 @@ export const paths = {
 	admin: "/admin",
 	adminViewTicket: "/admin/ticket/:ticketId",
 	adminManageEvents: "/admin/manage",
+	adminScan: "/admin/scan",
 	notFound: "*",
 	login: "/login",
 	root: "/",
@@ -89,5 +90,13 @@ export const titles: Record<string, HeaderInfo> = {
 	[paths.scan]: {
 		title: "QR Code Scanner",
 		subTitle: "QR code scanning will be available during the event",
+	},
+	[paths.adminScan]: {
+		title: "Admin QR Scanner",
+		subTitle: "Scan tickets to check in participants and manage meals",
+	},
+	[paths.adminViewTicket]: {
+		title: "Admin Ticket View",
+		subTitle: "View and manage participant ticket details",
 	},
 };
