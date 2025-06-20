@@ -4,6 +4,7 @@ export type UserType =
 	| "hacker"
 	| "mentor"
 	| "volunteer"
+	| "volunteer.t2"
 	| "speaker"
 	| "sponsor"
 	| "guest";

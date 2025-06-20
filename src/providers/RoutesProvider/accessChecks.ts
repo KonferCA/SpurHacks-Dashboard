@@ -1,4 +1,7 @@
-import type { AccessControlFn } from "@/navigation/AccessControl/types";
+import type {
+	AccessControlContext,
+	AccessControlFn,
+} from "@/navigation/AccessControl/types";
 import { Redirect } from "@/navigation/redirect";
 import { paths } from "./data";
 
@@ -23,9 +26,7 @@ export const hasVerifiedEmail: AccessControlFn = (ctx) => {
  * Checks if user is an admin
  */
 export const isAdmin: AccessControlFn = (ctx) => {
-	if (!isAuthenticated(ctx) || !ctx.user?.hawkAdmin)
-		throw new Redirect("/not-found");
-	return true;
+	return isAuthenticated(ctx) && !!ctx.user?.hawkAdmin;
 };
 
 /**
@@ -73,3 +74,13 @@ export const isAppOpen: AccessControlFn = (ctx) =>
  * Checks that just returns false to disable the page.
  */
 export const disable: AccessControlFn = () => false;
+
+export const isVolunteerT1: AccessControlFn = (ctx) =>
+	ctx.user?.type === "volunteer";
+
+export const isVolunteerT2: AccessControlFn = (ctx) =>
+	ctx.user?.type === "volunteer.t2";
+
+export function oneOf(...checks: AccessControlFn[]) {
+	return (ctx: AccessControlContext) => checks.some((c) => c(ctx));
+}

@@ -495,13 +495,15 @@ async function internalGetTicketData(id: string, extended = false) {
 		if (socials.linkedin) publicData.linkedin = socials.linkedin;
 		if (socials.discord) publicData.discord = socials.discord;
 		if (socials.website) publicData.website = socials.website;
-		if (socials.profilePictureRef) publicData.profilePictureRef = socials.profilePictureRef;
+		if (socials.profilePictureRef)
+			publicData.profilePictureRef = socials.profilePictureRef;
 		if (providerPhotoURL) publicData.providerPhotoURL = providerPhotoURL;
-		
+
 		if (socials.resumeConsent && socials.resumeRef) {
 			publicData.resumeRef = socials.resumeRef;
 			publicData.resumeVisibility = socials.resumeVisibility;
-			if (socials.resumeFilename) publicData.resumeFilename = socials.resumeFilename;
+			if (socials.resumeFilename)
+				publicData.resumeFilename = socials.resumeFilename;
 		}
 
 		return publicData;
@@ -523,9 +525,11 @@ async function internalGetTicketData(id: string, extended = false) {
 }
 
 export const getTicketData = onCall(async (request) => {
-	const ticketIdSchema = z.string().refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
-		message: "Invalid ticket ID format",
-	});
+	const ticketIdSchema = z
+		.string()
+		.refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
+			message: "Invalid ticket ID format",
+		});
 
 	if (!ticketIdSchema.safeParse(request.data.id).success) {
 		return response(HttpStatus.BAD_REQUEST, { message: "bad request" });
@@ -546,9 +550,11 @@ export const getTicketData = onCall(async (request) => {
 });
 
 export const getExtendedTicketData = onCall(async (request) => {
-	const ticketIdSchema = z.string().refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
-		message: "Invalid ticket ID format",
-	});
+	const ticketIdSchema = z
+		.string()
+		.refine((val) => /^ticket_[a-zA-Z0-9]+$/.test(val), {
+			message: "Invalid ticket ID format",
+		});
 
 	if (!ticketIdSchema.safeParse(request.data.id).success) {
 		return response(HttpStatus.BAD_REQUEST, { message: "bad request" });
@@ -578,7 +584,11 @@ export const redeemItem = onCall({ cors }, async (req) => {
 	}
 
 	const user = await getAuth().getUser(req.auth.uid);
-	if (!user.customClaims?.admin) {
+	if (
+		!user.customClaims?.admin &&
+		user.customClaims?.type !== "volunteer" &&
+		user.customClaims?.type !== "volunteer.t2"
+	) {
 		logInfo("Admin permissions required.");
 		throw new HttpsError("permission-denied", "Admin access required");
 	}
@@ -590,7 +600,7 @@ export const redeemItem = onCall({ cors }, async (req) => {
 			action: z.string().refine((v) => v === "check" || v === "uncheck"),
 		})
 		.safeParse(req.data);
-	
+
 	if (!validateResults.success) {
 		logError("Bad request", {
 			issues: validateResults.error.issues.map((i) => i.path),
@@ -600,7 +610,10 @@ export const redeemItem = onCall({ cors }, async (req) => {
 
 	const { ticketId, itemId, action } = validateResults.data;
 
-	const ticketDoc = await getFirestore().collection("tickets").doc(ticketId).get();
+	const ticketDoc = await getFirestore()
+		.collection("tickets")
+		.doc(ticketId)
+		.get();
 	if (!ticketDoc.exists) {
 		throw new HttpsError("not-found", "Ticket not found");
 	}
@@ -613,16 +626,10 @@ export const redeemItem = onCall({ cors }, async (req) => {
 	let events = [];
 	if (action === "check") {
 		events = [...ticket.events, itemId];
-		await getFirestore()
-			.collection("tickets")
-			.doc(ticketId)
-			.update({ events });
+		await getFirestore().collection("tickets").doc(ticketId).update({ events });
 	} else {
 		events = ticket.events.filter((evt: string) => evt !== itemId);
-		await getFirestore()
-			.collection("tickets")
-			.doc(ticketId)
-			.update({ events });
+		await getFirestore().collection("tickets").doc(ticketId).update({ events });
 	}
 
 	return response(HttpStatus.OK, { data: events });

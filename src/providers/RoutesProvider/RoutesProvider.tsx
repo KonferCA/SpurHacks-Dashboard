@@ -51,6 +51,9 @@ import {
 	isAdmin,
 	isAppOpen,
 	isAuthenticated,
+	isVolunteerT1,
+	isVolunteerT2,
+	oneOf,
 } from "./accessChecks";
 import { RoutesContext } from "./context";
 import { paths } from "./data";
@@ -241,12 +244,20 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.admin,
 				element: <AdminPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					oneOf(isAdmin, isVolunteerT1, isVolunteerT2),
+				],
 			},
 			{
 				path: paths.adminViewTicket,
 				element: <AdminScanPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					oneOf(isAdmin, isVolunteerT1, isVolunteerT2),
+				],
 			},
 			{
 				path: paths.adminManageEvents,
@@ -256,7 +267,11 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.adminScan,
 				element: <AdminScanPage />,
-				accessCheck: [isAuthenticated, hasVerifiedEmail, isAdmin],
+				accessCheck: [
+					isAuthenticated,
+					hasVerifiedEmail,
+					oneOf(isAdmin, isVolunteerT1, isVolunteerT2),
+				],
 			},
 		];
 

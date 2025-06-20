@@ -13,9 +13,9 @@ export const AdminPage = () => {
 
 				<ul>
 					<li>
-						{/* @ts-ignore */}
 						<ChakraLink
 							as={Link}
+							// @ts-ignore
 							to={paths.adminScan}
 							color="skyblue"
 							textDecor="underline"

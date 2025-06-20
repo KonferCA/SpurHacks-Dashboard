@@ -1,6 +1,14 @@
 import { FullLogo, Knots } from "@/assets";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Box, Button, Flex, Image, Link, Text } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
+import {
+	Box,
+	Button,
+	Flex,
+	Image,
+	Link as ChakraLink,
+	Text,
+} from "@chakra-ui/react";
 
 export const NotFoundPage = () => {
 	return (
@@ -52,7 +60,8 @@ export const NotFoundPage = () => {
 				>
 					Uh oh, looks like something went wrong.
 				</Text>
-				<Link textDecoration="none" href={paths.home}>
+				{/*@ts-ignore*/}
+				<ChakraLink as={Link} textDecoration="none" to={paths.home}>
 					<Button
 						bg="#FFA75F"
 						_hover={{
@@ -68,7 +77,7 @@ export const NotFoundPage = () => {
 					>
 						BACK TO DASHBOARD
 					</Button>
-				</Link>
+				</ChakraLink>
 			</Flex>
 		</Box>
 	);

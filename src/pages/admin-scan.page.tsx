@@ -548,7 +548,11 @@ export const AdminScanPage = () => {
 	};
 
 	// check if user is admin
-	if (!currentUser?.hawkAdmin) {
+	if (
+		!currentUser?.hawkAdmin &&
+		currentUser?.type !== "volunteer" &&
+		currentUser?.type !== "volunteer.t2"
+	) {
 		return (
 			<PageWrapper>
 				<Card.Root rounded="4xl" maxW="400px" mx="auto">
@@ -1027,4 +1031,3 @@ export const AdminScanPage = () => {
 
 	return null;
 };
-
