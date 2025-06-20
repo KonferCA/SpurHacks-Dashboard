@@ -94,51 +94,7 @@ export const AdminScanPage = () => {
 		fetchEvents();
 	}, []);
 
-	// handle qr code scan
-	const handleScan = async (err: any, result: any) => {
-		if (result?.text) {
-			const qrText = result.text;
-			console.log("QR Code scanned:", qrText);
 
-			// extract ticket id from url
-			// expected format: https://dashboard.spurhacks.com/ticket/ticket_12345
-			const ticketMatch = qrText.match(/\/ticket\/(.+)$/);
-			if (ticketMatch) {
-				const ticketId = ticketMatch[1];
-
-				if (rapidScanMode && selectedRapidItem) {
-					// rapid scan mode - just toggle the selected item and show toast
-					if (scanner) {
-						scanner.clear().catch(console.error);
-						setScanner(null);
-					}
-					await handleRapidScan(ticketId, selectedRapidItem);
-					// restart scanner for rapid scan mode
-					setTimeout(() => {
-						setIsScanning(true);
-					}, 1000);
-				} else {
-					// normal mode - stop scanning and clear scanner to close camera
-					setIsScanning(false);
-					// immediately clear the scanner to stop camera
-					if (scanner) {
-						scanner.clear().catch(console.error);
-						setScanner(null);
-					}
-					await loadTicketData(ticketId);
-				}
-			} else {
-				toaster.error({
-					title: "Invalid QR Code",
-					description: "This doesn't appear to be a valid ticket QR code",
-				});
-			}
-		}
-
-		if (err) {
-			console.info("QR scan error:", err);
-		}
-	};
 
 	// rapid scan for a specific item
 	const handleRapidScan = async (
@@ -269,7 +225,21 @@ export const AdminScanPage = () => {
 
 	// initialize scanner when in scanning mode
 	useEffect(() => {
-		if (isScanning && scannerRef.current && !scanner) {
+		// cleanup existing scanner first if dependencies changed
+		if (scanner) {
+			scanner.clear().catch(console.error);
+			setScanner(null);
+			// give a small delay for cleanup to complete before creating new scanner
+			setTimeout(() => {
+				createNewScanner();
+			}, 100);
+		} else if (isScanning && scannerRef.current) {
+			createNewScanner();
+		}
+		
+		function createNewScanner() {
+			if (!isScanning || !scannerRef.current) return;
+			
 			const qrCodeScanner = new Html5QrcodeScanner(
 				"qr-reader",
 				{
@@ -284,12 +254,44 @@ export const AdminScanPage = () => {
 
 			qrCodeScanner.render(
 				(decodedText: string) => {
-					// success callback - immediately clear scanner to prevent loops
+					// success callback - handle rapid scan vs normal scan directly
 					qrCodeScanner
 						.clear()
-						.then(() => {
+						.then(async () => {
 							setScanner(null);
-							handleScan(null, { text: decodedText });
+							
+							console.log("QR Code scanned:", decodedText);
+							console.log("Current rapid scan mode:", rapidScanMode);
+							console.log("Current selected item:", selectedRapidItem);
+							
+							// extract ticket id from url
+							const ticketMatch = decodedText.match(/\/ticket\/(.+)$/);
+							if (ticketMatch) {
+								const ticketId = ticketMatch[1];
+								
+								if (rapidScanMode && selectedRapidItem) {
+									// rapid scan mode - just toggle the selected item
+									await handleRapidScan(ticketId, selectedRapidItem);
+									// restart scanner for rapid scan mode
+									setTimeout(() => {
+										setIsScanning(true);
+									}, 1000);
+								} else {
+									// normal mode - stop scanning and load full ticket data
+									setIsScanning(false);
+									await loadTicketData(ticketId);
+								}
+							} else {
+								// invalid qr code
+								toaster.error({
+									title: "Invalid QR Code",
+									description: "This doesn't appear to be a valid ticket QR code",
+								});
+								// restart scanner
+								setTimeout(() => {
+									setIsScanning(true);
+								}, 1000);
+							}
 						})
 						.catch(console.error);
 				},
@@ -308,14 +310,14 @@ export const AdminScanPage = () => {
 			setScanner(qrCodeScanner);
 		}
 
-		// cleanup scanner when not scanning
+		// cleanup function
 		return () => {
-			if (scanner && !isScanning) {
+			if (scanner) {
 				scanner.clear().catch(console.error);
 				setScanner(null);
 			}
 		};
-	}, [isScanning, scanner]);
+	}, [isScanning, rapidScanMode, selectedRapidItem]);
 
 	// cleanup scanner on component unmount
 	useEffect(() => {
@@ -547,7 +549,7 @@ export const AdminScanPage = () => {
 		}
 	};
 
-	// check if user is admin
+	// check if user has admin or volunteer access
 	if (
 		!currentUser?.hawkAdmin &&
 		currentUser?.type !== "volunteer" &&
