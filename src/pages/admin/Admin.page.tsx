@@ -1,6 +1,7 @@
 import { PageWrapper } from "@/components";
 import { paths } from "@/providers/RoutesProvider/data";
 import { Link } from "react-router-dom";
+import { Link as ChakraLink } from "@chakra-ui/react";
 
 export const AdminPage = () => {
 	return (
@@ -12,22 +13,22 @@ export const AdminPage = () => {
 
 				<ul>
 					<li>
-						<Link
-							to={paths.adminManageEvents}
-							className="px-5 py-4 text-sm font-medium transition relative rounded-sm
-                        focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tbrand
-                        disabled:cursor-not-allowed disabled:after:hidden disabled:bg-btn-gradient-disabled disabled:text-white disabled:hover:bg-gray-400 
-                        bg-btn-gradient text-white hover:bg-[#3f9098] active:bg-[#214b4f]"
+						{/* @ts-ignore */}
+						<ChakraLink
+							as={Link}
+							to={paths.adminScan}
+							color="skyblue"
+							textDecor="underline"
 						>
-							Manage Events/Foods
-						</Link>
+							Scan QR Code
+						</ChakraLink>
 					</li>
 				</ul>
 
 				<br />
 
 				<p className="text-sm mt-4">
-					(If you're unsure on how to use this page, contact Juan or Aidan.)
+					(If you're unsure on how to use this page, contact Amir.)
 				</p>
 			</div>
 		</PageWrapper>
