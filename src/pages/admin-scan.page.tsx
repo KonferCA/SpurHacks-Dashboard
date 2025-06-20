@@ -5,7 +5,13 @@ import { getRedeemableItems, redeemItem } from "@/services/firebase/redeem";
 import { getExtendedTicketData } from "@/services/firebase/ticket";
 import type { EventItem, ExtendedTicketData } from "@/services/firebase/types";
 import { firestore } from "@/services/firebase";
-import { collection, query as firestoreQuery, where, getDocs, limit } from "firebase/firestore";
+import {
+	collection,
+	query as firestoreQuery,
+	where,
+	getDocs,
+	limit,
+} from "firebase/firestore";
 import {
 	Badge,
 	Box,
@@ -43,14 +49,18 @@ export const AdminScanPage = () => {
 	} | null>(null);
 	const [lastScannedPerson, setLastScannedPerson] = useState<string>("");
 	const [lastScannedTicketId, setLastScannedTicketId] = useState<string>("");
-	const [lastAction, setLastAction] = useState<"check" | "uncheck" | null>(null);
+	const [lastAction, setLastAction] = useState<"check" | "uncheck" | null>(
+		null,
+	);
 	const [recentScans, setRecentScans] = useState<Set<string>>(new Set());
 	const [searchQuery, setSearchQuery] = useState<string>("");
-	const [searchResults, setSearchResults] = useState<Array<{
-		ticketId: string;
-		name: string;
-		email: string;
-	}>>([]);
+	const [searchResults, setSearchResults] = useState<
+		Array<{
+			ticketId: string;
+			name: string;
+			email: string;
+		}>
+	>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null);
 
@@ -64,7 +74,7 @@ export const AdminScanPage = () => {
 				const eventsData = await getRedeemableItems();
 				console.log("Loaded events:", eventsData);
 				setEvents(eventsData);
-				
+
 				if (eventsData.length === 0) {
 					toaster.error({
 						title: "No events loaded",
@@ -75,7 +85,7 @@ export const AdminScanPage = () => {
 			} catch (error) {
 				console.error("Failed to fetch events:", error);
 				toaster.error({
-					title: "Failed to load events", 
+					title: "Failed to load events",
 					description: "idk.",
 					duration: 8000,
 				});
@@ -95,17 +105,26 @@ export const AdminScanPage = () => {
 			const ticketMatch = qrText.match(/\/ticket\/(.+)$/);
 			if (ticketMatch) {
 				const ticketId = ticketMatch[1];
-				
+
 				if (rapidScanMode && selectedRapidItem) {
 					// rapid scan mode - just toggle the selected item and show toast
+					if (scanner) {
+						scanner.clear().catch(console.error);
+						setScanner(null);
+					}
 					await handleRapidScan(ticketId, selectedRapidItem);
 					// restart scanner for rapid scan mode
 					setTimeout(() => {
 						setIsScanning(true);
 					}, 1000);
 				} else {
-					// normal mode - load full ticket data
+					// normal mode - stop scanning and clear scanner to close camera
 					setIsScanning(false);
+					// immediately clear the scanner to stop camera
+					if (scanner) {
+						scanner.clear().catch(console.error);
+						setScanner(null);
+					}
 					await loadTicketData(ticketId);
 				}
 			} else {
@@ -122,7 +141,10 @@ export const AdminScanPage = () => {
 	};
 
 	// rapid scan for a specific item
-	const handleRapidScan = async (ticketId: string, rapidItem: { id: string; title: string; type: "food" | "event" }) => {
+	const handleRapidScan = async (
+		ticketId: string,
+		rapidItem: { id: string; title: string; type: "food" | "event" },
+	) => {
 		// prevent duplicate scans within 2 seconds
 		const scanKey = `${ticketId}-${rapidItem.id}`;
 		if (recentScans.has(scanKey)) {
@@ -130,9 +152,9 @@ export const AdminScanPage = () => {
 		}
 
 		// add to recent scans and remove after 2 seconds
-		setRecentScans(prev => new Set(prev).add(scanKey));
+		setRecentScans((prev) => new Set(prev).add(scanKey));
 		setTimeout(() => {
-			setRecentScans(prev => {
+			setRecentScans((prev) => {
 				const newSet = new Set(prev);
 				newSet.delete(scanKey);
 				return newSet;
@@ -150,9 +172,11 @@ export const AdminScanPage = () => {
 				return;
 			}
 
-			const isCurrentlyChecked = ticketResponse.data.events.includes(rapidItem.id);
+			const isCurrentlyChecked = ticketResponse.data.events.includes(
+				rapidItem.id,
+			);
 			const personName = `${ticketResponse.data.firstName} ${ticketResponse.data.lastName}`;
-			
+
 			// rapid scan only sets/adds items, never removes
 			if (isCurrentlyChecked) {
 				const itemTypeText = rapidItem.type === "food" ? "fed" : "checked in";
@@ -163,27 +187,32 @@ export const AdminScanPage = () => {
 				});
 				return;
 			}
-			
+
 			// only check/add the item
 			const response = await redeemItem(ticketId, rapidItem.id, "check");
-			
+
 			if (response.status === 200) {
 				setLastScannedPerson(personName);
 				setLastScannedTicketId(ticketId);
 				setLastAction("check");
-				
+
 				const statusText = rapidItem.type === "food" ? "Fed" : "Checked in";
-				
+
 				// show success toast
 				toaster.success({
 					title: `${statusText}: ${personName}`,
 					description: rapidItem.title,
 				});
-				
+
 				// show separate warning toast for allergies if this is a food event
-				if (rapidItem.type === "food" && ticketResponse.data.allergies && Array.isArray(ticketResponse.data.allergies) && ticketResponse.data.allergies.length > 0) {
+				if (
+					rapidItem.type === "food" &&
+					ticketResponse.data.allergies &&
+					Array.isArray(ticketResponse.data.allergies) &&
+					ticketResponse.data.allergies.length > 0
+				) {
 					toaster.warning({
-						title: "⚠️ ALLERGIES WARNING",
+						title: "! ALLERGIES WARNING",
 						description: `${personName}: ${ticketResponse.data.allergies.join(", ")}`,
 						duration: 8000,
 					});
@@ -250,25 +279,30 @@ export const AdminScanPage = () => {
 					supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
 					// remove formatsToSupport to allow default QR code detection
 				},
-				false
+				false,
 			);
 
 			qrCodeScanner.render(
 				(decodedText: string) => {
 					// success callback - immediately clear scanner to prevent loops
-					qrCodeScanner.clear().then(() => {
-						setScanner(null);
-						handleScan(null, { text: decodedText });
-					}).catch(console.error);
+					qrCodeScanner
+						.clear()
+						.then(() => {
+							setScanner(null);
+							handleScan(null, { text: decodedText });
+						})
+						.catch(console.error);
 				},
 				(error: string) => {
 					// error callback - only log meaningful errors
-					if (!error.includes("NotFoundException") && 
+					if (
+						!error.includes("NotFoundException") &&
 						!error.includes("No MultiFormat Readers") &&
-						!error.includes("parse error")) {
+						!error.includes("parse error")
+					) {
 						console.warn("QR scan error:", error);
 					}
-				}
+				},
 			);
 
 			setScanner(qrCodeScanner);
@@ -299,14 +333,14 @@ export const AdminScanPage = () => {
 		try {
 			const action = isChecked ? "uncheck" : "check";
 			const response = await redeemItem(scannedTicketId, eventId, action);
-			
+
 			if (response.status === 200) {
 				// update local state
 				setTicketData({
 					...ticketData,
 					events: response.data,
 				});
-				
+
 				toaster.success({
 					title: `${isChecked ? "Unchecked" : "Checked"} successfully`,
 					description: "",
@@ -338,13 +372,13 @@ export const AdminScanPage = () => {
 		setRecentScans(new Set());
 		setSearchQuery("");
 		setSearchResults([]);
-		
+
 		// cleanup existing scanner
 		if (scanner) {
 			scanner.clear().catch(console.error);
 			setScanner(null);
 		}
-		
+
 		// if we're in direct ticket view mode, navigate back to admin scan
 		if (isDirectTicketView) {
 			navigate("/admin/scan");
@@ -354,7 +388,11 @@ export const AdminScanPage = () => {
 	};
 
 	// enter rapid scan mode
-	const enterRapidScanMode = (item: { id: string; title: string; type: "food" | "event" }) => {
+	const enterRapidScanMode = (item: {
+		id: string;
+		title: string;
+		type: "food" | "event";
+	}) => {
 		setSelectedRapidItem(item);
 		setRapidScanMode(true);
 		setTicketData(null);
@@ -384,42 +422,43 @@ export const AdminScanPage = () => {
 		try {
 			// search in applications collection by name or email
 			const applicationsRef = collection(firestore, "applications");
-			
+
 			// search by email (exact match)
 			const emailQuery = firestoreQuery(
 				applicationsRef,
 				where("email", ">=", query.toLowerCase()),
 				where("email", "<=", `${query.toLowerCase()}\uf8ff`),
-				limit(10)
+				limit(10),
 			);
-			
+
 			// search by first name
 			const firstNameQuery = firestoreQuery(
 				applicationsRef,
 				where("firstName", ">=", query),
 				where("firstName", "<=", `${query}\uf8ff`),
-				limit(10)
+				limit(10),
 			);
-			
+
 			// search by last name
 			const lastNameQuery = firestoreQuery(
 				applicationsRef,
 				where("lastName", ">=", query),
 				where("lastName", "<=", `${query}\uf8ff`),
-				limit(10)
+				limit(10),
 			);
 
-			const [emailResults, firstNameResults, lastNameResults] = await Promise.all([
-				getDocs(emailQuery),
-				getDocs(firstNameQuery),
-				getDocs(lastNameQuery)
-			]);
+			const [emailResults, firstNameResults, lastNameResults] =
+				await Promise.all([
+					getDocs(emailQuery),
+					getDocs(firstNameQuery),
+					getDocs(lastNameQuery),
+				]);
 
 			// combine and deduplicate results
 			const allResults = new Map();
-			
-			[emailResults, firstNameResults, lastNameResults].forEach(snapshot => {
-				snapshot.docs.forEach(doc => {
+
+			[emailResults, firstNameResults, lastNameResults].forEach((snapshot) => {
+				snapshot.docs.forEach((doc) => {
 					const data = doc.data() as {
 						applicantId: string;
 						firstName: string;
@@ -468,18 +507,27 @@ export const AdminScanPage = () => {
 		try {
 			// reverse the last action
 			const reverseAction = lastAction === "check" ? "uncheck" : "check";
-			const response = await redeemItem(lastScannedTicketId, selectedRapidItem.id, reverseAction);
-			
+			const response = await redeemItem(
+				lastScannedTicketId,
+				selectedRapidItem.id,
+				reverseAction,
+			);
+
 			if (response.status === 200) {
-				const statusText = reverseAction === "check" ? 
-					(selectedRapidItem.type === "food" ? "Fed" : "Checked in") : 
-					(selectedRapidItem.type === "food" ? "Unfed" : "Checked out");
-				
+				const statusText =
+					reverseAction === "check"
+						? selectedRapidItem.type === "food"
+							? "Fed"
+							: "Checked in"
+						: selectedRapidItem.type === "food"
+							? "Unfed"
+							: "Checked out";
+
 				toaster.success({
 					title: `Undone: ${statusText} ${lastScannedPerson}`,
 					description: `${selectedRapidItem.title}`,
 				});
-				
+
 				// clear undo state
 				setLastScannedPerson("");
 				setLastScannedTicketId("");
@@ -526,24 +574,28 @@ export const AdminScanPage = () => {
 	// scanner view
 	if (isScanning) {
 		const allItems = [
-			...events.filter(e => {
-				const type = e.type.toLowerCase();
-				return type === "food" || type === "meal";
-			}).map(e => ({ 
-				id: e.id, 
-				title: `🍽️ ${e.title}`, 
-				type: "food" as const,
-				originalTitle: e.title
-			})),
-			...events.filter(e => {
-				const type = e.type.toLowerCase();
-				return type !== "food" && type !== "meal";
-			}).map(e => ({ 
-				id: e.id, 
-				title: `🎯 ${e.title}`, 
-				type: "event" as const,
-				originalTitle: e.title
-			}))
+			...events
+				.filter((e) => {
+					const type = e.type.toLowerCase();
+					return type === "food" || type === "meal";
+				})
+				.map((e) => ({
+					id: e.id,
+					title: `🍽 ${e.title}`,
+					type: "food" as const,
+					originalTitle: e.title,
+				})),
+			...events
+				.filter((e) => {
+					const type = e.type.toLowerCase();
+					return type !== "food" && type !== "meal";
+				})
+				.map((e) => ({
+					id: e.id,
+					title: `🎯 ${e.title}`,
+					type: "event" as const,
+					originalTitle: e.title,
+				})),
 		];
 
 		return (
@@ -563,7 +615,8 @@ export const AdminScanPage = () => {
 											{selectedRapidItem.title}
 										</Text>
 										<Text color="gray.400" fontSize="sm">
-											Scanning for: {selectedRapidItem.type === "food" ? "Meal" : "Event"}
+											Scanning for:{" "}
+											{selectedRapidItem.type === "food" ? "Meal" : "Event"}
 										</Text>
 									</Flex>
 								) : (
@@ -582,7 +635,7 @@ export const AdminScanPage = () => {
 								borderRadius="2xl"
 								bg="#1a1a1a"
 							>
-								<div 
+								<div
 									id="qr-reader"
 									ref={scannerRef}
 									style={{
@@ -590,36 +643,53 @@ export const AdminScanPage = () => {
 										height: "100%",
 									}}
 								/>
-								
+
 								{/* html5-qrcode provides its own camera controls */}
 							</Box>
-							
+
 							{/* Rapid Scan Mode Selector */}
 							{!rapidScanMode ? (
 								<Box mt={4}>
-									<Text color="gray.400" fontSize="sm" mb={3} textAlign="center">
+									<Text
+										color="gray.400"
+										fontSize="sm"
+										mb={3}
+										textAlign="center"
+									>
 										Select an item to enable rapid scan mode
 									</Text>
 									{allItems.length === 0 ? (
-										<Box p={4} bg="#2d1b1b" borderRadius="xl" border="1px solid #dc2626">
-											<Text fontSize="sm" fontWeight="bold" color="#f87171" mb={2}>
-												⚠️ No Events Available
+										<Box
+											p={4}
+											bg="#2d1b1b"
+											borderRadius="xl"
+											border="1px solid #dc2626"
+										>
+											<Text
+												fontSize="sm"
+												fontWeight="bold"
+												color="#f87171"
+												mb={2}
+											>
+												! No Events Available
 											</Text>
 										</Box>
 									) : (
 										<Select
 											label=""
 											placeholder="Choose event or meal to rapid scan"
-											options={allItems.map(item => item.title)}
+											options={allItems.map((item) => item.title)}
 											onChange={(selected) => {
 												if (selected && selected.length > 0) {
 													const selectedTitle = selected[0];
-													const item = allItems.find(i => i.title === selectedTitle);
+													const item = allItems.find(
+														(i) => i.title === selectedTitle,
+													);
 													if (item) {
-														enterRapidScanMode({ 
-															id: item.id, 
-															title: item.originalTitle, 
-															type: item.type 
+														enterRapidScanMode({
+															id: item.id,
+															title: item.originalTitle,
+															type: item.type,
 														});
 													}
 												}
@@ -631,7 +701,12 @@ export const AdminScanPage = () => {
 								/* Rapid Scan Status */
 								<Flex direction="column" gap={3} mt={4}>
 									{lastScannedPerson && (
-										<Box p={3} bg="#1f2937" borderRadius="xl" textAlign="center">
+										<Box
+											p={3}
+											bg="#1f2937"
+											borderRadius="xl"
+											textAlign="center"
+										>
 											<Text color="#f9a857" fontSize="sm" fontWeight="bold">
 												Last Scanned: {lastScannedPerson}
 											</Text>
@@ -691,13 +766,15 @@ export const AdminScanPage = () => {
 									searchParticipants(value);
 								}}
 							/>
-							
+
 							{isSearching && (
 								<Box mt={3} textAlign="center">
-									<Text color="gray.400" fontSize="sm">Searching...</Text>
+									<Text color="gray.400" fontSize="sm">
+										Searching...
+									</Text>
 								</Box>
 							)}
-							
+
 							{searchResults.length > 0 && (
 								<Box mt={3}>
 									<Text color="gray.400" fontSize="sm" mb={2}>
@@ -728,14 +805,16 @@ export const AdminScanPage = () => {
 									</Flex>
 								</Box>
 							)}
-							
-							{searchQuery.length >= 2 && !isSearching && searchResults.length === 0 && (
-								<Box mt={3} textAlign="center">
-									<Text color="gray.400" fontSize="sm">
-										No participants found matching "{searchQuery}"
-									</Text>
-								</Box>
-							)}
+
+							{searchQuery.length >= 2 &&
+								!isSearching &&
+								searchResults.length === 0 && (
+									<Box mt={3} textAlign="center">
+										<Text color="gray.400" fontSize="sm">
+											No participants found matching "{searchQuery}"
+										</Text>
+									</Box>
+								)}
 						</CardBody>
 					</Card.Root>
 				</Flex>
@@ -745,11 +824,11 @@ export const AdminScanPage = () => {
 
 	// ticket data view
 	if (ticketData) {
-		const foodEvents = events.filter(e => {
+		const foodEvents = events.filter((e) => {
 			const type = e.type.toLowerCase();
 			return type === "food" || type === "meal";
 		});
-		const otherEvents = events.filter(e => {
+		const otherEvents = events.filter((e) => {
 			const type = e.type.toLowerCase();
 			return type !== "food" && type !== "meal";
 		});
@@ -776,8 +855,8 @@ export const AdminScanPage = () => {
 										</Text>
 									)}
 								</Box>
-								<Button 
-									onClick={resetScanner} 
+								<Button
+									onClick={resetScanner}
 									rounded="full"
 									bg="#f9a857"
 									color="black"
@@ -789,24 +868,31 @@ export const AdminScanPage = () => {
 								</Button>
 							</Flex>
 						</CardHeader>
-						{ticketData.allergies && Array.isArray(ticketData.allergies) && ticketData.allergies.length > 0 && (
-							<CardBody pt={0}>
-								<Box 
-									p={3} 
-									bg="#2d1b1b" 
-									borderRadius="lg" 
-									border="1px solid"
-									borderColor="#dc2626"
-								>
-									<Text fontSize="sm" fontWeight="bold" color="#f87171" mb={2}>
-										⚠️ ALLERGIES
-									</Text>
-									<Text fontSize="sm" color="#fca5a5">
-										{ticketData.allergies.join(", ")}
-									</Text>
-								</Box>
-							</CardBody>
-						)}
+						{ticketData.allergies &&
+							Array.isArray(ticketData.allergies) &&
+							ticketData.allergies.length > 0 && (
+								<CardBody pt={0}>
+									<Box
+										p={3}
+										bg="#2d1b1b"
+										borderRadius="lg"
+										border="1px solid"
+										borderColor="#dc2626"
+									>
+										<Text
+											fontSize="sm"
+											fontWeight="bold"
+											color="#f87171"
+											mb={2}
+										>
+											! ALLERGIES
+										</Text>
+										<Text fontSize="sm" color="#fca5a5">
+											{ticketData.allergies.join(", ")}
+										</Text>
+									</Box>
+								</CardBody>
+							)}
 					</Card.Root>
 
 					{/* meals section */}
@@ -858,7 +944,12 @@ export const AdminScanPage = () => {
 										);
 									})
 								) : (
-									<Text color="gray.400" fontSize="sm" textAlign="center" py={4}>
+									<Text
+										color="gray.400"
+										fontSize="sm"
+										textAlign="center"
+										py={4}
+									>
 										No meals available
 									</Text>
 								)}
@@ -890,12 +981,17 @@ export const AdminScanPage = () => {
 												borderColor={isChecked ? "#8b5cf6" : "#374151"}
 											>
 												<Box flex={1}>
-													<Text fontSize="sm" fontWeight="medium" mb={1} color="white">
+													<Text
+														fontSize="sm"
+														fontWeight="medium"
+														mb={1}
+														color="white"
+													>
 														{event.title}
 													</Text>
 													<Flex gap={2} align="center">
-														<Badge 
-															size="sm" 
+														<Badge
+															size="sm"
 															bg={isChecked ? "#8b5cf6" : "#6b7280"}
 															color="white"
 															variant="solid"
@@ -930,4 +1026,5 @@ export const AdminScanPage = () => {
 	}
 
 	return null;
-}; 
+};
+
