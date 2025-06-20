@@ -149,6 +149,10 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				element: <ViewTicketPage />,
 			},
 			{
+				path: paths.schedule,
+				element: <SchedulePage />,
+			},
+			{
 				path: paths.notFound,
 				element: <NotFoundPage />,
 			},
@@ -176,34 +180,14 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 				accessCheck: [isAuthenticated, hasVerifiedEmail],
 			},
 			{
-				path: paths.schedule,
-				element: <SchedulePage />,
-				accessCheck: [
-					isAuthenticated,
-					hasVerifiedEmail,
-					isAccepted,
-					hasRSVP,
-				],
-			},
-			{
 				path: paths.networking,
 				element: <NetworkingPage />,
-				accessCheck: [
-					isAuthenticated,
-					hasVerifiedEmail,
-					isAccepted,
-					hasRSVP,
-				],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.myTicket,
 				element: <MyTicketPage />,
-				accessCheck: [
-					isAuthenticated,
-					hasVerifiedEmail,
-					isAccepted,
-					hasRSVP,
-				],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.apply,
@@ -221,12 +205,7 @@ export const RoutesProvider: FC<ComponentProps> = () => {
 			{
 				path: paths.myTeam,
 				element: <MyTeamPage />,
-				accessCheck: [
-					isAuthenticated,
-					hasVerifiedEmail,
-					isAccepted,
-					hasRSVP,
-				],
+				accessCheck: [isAuthenticated, hasVerifiedEmail, isAccepted, hasRSVP],
 			},
 			{
 				path: paths.joinTeam,

@@ -97,7 +97,7 @@ service cloud.firestore {
 
     match /events/{eventId} {
         // Only grant read access if you are owner/admin
-        allow read: if isAuthenticated();
+        allow read: if true;
         allow write: if isAuthenticated() && isAdmin();
     }
 
