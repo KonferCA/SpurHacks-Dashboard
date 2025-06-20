@@ -36,6 +36,10 @@ export const AdminScanPage = () => {
 	const { ticketId: urlTicketId } = useParams();
 	const navigate = useNavigate();
 	const scannerRef = useRef<HTMLDivElement>(null);
+	const rapidScanModeRef = useRef<boolean>(false);
+	const selectedRapidItemRef = useRef<{ id: string; title: string; type: "food" | "event" } | null>(null);
+	const lastScanTimeRef = useRef<number>(0);
+	const lastScannedCodeRef = useRef<string>("");
 	const [isLoading, setIsLoading] = useState(false);
 	const [ticketData, setTicketData] = useState<ExtendedTicketData | null>(null);
 	const [events, setEvents] = useState<EventItem[]>([]);
@@ -52,7 +56,6 @@ export const AdminScanPage = () => {
 	const [lastAction, setLastAction] = useState<"check" | "uncheck" | null>(
 		null,
 	);
-	const [recentScans, setRecentScans] = useState<Set<string>>(new Set());
 	const [searchQuery, setSearchQuery] = useState<string>("");
 	const [searchResults, setSearchResults] = useState<
 		Array<{
@@ -66,6 +69,10 @@ export const AdminScanPage = () => {
 
 	// check if we're in direct ticket view mode
 	const isDirectTicketView = !!urlTicketId;
+
+	// update refs when state changes for scanner callback access
+	rapidScanModeRef.current = rapidScanMode;
+	selectedRapidItemRef.current = selectedRapidItem;
 
 	// fetch events data on component mount
 	useEffect(() => {
@@ -101,21 +108,7 @@ export const AdminScanPage = () => {
 		ticketId: string,
 		rapidItem: { id: string; title: string; type: "food" | "event" },
 	) => {
-		// prevent duplicate scans within 2 seconds
-		const scanKey = `${ticketId}-${rapidItem.id}`;
-		if (recentScans.has(scanKey)) {
-			return; // ignore duplicate scan
-		}
-
-		// add to recent scans and remove after 2 seconds
-		setRecentScans((prev) => new Set(prev).add(scanKey));
-		setTimeout(() => {
-			setRecentScans((prev) => {
-				const newSet = new Set(prev);
-				newSet.delete(scanKey);
-				return newSet;
-			});
-		}, 2000);
+		// debouncing is now handled in the scanner callback
 
 		try {
 			// first get minimal ticket data to check current status
@@ -225,21 +218,7 @@ export const AdminScanPage = () => {
 
 	// initialize scanner when in scanning mode
 	useEffect(() => {
-		// cleanup existing scanner first if dependencies changed
-		if (scanner) {
-			scanner.clear().catch(console.error);
-			setScanner(null);
-			// give a small delay for cleanup to complete before creating new scanner
-			setTimeout(() => {
-				createNewScanner();
-			}, 100);
-		} else if (isScanning && scannerRef.current) {
-			createNewScanner();
-		}
-		
-		function createNewScanner() {
-			if (!isScanning || !scannerRef.current) return;
-			
+		if (isScanning && scannerRef.current && !scanner) {
 			const qrCodeScanner = new Html5QrcodeScanner(
 				"qr-reader",
 				{
@@ -255,45 +234,51 @@ export const AdminScanPage = () => {
 			qrCodeScanner.render(
 				(decodedText: string) => {
 					// success callback - handle rapid scan vs normal scan directly
-					qrCodeScanner
-						.clear()
-						.then(async () => {
-							setScanner(null);
-							
-							console.log("QR Code scanned:", decodedText);
-							console.log("Current rapid scan mode:", rapidScanMode);
-							console.log("Current selected item:", selectedRapidItem);
-							
-							// extract ticket id from url
-							const ticketMatch = decodedText.match(/\/ticket\/(.+)$/);
-							if (ticketMatch) {
-								const ticketId = ticketMatch[1];
-								
-								if (rapidScanMode && selectedRapidItem) {
-									// rapid scan mode - just toggle the selected item
-									await handleRapidScan(ticketId, selectedRapidItem);
-									// restart scanner for rapid scan mode
-									setTimeout(() => {
-										setIsScanning(true);
-									}, 1000);
-								} else {
-									// normal mode - stop scanning and load full ticket data
+					const now = Date.now();
+					const timeSinceLastScan = now - lastScanTimeRef.current;
+					const isSameCode = decodedText === lastScannedCodeRef.current;
+					
+					// debounce: ignore if same code scanned within 4 seconds
+					if (isSameCode && timeSinceLastScan < 4000) {
+						return;
+					}
+					
+					// extract ticket id from url
+					const ticketMatch = decodedText.match(/\/ticket\/(.+)$/);
+					if (ticketMatch) {
+						const ticketId = ticketMatch[1];
+						
+						// update debounce refs
+						lastScanTimeRef.current = now;
+						lastScannedCodeRef.current = decodedText;
+						
+						// use refs to get current values (not closure values)
+						const currentRapidScanMode = rapidScanModeRef.current;
+						const currentSelectedRapidItem = selectedRapidItemRef.current;
+						
+						if (currentRapidScanMode && currentSelectedRapidItem) {
+							// rapid scan mode - keep camera running, just process the scan
+							console.log("🚀 Rapid scan mode:", currentSelectedRapidItem.title);
+							handleRapidScan(ticketId, currentSelectedRapidItem);
+							// no need to restart scanner - it keeps running!
+						} else {
+							// normal mode - clear scanner and stop camera, then load ticket data
+							qrCodeScanner
+								.clear()
+								.then(async () => {
+									setScanner(null);
 									setIsScanning(false);
 									await loadTicketData(ticketId);
-								}
-							} else {
-								// invalid qr code
-								toaster.error({
-									title: "Invalid QR Code",
-									description: "This doesn't appear to be a valid ticket QR code",
-								});
-								// restart scanner
-								setTimeout(() => {
-									setIsScanning(true);
-								}, 1000);
-							}
-						})
-						.catch(console.error);
+								})
+								.catch(console.error);
+						}
+					} else {
+						// invalid qr code
+						toaster.error({
+							title: "Invalid QR Code",
+							description: "This doesn't appear to be a valid ticket QR code",
+						});
+					}
 				},
 				(error: string) => {
 					// error callback - only log meaningful errors
@@ -310,14 +295,14 @@ export const AdminScanPage = () => {
 			setScanner(qrCodeScanner);
 		}
 
-		// cleanup function
+		// cleanup scanner when not scanning
 		return () => {
-			if (scanner) {
+			if (scanner && !isScanning) {
 				scanner.clear().catch(console.error);
 				setScanner(null);
 			}
 		};
-	}, [isScanning, rapidScanMode, selectedRapidItem]);
+	}, [isScanning, scanner]);
 
 	// cleanup scanner on component unmount
 	useEffect(() => {
@@ -362,7 +347,7 @@ export const AdminScanPage = () => {
 		}
 	};
 
-	// reset scanner to scan new ticket
+		// reset scanner to scan new ticket
 	const resetScanner = () => {
 		setTicketData(null);
 		setScannedTicketId(null);
@@ -371,21 +356,31 @@ export const AdminScanPage = () => {
 		setLastScannedPerson("");
 		setLastScannedTicketId("");
 		setLastAction(null);
-		setRecentScans(new Set());
 		setSearchQuery("");
 		setSearchResults([]);
-
-		// cleanup existing scanner
+		
+		// reset debounce refs
+		lastScanTimeRef.current = 0;
+		lastScannedCodeRef.current = "";
+		
+		// cleanup existing scanner and restart
 		if (scanner) {
-			scanner.clear().catch(console.error);
-			setScanner(null);
-		}
-
-		// if we're in direct ticket view mode, navigate back to admin scan
-		if (isDirectTicketView) {
-			navigate("/admin/scan");
+			scanner.clear().then(() => {
+				setScanner(null);
+				// if we're in direct ticket view mode, navigate back to admin scan
+				if (isDirectTicketView) {
+					navigate("/admin/scan");
+				} else {
+					setIsScanning(true);
+				}
+			}).catch(console.error);
 		} else {
-			setIsScanning(true);
+			// if we're in direct ticket view mode, navigate back to admin scan
+			if (isDirectTicketView) {
+				navigate("/admin/scan");
+			} else {
+				setIsScanning(true);
+			}
 		}
 	};
 
@@ -409,6 +404,18 @@ export const AdminScanPage = () => {
 		setLastScannedPerson("");
 		setLastScannedTicketId("");
 		setLastAction(null);
+		
+		// reset debounce refs
+		lastScanTimeRef.current = 0;
+		lastScannedCodeRef.current = "";
+		
+		// clear scanner when exiting rapid scan mode to turn off camera
+		if (scanner) {
+			scanner.clear().then(() => {
+				setScanner(null);
+				setIsScanning(true); // restart in normal mode
+			}).catch(console.error);
+		}
 	};
 
 	// html5-qrcode handles camera switching internally via its UI
