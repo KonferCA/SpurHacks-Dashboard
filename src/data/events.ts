@@ -344,14 +344,14 @@ export const schedule = [
 		row: 4,
 	},
 	{
-		id: "jackbox",
+		id: "mortal-kombat",
 		startDate: new Date("2025-06-22T03:00:00.000Z"),
 		endTime: new Date("2025-06-22T05:00:00.000Z"),
 		color: "purple",
-		title: "Jackbox",
+		title: "Mortal Kombat",
 		location: "Workshop Room (2nd floor)",
 		description:
-			"📱 Hilarious party games await! Use your phone to participate in these witty, creative, and often ridiculous multiplayer games. Laughter guaranteed!",
+			"⚔️ Finish him! Test your might in the ultimate fighting game tournament. Choose your fighter and prove your combat skills in this legendary battle arena!",
 		row: 1,
 	},
 	{
