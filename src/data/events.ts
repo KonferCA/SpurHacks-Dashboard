@@ -268,13 +268,13 @@ export const schedule = [
 	},
 	{
 		id: "how-not-to-be-a-web-developer-in-tech-w-nathan-laundry",
-		startDate: new Date("2025-06-21T22:00:00.000Z"),
-		endTime: new Date("2025-06-21T23:00:00.000Z"),
+		startDate: new Date("2025-06-21T22:15:00.000Z"),
+		endTime: new Date("2025-06-21T23:15:00.000Z"),
 		color: "blue",
-		title: "How Not To Be a Web Developer in Tech w/ Nathan Laundry",
+		title: "Maybe it is the Damn Phone: or how to quit doomscrolling and why you NEED to w/ Nathan Laundry",
 		location: "Common Area",
 		description:
-			"😅 Learn from the mistakes of others! An educational journey through web development fails, career pitfalls, and how to avoid common traps.",
+			"📱 Break free from the endless scroll! Discover practical strategies to reclaim your attention, boost productivity, and understand why disconnecting is essential for your mental health and creativity.",
 		row: 2,
 	},
 	{
