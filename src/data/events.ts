@@ -224,8 +224,8 @@ export const schedule = [
 	},
 	{
 		id: "resume-roast-w-dragos-cada",
-		startDate: new Date("2025-06-21T19:00:00.000Z"),
-		endTime: new Date("2025-06-21T20:00:00.000Z"),
+		startDate: new Date("2025-06-21T20:00:00.000Z"),
+		endTime: new Date("2025-06-21T21:00:00.000Z"),
 		color: "blue",
 		title: "Resume Roast w/ Dragos Cada",
 		location: "Common Area",
@@ -246,8 +246,8 @@ export const schedule = [
 	},
 	{
 		id: "ibm-quantum-workshop",
-		startDate: new Date("2025-06-21T20:00:00.000Z"),
-		endTime: new Date("2025-06-21T21:00:00.000Z"),
+		startDate: new Date("2025-06-21T21:00:00.000Z"),
+		endTime: new Date("2025-06-21T22:00:00.000Z"),
 		color: "blue",
 		title: "IBM Quantum Workshop",
 		location: "Common Area",
@@ -268,8 +268,8 @@ export const schedule = [
 	},
 	{
 		id: "how-not-to-be-a-web-developer-in-tech-w-nathan-laundry",
-		startDate: new Date("2025-06-21T21:00:00.000Z"),
-		endTime: new Date("2025-06-21T22:00:00.000Z"),
+		startDate: new Date("2025-06-21T22:00:00.000Z"),
+		endTime: new Date("2025-06-21T23:00:00.000Z"),
 		color: "blue",
 		title: "How Not To Be a Web Developer in Tech w/ Nathan Laundry",
 		location: "Common Area",
@@ -388,6 +388,17 @@ export const schedule = [
 		description:
 			"⚖️ The moment of truth! Present your incredible creations to our panel of expert judges. Show off what you've built and explain your brilliant solutions!",
 		row: 4,
+	},
+	{
+		id: "intro-to-quantum-bitcoin-with-david-chaum",
+		startDate: new Date("2025-06-22T18:00:00.000Z"),
+		endTime: new Date("2025-06-22T19:00:00.000Z"),
+		color: "blue",
+		title: "Intro to Quantum with Bitcoin w/ David Chaum",
+		location: "Common Area",
+		description:
+			"🧠 Explore the intersection of quantum tech and digital currency in this visionary session with cryptography pioneer David Chaum!",
+		row: 2,
 	},
 	{
 		id: "closing-ceremony",
