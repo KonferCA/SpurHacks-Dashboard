@@ -217,9 +217,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T21:00:00.000Z"),
 		color: "green",
 		title: "Saturday Lunch",
-		location: "Dining Hall",
+		location: "Outdoor Food Truck",
 		description:
-			"🍔 Midday refuel! Take a break from coding, grab some delicious food, and recharge for the afternoon push. Great time to catch up with teammates and plan your next features!",
+			"🍔 Midday refuel! Take a break from coding, grab some delicious food, and recharge for the afternoon push. Great time to catch up with teammates and plan your next features! Line is starting outside of common area 1.",
 		row: 1,
 	},
 	{
