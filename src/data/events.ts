@@ -177,7 +177,7 @@ export const schedule = [
 		location: "Common Area",
 		description:
 			"🔒 With great AI power comes great responsibility! Learn how to build secure, ethical AI systems and protect against emerging threats in our AI-powered world.",
-		row: 1,
+		row: 2,
 	},
 	{
 		id: "intro-to-github--copilot-w-karolina-from-mlh",
