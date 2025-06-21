@@ -171,7 +171,7 @@ export const schedule = [
 	{
 		id: "intro-to-ai-security-w-david-from-fairly-ai",
 		startDate: new Date("2025-06-21T19:00:00.000Z"),
-		endTime: new Date("2025-06-21T120:00:00.000Z"),
+		endTime: new Date("2025-06-21T20:00:00.000Z"),
 		color: "blue",
 		title: "Intro to AI Security w/ David from Fairly AI",
 		location: "Common Area",
