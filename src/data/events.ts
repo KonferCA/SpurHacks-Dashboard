@@ -7,7 +7,8 @@ export const schedule = [
 		color: "blue",
 		title: "Toronto Bus A Arrival",
 		location: "Campus",
-		description: "🚌 The first wave of caffeine-dependent code warriors arrives! Welcome to the beginning of an epic weekend of debugging, creativity, and questionable sleep schedules.",
+		description:
+			"🚌 The first wave of caffeine-dependent code warriors arrives! Welcome to the beginning of an epic weekend of debugging, creativity, and questionable sleep schedules.",
 		row: 2,
 	},
 	{
@@ -17,7 +18,8 @@ export const schedule = [
 		color: "orange",
 		title: "Main Registration Period",
 		location: "Main Hall",
-		description: "📝 Time to make it official! Get your badges, swag, and that all-important wristband that proves you're ready to hack the night away. Pro tip: This is where the real networking begins!",
+		description:
+			"📝 Time to make it official! Get your badges, swag, and that all-important wristband that proves you're ready to hack the night away. Pro tip: This is where the real networking begins!",
 		row: 3,
 	},
 	{
@@ -27,7 +29,8 @@ export const schedule = [
 		color: "blue",
 		title: "Toronto Bus B Arrival",
 		location: "Campus",
-		description: "🚌 Round two of brilliant minds rolling in! The gang's almost all here - time to reunite with old friends and make some new coding buddies.",
+		description:
+			"🚌 Round two of brilliant minds rolling in! The gang's almost all here - time to reunite with old friends and make some new coding buddies.",
 		row: 4,
 	},
 	{
@@ -37,7 +40,8 @@ export const schedule = [
 		color: "orange",
 		title: "Main Opening Ceremony",
 		location: "Main Hall",
-		description: "🎉 The moment we've all been waiting for! Get pumped with inspiring talks, meet the amazing sponsors, learn the rules, and officially kick off this incredible hackathon journey!",
+		description:
+			"🎉 The moment we've all been waiting for! Get pumped with inspiring talks, meet the amazing sponsors, learn the rules, and officially kick off this incredible hackathon journey!",
 		row: 1,
 	},
 	{
@@ -47,7 +51,8 @@ export const schedule = [
 		color: "green",
 		title: "Friday Dinner",
 		location: "Dining Hall",
-		description: "🍕 Fuel up for the marathon ahead! Enjoy delicious food, great conversations, and maybe scout out your future teammates. Remember: a well-fed hacker is a happy hacker!",
+		description:
+			"🍕 Fuel up for the marathon ahead! Enjoy delicious food, great conversations, and maybe scout out your future teammates. Remember: a well-fed hacker is a happy hacker!",
 		row: 2,
 	},
 	{
@@ -57,7 +62,8 @@ export const schedule = [
 		color: "orange",
 		title: "Hacking Period",
 		location: "Main Hall",
-		description: "💻 This is it - the main event! 48 hours of pure innovation, creativity, and coding magic. Build something amazing, break things, fix them, and repeat. The clock is ticking!",
+		description:
+			"💻 This is it - the main event! 48 hours of pure innovation, creativity, and coding magic. Build something amazing, break things, fix them, and repeat. The clock is ticking!",
 		row: 3,
 	},
 	{
@@ -67,7 +73,8 @@ export const schedule = [
 		color: "orange",
 		title: "Late Registration Period",
 		location: "Main Hall",
-		description: "⏰ Running fashionably late? No worries! Last chance to jump aboard this incredible hackathon adventure. Better late than never!",
+		description:
+			"⏰ Running fashionably late? No worries! Last chance to jump aboard this incredible hackathon adventure. Better late than never!",
 		row: 4,
 	},
 	{
@@ -77,7 +84,8 @@ export const schedule = [
 		color: "purple",
 		title: "Photobooth",
 		location: "Activity Area",
-		description: "📸 Strike a pose! Capture those pre-hacking glow moments and silly team photos. These pics will be legendary when you're sleep-deprived tomorrow!",
+		description:
+			"📸 Strike a pose! Capture those pre-hacking glow moments and silly team photos. These pics will be legendary when you're sleep-deprived tomorrow!",
 		row: 1,
 	},
 	{
@@ -87,7 +95,8 @@ export const schedule = [
 		color: "purple",
 		title: "Mafia",
 		location: "Activity Area",
-		description: "🕵️ Who can you trust? Test your deception skills in this classic game of lies, accusations, and dramatic eliminations. Perfect for bonding with fellow hackers!",
+		description:
+			"🕵️ Who can you trust? Test your deception skills in this classic game of lies, accusations, and dramatic eliminations. Perfect for bonding with fellow hackers!",
 		row: 2,
 	},
 
@@ -99,7 +108,8 @@ export const schedule = [
 		color: "green",
 		title: "Saturday Breakfast",
 		location: "Dining Hall",
-		description: "🥞 Rise and grind! Start your day with energizing breakfast fuel. Coffee will be flowing freely - you're going to need it for the coding marathon ahead!",
+		description:
+			"🥞 Rise and grind! Start your day with energizing breakfast fuel. Coffee will be flowing freely - you're going to need it for the coding marathon ahead!",
 		row: 3,
 	},
 	{
@@ -109,7 +119,8 @@ export const schedule = [
 		color: "orange",
 		title: "Saturday Mentorship",
 		location: "Main Hall",
-		description: "🧠 Stuck on a problem? Need some wisdom? Our amazing mentors are here to help you navigate technical challenges, brainstorm ideas, and push your project to the next level!",
+		description:
+			"🧠 Stuck on a problem? Need some wisdom? Our amazing mentors are here to help you navigate technical challenges, brainstorm ideas, and push your project to the next level!",
 		row: 4,
 	},
 	{
@@ -119,7 +130,8 @@ export const schedule = [
 		color: "purple",
 		title: "Board Game Cafe",
 		location: "Activity Area",
-		description: "🎲 Take a break from screens and enjoy some analog fun! Perfect for team bonding, strategic thinking, or just letting your brain decompress between coding sessions.",
+		description:
+			"🎲 Take a break from screens and enjoy some analog fun! Perfect for team bonding, strategic thinking, or just letting your brain decompress between coding sessions.",
 		row: 1,
 	},
 	{
@@ -128,8 +140,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T17:00:00.000Z"),
 		color: "blue",
 		title: "Intro to Web Development with React w/ Sooraj Modi",
-		location: "Workshop Room",
-		description: "⚛️ Ready to React? Learn the fundamentals of modern web development and discover why React makes building UIs a breeze. Perfect for beginners and a great refresher for pros!",
+		location: "Common Area",
+		description:
+			"⚛️ Ready to React? Learn the fundamentals of modern web development and discover why React makes building UIs a breeze. Perfect for beginners and a great refresher for pros!",
 		row: 2,
 	},
 	{
@@ -138,8 +151,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T17:30:00.000Z"),
 		color: "blue",
 		title: "Innovation Isn't a Feature - It's a Decision Engine w/ Hadi Ismail",
-		location: "Workshop Room",
-		description: "💡 Transform your mindset about innovation! Learn how to build systematic approaches to creative problem-solving that will supercharge your hackathon projects and beyond.",
+		location: "Common Area",
+		description:
+			"💡 Transform your mindset about innovation! Learn how to build systematic approaches to creative problem-solving that will supercharge your hackathon projects and beyond.",
 		row: 3,
 	},
 	{
@@ -147,9 +161,11 @@ export const schedule = [
 		startDate: new Date("2025-06-21T17:30:00.000Z"),
 		endTime: new Date("2025-06-21T18:00:00.000Z"),
 		color: "blue",
-		title: "Non-dilutive Funding for Startups - SR&ED & Grants w/ Tarig Abdellatief",
-		location: "Workshop Room",
-		description: "💰 Free money for your startup? Yes, please! Discover how to access government grants and tax credits without giving up equity. Your future entrepreneur self will thank you!",
+		title:
+			"Non-dilutive Funding for Startups - SR&ED & Grants w/ Tarig Abdellatief",
+		location: "Common Area",
+		description:
+			"💰 Free money for your startup? Yes, please! Discover how to access government grants and tax credits without giving up equity. Your future entrepreneur self will thank you!",
 		row: 4,
 	},
 	{
@@ -158,8 +174,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T19:00:00.000Z"),
 		color: "blue",
 		title: "Intro to AI Security w/ David from Fairly AI",
-		location: "Workshop Room",
-		description: "🔒 With great AI power comes great responsibility! Learn how to build secure, ethical AI systems and protect against emerging threats in our AI-powered world.",
+		location: "Common Area",
+		description:
+			"🔒 With great AI power comes great responsibility! Learn how to build secure, ethical AI systems and protect against emerging threats in our AI-powered world.",
 		row: 1,
 	},
 	{
@@ -168,8 +185,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T19:00:00.000Z"),
 		color: "blue",
 		title: "Intro to GitHub & Copilot w/ Karolina from MLH",
-		location: "Workshop Room",
-		description: "🤖 Meet your new AI coding buddy! Master GitHub workflows and let Copilot supercharge your development speed. It's like having a pair programming partner who never gets tired!",
+		location: "Common Area",
+		description:
+			"🤖 Meet your new AI coding buddy! Master GitHub workflows and let Copilot supercharge your development speed. It's like having a pair programming partner who never gets tired!",
 		row: 2,
 	},
 	{
@@ -178,20 +196,21 @@ export const schedule = [
 		endTime: new Date("2025-06-21T19:00:00.000Z"),
 		color: "purple",
 		title: "Chess Tournament",
-		location: "Activity Area",
-		description: "♟️ Battle of the minds! Test your strategic thinking skills in the ultimate game of intellect. May the best tactician win - and may your code be as elegant as your endgame!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"♟️ Battle of the minds! Test your strategic thinking skills in the ultimate game of intellect. May the best tactician win - and may your code be as elegant as your endgame!",
 		row: 3,
 	},
-	{
-		id: "sponsor-booths",
-		startDate: new Date("2025-06-21T18:00:00.000Z"),
-		endTime: new Date("2025-06-22T00:00:00.000Z"),
-		color: "blue",
-		title: "Sponsor Booths",
-		location: "Sponsor Area",
-		description: "🤝 Network like a pro! Meet incredible companies, learn about opportunities, snag some sweet swag, and maybe even find your dream job or internship. Don't be shy!",
-		row: 4,
-	},
+	// {
+	// 	id: "sponsor-booths",
+	// 	startDate: new Date("2025-06-21T18:00:00.000Z"),
+	// 	endTime: new Date("2025-06-22T00:00:00.000Z"),
+	// 	color: "blue",
+	// 	title: "Sponsor Booths",
+	// 	location: "Sponsor Area",
+	// 	description: "🤝 Network like a pro! Meet incredible companies, learn about opportunities, snag some sweet swag, and maybe even find your dream job or internship. Don't be shy!",
+	// 	row: 4,
+	// },
 	{
 		id: "saturday-lunch",
 		startDate: new Date("2025-06-21T19:00:00.000Z"),
@@ -199,7 +218,8 @@ export const schedule = [
 		color: "green",
 		title: "Saturday Lunch",
 		location: "Dining Hall",
-		description: "🍔 Midday refuel! Take a break from coding, grab some delicious food, and recharge for the afternoon push. Great time to catch up with teammates and plan your next features!",
+		description:
+			"🍔 Midday refuel! Take a break from coding, grab some delicious food, and recharge for the afternoon push. Great time to catch up with teammates and plan your next features!",
 		row: 1,
 	},
 	{
@@ -208,8 +228,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T20:00:00.000Z"),
 		color: "blue",
 		title: "Resume Roast w/ Dragos Cada",
-		location: "Workshop Room",
-		description: "📄 Bring your resume and prepare to be roasted (constructively)! Get honest feedback and pro tips to make your resume stand out from the pile. Thick skin recommended!",
+		location: "Common Area",
+		description:
+			"📄 Bring your resume and prepare to be roasted (constructively)! Get honest feedback and pro tips to make your resume stand out from the pile. Thick skin recommended!",
 		row: 2,
 	},
 	{
@@ -218,8 +239,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T20:00:00.000Z"),
 		color: "purple",
 		title: "Tetris",
-		location: "Activity Area",
-		description: "🧩 Line piece, where are you?! Put your spatial reasoning and quick reflexes to the test in this classic puzzle game. Perfect brain break activity!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"🧩 Line piece, where are you?! Put your spatial reasoning and quick reflexes to the test in this classic puzzle game. Perfect brain break activity!",
 		row: 3,
 	},
 	{
@@ -228,8 +250,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T21:00:00.000Z"),
 		color: "blue",
 		title: "IBM Quantum Workshop",
-		location: "Workshop Room",
-		description: "⚛️ Enter the quantum realm! Explore the mind-bending world of quantum computing and learn how to write quantum algorithms. The future is quantum, and it starts here!",
+		location: "Common Area",
+		description:
+			"⚛️ Enter the quantum realm! Explore the mind-bending world of quantum computing and learn how to write quantum algorithms. The future is quantum, and it starts here!",
 		row: 4,
 	},
 	{
@@ -238,8 +261,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T21:00:00.000Z"),
 		color: "purple",
 		title: "Fast Typing Competition",
-		location: "Activity Area",
-		description: "⌨️ Show off those WPM skills! See who can type the fastest with the most accuracy. Your keyboard is your weapon - may the fastest fingers win!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"⌨️ Show off those WPM skills! See who can type the fastest with the most accuracy. Your keyboard is your weapon - may the fastest fingers win!",
 		row: 1,
 	},
 	{
@@ -248,8 +272,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T22:00:00.000Z"),
 		color: "blue",
 		title: "How Not To Be a Web Developer in Tech w/ Nathan Laundry",
-		location: "Workshop Room",
-		description: "😅 Learn from the mistakes of others! An educational journey through web development fails, career pitfalls, and how to avoid common traps.",
+		location: "Common Area",
+		description:
+			"😅 Learn from the mistakes of others! An educational journey through web development fails, career pitfalls, and how to avoid common traps.",
 		row: 2,
 	},
 	{
@@ -258,8 +283,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T22:00:00.000Z"),
 		color: "purple",
 		title: "Geoguessr",
-		location: "Activity Area",
-		description: "🌍 Where in the world are you? Test your geography skills and detective abilities by guessing locations from random Google Street View images. Prepare for some wild guesses!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"🌍 Where in the world are you? Test your geography skills and detective abilities by guessing locations from random Google Street View images. Prepare for some wild guesses!",
 		row: 3,
 	},
 	{
@@ -268,8 +294,9 @@ export const schedule = [
 		endTime: new Date("2025-06-21T23:00:00.000Z"),
 		color: "purple",
 		title: "Spicy Ramen Eating Competition",
-		location: "Activity Area",
-		description: "🌶️ Think you can handle the heat? Test your spice tolerance in this fiery challenge! Milk will be provided for casualties. Not for the faint of taste buds!",
+		location: "Common Area",
+		description:
+			"🌶️ Think you can handle the heat? Test your spice tolerance in this fiery challenge! Milk will be provided for casualties. Not for the faint of taste buds!",
 		row: 4,
 	},
 	{
@@ -278,8 +305,9 @@ export const schedule = [
 		endTime: new Date("2025-06-22T01:00:00.000Z"),
 		color: "purple",
 		title: "Mario Kart",
-		location: "Activity Area",
-		description: "🏎️ Start your engines! Race your way to victory on Rainbow Road and beyond. Blue shells and friendships will be broken. May the best racer win!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"🏎️ Start your engines! Race your way to victory on Rainbow Road and beyond. Blue shells and friendships will be broken. May the best racer win!",
 		row: 1,
 	},
 	{
@@ -288,8 +316,9 @@ export const schedule = [
 		endTime: new Date("2025-06-22T00:00:00.000Z"),
 		color: "purple",
 		title: "Cup Stacking Tournament w/ MLH",
-		location: "Activity Area",
-		description: "🥤 Stack 'em up, knock 'em down! Test your speed and precision in this surprisingly intense competition. Faster hands than you'd think required!",
+		location: "Common Area",
+		description:
+			"🥤 Stack 'em up, knock 'em down! Test your speed and precision in this surprisingly intense competition. Faster hands than you'd think required!",
 		row: 2,
 	},
 	{
@@ -299,7 +328,8 @@ export const schedule = [
 		color: "green",
 		title: "Saturday Dinner",
 		location: "Dining Hall",
-		description: "🍝 Late night fuel for the final coding stretch! Hearty dinner to power you through the last leg of development. Almost there - keep pushing!",
+		description:
+			"🍝 Late night fuel for the final coding stretch! Hearty dinner to power you through the last leg of development. Almost there - keep pushing!",
 		row: 3,
 	},
 	{
@@ -308,8 +338,9 @@ export const schedule = [
 		endTime: new Date("2025-06-22T03:00:00.000Z"),
 		color: "purple",
 		title: "Smash Bros Competition",
-		location: "Activity Area",
-		description: "👊 Time to settle it in Smash! Prove your gaming supremacy in the ultimate fighting game showdown. Choose your fighter and show no mercy!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"👊 Time to settle it in Smash! Prove your gaming supremacy in the ultimate fighting game showdown. Choose your fighter and show no mercy!",
 		row: 4,
 	},
 	{
@@ -318,8 +349,9 @@ export const schedule = [
 		endTime: new Date("2025-06-22T05:00:00.000Z"),
 		color: "purple",
 		title: "Jackbox",
-		location: "Activity Area",
-		description: "📱 Hilarious party games await! Use your phone to participate in these witty, creative, and often ridiculous multiplayer games. Laughter guaranteed!",
+		location: "Workshop Room (2nd floor)",
+		description:
+			"📱 Hilarious party games await! Use your phone to participate in these witty, creative, and often ridiculous multiplayer games. Laughter guaranteed!",
 		row: 1,
 	},
 	{
@@ -328,8 +360,9 @@ export const schedule = [
 		endTime: new Date("2025-06-22T05:00:00.000Z"),
 		color: "purple",
 		title: "Karaoke",
-		location: "Activity Area",
-		description: "🎤 Sing your heart out! Release the stress of coding with some epic karaoke performances. Don't worry about being good - just have fun and be loud!",
+		location: "Common Area",
+		description:
+			"🎤 Sing your heart out! Release the stress of coding with some epic karaoke performances. Don't worry about being good - just have fun and be loud!",
 		row: 2,
 	},
 
@@ -341,7 +374,8 @@ export const schedule = [
 		color: "green",
 		title: "Sunday Brunch",
 		location: "Dining Hall",
-		description: "🥐 The final feast! Celebrate making it through the hackathon with a delicious brunch. Time to reflect on your amazing accomplishments and prepare for judging!",
+		description:
+			"🥐 The final feast! Celebrate making it through the hackathon with a delicious brunch. Time to reflect on your amazing accomplishments and prepare for judging!",
 		row: 3,
 	},
 	{
@@ -351,7 +385,8 @@ export const schedule = [
 		color: "orange",
 		title: "Judging Period",
 		location: "Main Hall",
-		description: "⚖️ The moment of truth! Present your incredible creations to our panel of expert judges. Show off what you've built and explain your brilliant solutions!",
+		description:
+			"⚖️ The moment of truth! Present your incredible creations to our panel of expert judges. Show off what you've built and explain your brilliant solutions!",
 		row: 4,
 	},
 	{
@@ -361,7 +396,8 @@ export const schedule = [
 		color: "orange",
 		title: "Closing Ceremony",
 		location: "Main Hall",
-		description: "🏆 The grand finale! Celebrate everyone's amazing achievements, find out who won the prizes, and reflect on an incredible weekend of innovation and friendship!",
+		description:
+			"🏆 The grand finale! Celebrate everyone's amazing achievements, find out who won the prizes, and reflect on an incredible weekend of innovation and friendship!",
 		row: 1,
 	},
 	{
@@ -371,7 +407,8 @@ export const schedule = [
 		color: "blue",
 		title: "Toronto Bus A & B Departure",
 		location: "Campus",
-		description: "🚌 Farewell, amazing hackers! Time to head home with new skills, new friends, and incredible memories. Until the next hackathon adventure!",
+		description:
+			"🚌 Farewell, amazing hackers! Time to head home with new skills, new friends, and incredible memories. Until the next hackathon adventure!",
 		row: 2,
 	},
 ];
