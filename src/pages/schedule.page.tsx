@@ -14,7 +14,11 @@ import { useState } from "react";
 import { schedule } from "@/data/events";
 
 // utility function to truncate text based on actual card width
-function truncateTextByWidth(text: string, widthPx: number, isTitle = true): string {
+function truncateTextByWidth(
+	text: string,
+	widthPx: number,
+	isTitle = true,
+): string {
 	const avgCharWidth = isTitle ? 6.5 : 6;
 	const availableWidth = widthPx - 16;
 	const maxChars = Math.floor(availableWidth / avgCharWidth);
@@ -25,7 +29,7 @@ function truncateTextByWidth(text: string, widthPx: number, isTitle = true): str
 
 	if (finalMaxChars > 10) {
 		const truncated = text.slice(0, finalMaxChars - 3);
-		const lastSpace = truncated.lastIndexOf(' ');
+		const lastSpace = truncated.lastIndexOf(" ");
 		if (lastSpace > finalMaxChars * 0.4) {
 			return `${truncated.slice(0, lastSpace)}...`;
 		}
@@ -54,25 +58,25 @@ function ScheduleEntry(
 		onExpand: (eventId: string | null) => void;
 	},
 ) {
-	const [startHour, startMin] = props.startTime.split(':').map(Number);
-	const [endHour, endMin] = props.endTime.split(':').map(Number);
+	const [startHour, startMin] = props.startTime.split(":").map(Number);
+	const [endHour, endMin] = props.endTime.split(":").map(Number);
 	const startTotalHours = startHour + startMin / 60;
 	let endTotalHours = endHour + endMin / 60;
 	if (endHour >= 24) {
 		endTotalHours = endHour + endMin / 60;
 	}
 	const durationHours = endTotalHours - startTotalHours;
-	
+
 	const totalHours = props.timeRange.end - props.timeRange.start;
 	const duration = durationHours / totalHours;
 	const normalWidth = duration * (props.timelineWidth - 32);
 	const eventDurationHours = endTotalHours - startTotalHours;
 	const minWidth = eventDurationHours <= 0.5 ? 60 : Math.min(80, normalWidth);
 	const boxWidth = Math.max(normalWidth, minWidth);
-	
+
 	const isVeryShort = durationHours <= 0.5;
 	const isShort = durationHours <= 1;
-	
+
 	return (
 		<ScheduleGridItem
 			{...props}
@@ -103,17 +107,19 @@ function ScheduleEntry(
 					{truncateTextByWidth(props.location, boxWidth, false)}
 				</Text>
 				<Text fontSize="xs" opacity={0.8} lineHeight="1.1" mt={1}>
-					{isVeryShort 
+					{isVeryShort
 						? format12HourTime(props.startTime, false)
-						: `${format12HourTime(props.startTime, false)} - ${format12HourTime(props.endTime, false)}`
-					}
+						: `${format12HourTime(props.startTime, false)} - ${format12HourTime(props.endTime, false)}`}
 				</Text>
 			</VStack>
 		</ScheduleGridItem>
 	);
 }
 
-function calculateTimeRange(events: typeof schedule, dayDate: Date): {
+function calculateTimeRange(
+	events: typeof schedule,
+	dayDate: Date,
+): {
 	start: number;
 	end: number;
 } {
@@ -126,7 +132,8 @@ function calculateTimeRange(events: typeof schedule, dayDate: Date): {
 		// Ignore events that were added to this day as a late-night duplicate
 		if (event.startDate.toDateString() !== dayDate.toDateString()) return;
 
-		const startHour = event.startDate.getHours() + event.startDate.getMinutes() / 60;
+		const startHour =
+			event.startDate.getHours() + event.startDate.getMinutes() / 60;
 		let endHour = event.endTime.getHours() + event.endTime.getMinutes() / 60;
 
 		if (event.endTime.getDate() > event.startDate.getDate()) {
@@ -136,7 +143,6 @@ function calculateTimeRange(events: typeof schedule, dayDate: Date): {
 		earliestStart = Math.min(earliestStart, startHour);
 		latestEnd = Math.max(latestEnd, endHour);
 	});
-
 
 	const start = Math.max(0, Math.floor(earliestStart) - 1);
 	const end = Math.min(48, Math.ceil(latestEnd) + 1); // allow up to 48 hours (next day)
@@ -208,7 +214,10 @@ export const SchedulePage: React.FC = () => {
 		}
 
 		return acc;
-	}, new Map<string, { dayDate: Date; entries: ScheduleEntryProps[]; events: typeof schedule }>());
+	}, new Map<
+		string,
+		{ dayDate: Date; entries: ScheduleEntryProps[]; events: typeof schedule }
+	>());
 
 	const scheduleEntries = Array.from(groupedSchedule.entries()).map(
 		([dayKey, data]) => {

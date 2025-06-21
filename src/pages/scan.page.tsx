@@ -83,7 +83,8 @@ export const ScanPage = () => {
 						opacity={0.7}
 						mt={2}
 					>
-						Check back during the event for networking and other interactive features!
+						Check back during the event for networking and other interactive
+						features!
 					</Text>
 				</VStack>
 				<Link textDecoration="none" href={paths.home}>
@@ -107,4 +108,4 @@ export const ScanPage = () => {
 			</Flex>
 		</Box>
 	);
-}; 
+};

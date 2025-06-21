@@ -1,7 +1,7 @@
 import { PageWrapper } from "@/components";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Link } from "react-router-dom";
 import { Link as ChakraLink } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 export const AdminPage = () => {
 	return (

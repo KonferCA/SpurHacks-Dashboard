@@ -28,10 +28,10 @@ import { PerksPage } from "@/pages/perks.page";
 // Private pages
 import { SchedulePage } from "@/pages/schedule.page";
 
+import { AdminScanPage } from "@/pages/admin-scan.page";
 // Admin pages
 import { AdminPage } from "@/pages/admin/Admin.page";
 import { AdminManageEventsPage } from "@/pages/admin/manage-events.page";
-import { AdminScanPage } from "@/pages/admin-scan.page";
 
 // Miscellaneous pages
 import { NotFoundPage } from "@/pages/miscellaneous/not-found.page";

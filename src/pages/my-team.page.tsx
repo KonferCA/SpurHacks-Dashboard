@@ -690,9 +690,12 @@ export const MyTeamPage = () => {
 														overflow="hidden"
 														flexShrink={0}
 													>
-														{memberProfilePictures[member.email] && !failedProfilePictures[member.email] ? (
+														{memberProfilePictures[member.email] &&
+														!failedProfilePictures[member.email] ? (
 															<Image
-																src={memberProfilePictures[member.email] as string}
+																src={
+																	memberProfilePictures[member.email] as string
+																}
 																alt={`${member.firstName} ${member.lastName}`}
 																boxSize="full"
 																borderRadius="full"
@@ -704,7 +707,10 @@ export const MyTeamPage = () => {
 																	}));
 																}}
 															/>
-														) : member.providerPhotoURL && !failedProfilePictures[`${member.email}-provider`] ? (
+														) : member.providerPhotoURL &&
+															!failedProfilePictures[
+																`${member.email}-provider`
+															] ? (
 															<Image
 																src={member.providerPhotoURL}
 																alt={`${member.firstName} ${member.lastName}`}

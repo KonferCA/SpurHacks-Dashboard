@@ -88,7 +88,7 @@ export const MyTicketPage = () => {
 
 	const handleCreatePassObject = async (service: "apple" | "google") => {
 		setIsLoading(true);
-		
+
 		try {
 			const createTicket = httpsCallable(
 				functions,
@@ -101,12 +101,15 @@ export const MyTicketPage = () => {
 					: (userApp?.pronouns ?? "Not specified"),
 			});
 			const ticketData = ticketResult.data as { url: string };
-			
+
 			if (ticketData.url) {
 				if (service === "apple") {
 					const userAgent = navigator.userAgent.toLowerCase();
-					const isSafariIOS = /iphone|ipad|ipod/.test(userAgent) && /safari/.test(userAgent) && !/crios|fxios/.test(userAgent);
-					
+					const isSafariIOS =
+						/iphone|ipad|ipod/.test(userAgent) &&
+						/safari/.test(userAgent) &&
+						!/crios|fxios/.test(userAgent);
+
 					if (isSafariIOS) {
 						toaster.create({
 							title: "Opening Apple Wallet",

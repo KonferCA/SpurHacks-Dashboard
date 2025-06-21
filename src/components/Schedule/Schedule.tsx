@@ -100,14 +100,18 @@ export function ScheduleGrid(props: ScheduleGridProps) {
 
 	for (let hour = timeRange.start; hour < timeRange.end; hour++) {
 		const actualHour = hour >= 24 ? hour - 24 : hour;
-		const displayHour = actualHour === 0 ? 12 : actualHour > 12 ? actualHour - 12 : actualHour;
+		const displayHour =
+			actualHour === 0 ? 12 : actualHour > 12 ? actualHour - 12 : actualHour;
 		const period = actualHour < 12 ? "AM" : "PM";
-		
+
 		const dayIndicator = hour >= 24 ? " (+1)" : "";
 
 		timeSlots.push({
 			hour,
-			display: actualHour === 0 ? `12:00 AM${dayIndicator}` : `${displayHour}:00 ${period}${dayIndicator}`,
+			display:
+				actualHour === 0
+					? `12:00 AM${dayIndicator}`
+					: `${displayHour}:00 ${period}${dayIndicator}`,
 		});
 	}
 
@@ -633,14 +637,17 @@ function scheduleColumnHelper(time: TimeType): number {
 	return hour + minute / 60;
 }
 
-export function format12HourTime(time: TimeType, showDayIndicator = true): string {
+export function format12HourTime(
+	time: TimeType,
+	showDayIndicator = true,
+): string {
 	const [hour, minute] = time.split(":").map(Number);
-	
+
 	const actualHour = hour >= 24 ? hour - 24 : hour;
 	const period = actualHour >= 12 ? "PM" : "AM";
 	const formattedHour = actualHour % 12 || 12;
 	const formattedMinute = minute.toString().padStart(2, "0");
-	
+
 	const dayIndicator = showDayIndicator && hour >= 24 ? " (+1)" : "";
 
 	return `${formattedHour}:${formattedMinute} ${period}${dayIndicator}`;

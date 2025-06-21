@@ -18,11 +18,7 @@ import {
 	VStack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import {
-	FaDownload,
-	FaExternalLinkAlt,
-	FaGlobe,
-} from "react-icons/fa";
+import { FaDownload, FaExternalLinkAlt, FaGlobe } from "react-icons/fa";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 
 type SocialKey = "linkedin" | "instagram" | "github" | "discord";
@@ -188,10 +184,11 @@ export const ViewTicketPage = () => {
 
 	const socialLinks = Object.entries(ticketData)
 		.filter(
-			([key, value]) => socialInfo[key as SocialKey] && typeof value === "string" && value,
+			([key, value]) =>
+				socialInfo[key as SocialKey] && typeof value === "string" && value,
 		)
 		.map(([key, value]) => ({
-			...(socialInfo[key as SocialKey]),
+			...socialInfo[key as SocialKey],
 			key: key as SocialKey,
 			value: value as string,
 		}));
@@ -280,7 +277,9 @@ export const ViewTicketPage = () => {
 									>
 										About Me
 									</Heading>
-									<Text color="white" lineHeight="1.6">{aboutMe}</Text>
+									<Text color="white" lineHeight="1.6">
+										{aboutMe}
+									</Text>
 								</Box>
 							)}
 
@@ -313,9 +312,9 @@ export const ViewTicketPage = () => {
 														justifyContent="center"
 														flexShrink={0}
 													>
-														<Image 
-															src={social.iconSrc} 
-															alt={social.name} 
+														<Image
+															src={social.iconSrc}
+															alt={social.name}
 															boxSize="32px"
 														/>
 													</Box>
@@ -368,57 +367,64 @@ export const ViewTicketPage = () => {
 								</Heading>
 								<Flex direction="column" gap={3}>
 									{website && (
-										<Link href={getSocialUrl({key: "website"}, website)} target="_blank" rel="noopener noreferrer" _hover={{textDecoration: "none"}}>
-										<Flex
-											justify="space-between"
-											align="center"
-											py={3}
-											px={4}
-											bg="#2D2A3D"
-											borderRadius="2xl"
-											w="full"
+										<Link
+											href={getSocialUrl({ key: "website" }, website)}
+											target="_blank"
+											rel="noopener noreferrer"
+											_hover={{ textDecoration: "none" }}
 										>
-											<Flex align="center" gap={3}>
-												<Box
-													boxSize="40px"
-													display="flex"
-													alignItems="center"
-													justifyContent="center"
-													flexShrink={0}
-													borderRadius="lg"
-													bg="#0891b2"
-												>
-													<Icon as={FaGlobe} color="white" fontSize="xl" />
-												</Box>
-												<Box>
-													<Text fontWeight="medium" color="white">
-														Website
-													</Text>
-													<Text
-														color="fg.muted"
-														fontSize="sm"
-														overflow="hidden"
-														textOverflow="ellipsis"
-														whiteSpace="nowrap"
-														maxWidth={{ base: "150px", md: "200px" }}
+											<Flex
+												justify="space-between"
+												align="center"
+												py={3}
+												px={4}
+												bg="#2D2A3D"
+												borderRadius="2xl"
+												w="full"
+											>
+												<Flex align="center" gap={3}>
+													<Box
+														boxSize="40px"
+														display="flex"
+														alignItems="center"
+														justifyContent="center"
+														flexShrink={0}
+														borderRadius="lg"
+														bg="#0891b2"
 													>
-														{formatSocialValue("website", website)}
-													</Text>
-												</Box>
+														<Icon as={FaGlobe} color="white" fontSize="xl" />
+													</Box>
+													<Box>
+														<Text fontWeight="medium" color="white">
+															Website
+														</Text>
+														<Text
+															color="fg.muted"
+															fontSize="sm"
+															overflow="hidden"
+															textOverflow="ellipsis"
+															whiteSpace="nowrap"
+															maxWidth={{ base: "150px", md: "200px" }}
+														>
+															{formatSocialValue("website", website)}
+														</Text>
+													</Box>
+												</Flex>
+												<Icon
+													as={FaExternalLinkAlt}
+													fontSize="lg"
+													color="fg.muted"
+													_hover={{ color: "white" }}
+												/>
 											</Flex>
-											<Icon
-												as={FaExternalLinkAlt}
-												fontSize="lg"
-												color="fg.muted"
-												_hover={{ color: "white" }}
-											/>
-										</Flex>
 										</Link>
 									)}
 									{ticketData.resumeRef && showResume && (
 										<Flex
 											as="button"
-											onClick={() => ticketData.resumeRef && getResume(ticketData.resumeRef)}
+											onClick={() =>
+												ticketData.resumeRef && getResume(ticketData.resumeRef)
+											}
 											justify="space-between"
 											align="center"
 											py={3}

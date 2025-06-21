@@ -1,14 +1,14 @@
 import { FullLogo, Knots } from "@/assets";
 import { paths } from "@/providers/RoutesProvider/data";
-import { Link } from "react-router-dom";
 import {
 	Box,
 	Button,
+	Link as ChakraLink,
 	Flex,
 	Image,
-	Link as ChakraLink,
 	Text,
 } from "@chakra-ui/react";
+import { Link } from "react-router-dom";
 
 export const NotFoundPage = () => {
 	return (

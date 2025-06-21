@@ -7,8 +7,8 @@ import { HttpsError, onCall } from "firebase-functions/v2/https";
 import { Resend } from "resend";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { HttpStatus, response } from "./utils";
 import { cors } from "./cors";
+import { HttpStatus, response } from "./utils";
 
 // Define interfaces for request data types
 interface TeamNameRequest {
@@ -190,7 +190,7 @@ async function internalGetInvitedMembersByTeam(
 		// get profile picture from socials collection using userId if available
 		let profilePictureRef: string | undefined;
 		let providerPhotoURL: string | undefined;
-		
+
 		if (data.userId) {
 			try {
 				const socialsSnap = await getFirestore()

@@ -1,17 +1,10 @@
 import { LoadingAnimation, PageWrapper, Select, TextInput } from "@/components";
 import { toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/providers";
+import { firestore } from "@/services/firebase";
 import { getRedeemableItems, redeemItem } from "@/services/firebase/redeem";
 import { getExtendedTicketData } from "@/services/firebase/ticket";
 import type { EventItem, ExtendedTicketData } from "@/services/firebase/types";
-import { firestore } from "@/services/firebase";
-import {
-	collection,
-	query as firestoreQuery,
-	where,
-	getDocs,
-	limit,
-} from "firebase/firestore";
 import {
 	Badge,
 	Box,
@@ -24,12 +17,19 @@ import {
 	Icon,
 	Text,
 } from "@chakra-ui/react";
+import {
+	collection,
+	query as firestoreQuery,
+	getDocs,
+	limit,
+	where,
+} from "firebase/firestore";
+import { Html5QrcodeScanType, Html5QrcodeScanner } from "html5-qrcode";
 import { useEffect, useState } from "react";
-import { FaCheck, FaQrcode, FaUtensils, FaUndo } from "react-icons/fa";
-import { MdRefresh } from "react-icons/md";
-import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode";
-import { useParams, useNavigate } from "react-router-dom";
 import { useRef } from "react";
+import { FaCheck, FaQrcode, FaUndo, FaUtensils } from "react-icons/fa";
+import { MdRefresh } from "react-icons/md";
+import { useNavigate, useParams } from "react-router-dom";
 
 export const AdminScanPage = () => {
 	const { currentUser } = useAuth();
@@ -37,7 +37,11 @@ export const AdminScanPage = () => {
 	const navigate = useNavigate();
 	const scannerRef = useRef<HTMLDivElement>(null);
 	const rapidScanModeRef = useRef<boolean>(false);
-	const selectedRapidItemRef = useRef<{ id: string; title: string; type: "food" | "event" } | null>(null);
+	const selectedRapidItemRef = useRef<{
+		id: string;
+		title: string;
+		type: "food" | "event";
+	} | null>(null);
 	const lastScanTimeRef = useRef<number>(0);
 	const lastScannedCodeRef = useRef<string>("");
 	const [isLoading, setIsLoading] = useState(false);
@@ -100,8 +104,6 @@ export const AdminScanPage = () => {
 		};
 		fetchEvents();
 	}, []);
-
-
 
 	// rapid scan for a specific item
 	const handleRapidScan = async (
@@ -237,28 +239,31 @@ export const AdminScanPage = () => {
 					const now = Date.now();
 					const timeSinceLastScan = now - lastScanTimeRef.current;
 					const isSameCode = decodedText === lastScannedCodeRef.current;
-					
+
 					// debounce: ignore if same code scanned within 4 seconds
 					if (isSameCode && timeSinceLastScan < 4000) {
 						return;
 					}
-					
+
 					// extract ticket id from url
 					const ticketMatch = decodedText.match(/\/ticket\/(.+)$/);
 					if (ticketMatch) {
 						const ticketId = ticketMatch[1];
-						
+
 						// update debounce refs
 						lastScanTimeRef.current = now;
 						lastScannedCodeRef.current = decodedText;
-						
+
 						// use refs to get current values (not closure values)
 						const currentRapidScanMode = rapidScanModeRef.current;
 						const currentSelectedRapidItem = selectedRapidItemRef.current;
-						
+
 						if (currentRapidScanMode && currentSelectedRapidItem) {
 							// rapid scan mode - keep camera running, just process the scan
-							console.log("🚀 Rapid scan mode:", currentSelectedRapidItem.title);
+							console.log(
+								"🚀 Rapid scan mode:",
+								currentSelectedRapidItem.title,
+							);
 							handleRapidScan(ticketId, currentSelectedRapidItem);
 							// no need to restart scanner - it keeps running!
 						} else {
@@ -347,7 +352,7 @@ export const AdminScanPage = () => {
 		}
 	};
 
-		// reset scanner to scan new ticket
+	// reset scanner to scan new ticket
 	const resetScanner = () => {
 		setTicketData(null);
 		setScannedTicketId(null);
@@ -358,22 +363,25 @@ export const AdminScanPage = () => {
 		setLastAction(null);
 		setSearchQuery("");
 		setSearchResults([]);
-		
+
 		// reset debounce refs
 		lastScanTimeRef.current = 0;
 		lastScannedCodeRef.current = "";
-		
+
 		// cleanup existing scanner and restart
 		if (scanner) {
-			scanner.clear().then(() => {
-				setScanner(null);
-				// if we're in direct ticket view mode, navigate back to admin scan
-				if (isDirectTicketView) {
-					navigate("/admin/scan");
-				} else {
-					setIsScanning(true);
-				}
-			}).catch(console.error);
+			scanner
+				.clear()
+				.then(() => {
+					setScanner(null);
+					// if we're in direct ticket view mode, navigate back to admin scan
+					if (isDirectTicketView) {
+						navigate("/admin/scan");
+					} else {
+						setIsScanning(true);
+					}
+				})
+				.catch(console.error);
 		} else {
 			// if we're in direct ticket view mode, navigate back to admin scan
 			if (isDirectTicketView) {
@@ -404,17 +412,20 @@ export const AdminScanPage = () => {
 		setLastScannedPerson("");
 		setLastScannedTicketId("");
 		setLastAction(null);
-		
+
 		// reset debounce refs
 		lastScanTimeRef.current = 0;
 		lastScannedCodeRef.current = "";
-		
+
 		// clear scanner when exiting rapid scan mode to turn off camera
 		if (scanner) {
-			scanner.clear().then(() => {
-				setScanner(null);
-				setIsScanning(true); // restart in normal mode
-			}).catch(console.error);
+			scanner
+				.clear()
+				.then(() => {
+					setScanner(null);
+					setIsScanning(true); // restart in normal mode
+				})
+				.catch(console.error);
 		}
 	};
 
