@@ -271,7 +271,8 @@ export const schedule = [
 		startDate: new Date("2025-06-21T22:15:00.000Z"),
 		endTime: new Date("2025-06-21T23:15:00.000Z"),
 		color: "blue",
-		title: "Maybe it is the Damn Phone: or how to quit doomscrolling and why you NEED to w/ Nathan Laundry",
+		title:
+			"Maybe it is the Damn Phone: or how to quit doomscrolling and why you NEED to w/ Nathan Laundry",
 		location: "Common Area",
 		description:
 			"📱 Break free from the endless scroll! Discover practical strategies to reclaim your attention, boost productivity, and understand why disconnecting is essential for your mental health and creativity.",
@@ -388,6 +389,17 @@ export const schedule = [
 		description:
 			"⚖️ The moment of truth! Present your incredible creations to our panel of expert judges. Show off what you've built and explain your brilliant solutions!",
 		row: 4,
+	},
+	{
+		id: "mini-games",
+		startDate: new Date("2025-06-22T16:00:00.000Z"),
+		endTime: new Date("2025-06-22T21:00:00.000Z"),
+		color: "purple",
+		title: "Mini Games during Judging",
+		location: "Common Area (1st floor)",
+		description:
+			"🚀 Unwind during judging with some casual fun—drop in for Jackbox, Mario Kart, or Brawlhalla and chill with the crew.",
+		row: 1,
 	},
 	{
 		id: "intro-to-quantum-bitcoin-with-david-chaum",
