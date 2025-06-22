@@ -392,7 +392,7 @@ export const schedule = [
 	},
 	{
 		id: "mini-games",
-		startDate: new Date("2025-06-22T16:00:00.000Z"),
+		startDate: new Date("2025-06-22T17:00:00.000Z"),
 		endTime: new Date("2025-06-22T21:00:00.000Z"),
 		color: "purple",
 		title: "Mini Games during Judging",
