@@ -33,7 +33,7 @@ const importantInfo = [
 	{ day: "FRI", time: "5:00PM", label: "Registration" },
 	{ day: "FRI", time: "8:30PM", label: "Opening Ceremony" },
 	{ day: "SUN", time: "11:00AM", label: "Projects Due" },
-	{ day: "SUN", time: "5:30PM", label: "Closing Ceremony" },
+	{ day: "SUN", time: "6:00PM", label: "Closing Ceremony" },
 ];
 
 const cardStyles = {
